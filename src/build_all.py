@@ -42,6 +42,8 @@ from src.validate import (
     write_validation_report,
 )
 
+DETAIL_SOURCE_GROUP = "detail-page"
+
 
 @dataclass(frozen=True)
 class PipelinePaths:
@@ -87,12 +89,33 @@ def _relative_to_root(path: Path, *, root: Path) -> str:
     return path.relative_to(root).as_posix()
 
 
+def _detail_source_config(source: SourceConfig, card: ParsedStartupCard) -> SourceConfig:
+    detail_slug = detail_slug_from_path(card.detail_path) or f"position-{card.position}"
+    return SourceConfig(
+        source_id=f"{source.source_id}--detail--{detail_slug}",
+        url=card.detail_url,
+        parser_strategy=DETAIL_PAGE_PARSER_STRATEGY,
+        category_slug=source.category_slug,
+        category_label=source.category_label,
+        source_group=DETAIL_SOURCE_GROUP,
+    )
+
+
 def _build_detail_page_scaffold_payload(
+    source: SourceConfig,
     parsed_cards: list[ParsedStartupCard],
     *,
+    fetch_paths: FetchPaths,
+    pipeline_paths: PipelinePaths,
+    force: bool,
     detail_page_html_resolver: Callable[[ParsedStartupCard], str | None] | None,
-) -> dict[str, object]:
+    fetch_detail_pages: bool,
+    detail_page_limit_per_source: int | None,
+    detail_page_fetcher: Callable[..., tuple[FetchResult, float | None]],
+    last_live_fetch_at: float | None,
+) -> tuple[dict[str, object], float | None]:
     detail_pages: list[dict[str, object]] = []
+    fetched_detail_page_count = 0
     parsed_detail_page_count = 0
 
     for card in parsed_cards:
@@ -104,26 +127,65 @@ def _build_detail_page_scaffold_payload(
             "detail_slug": detail_slug_from_path(card.detail_path),
             "detail_parser_strategy": DETAIL_PAGE_PARSER_STRATEGY,
             "detail_parse_status": "not_requested",
+            "detail_html_source": "not_requested",
+            "detail_fetch_source_id": None,
+            "detail_fetch_cached": None,
+            "detail_raw_html_path": None,
+            "detail_raw_meta_path": None,
             "extracted_detail": None,
         }
+        resolver_was_consulted = detail_page_html_resolver is not None
+        detail_html: str | None = None
 
-        if detail_page_html_resolver is not None:
+        if resolver_was_consulted:
             detail_html = detail_page_html_resolver(card)
-            if detail_html is None:
-                detail_record["detail_parse_status"] = "html_not_supplied"
+            if detail_html is not None:
+                detail_record["detail_html_source"] = "provided_html"
+
+        if detail_html is None and fetch_detail_pages:
+            if detail_page_limit_per_source is not None and fetched_detail_page_count >= detail_page_limit_per_source:
+                detail_record["detail_parse_status"] = "skipped_by_limit"
+                detail_record["detail_html_source"] = "fetch_skipped_by_limit"
             else:
-                parsed_detail = parse_startup_detail_html(card, detail_html)
-                detail_record["detail_parse_status"] = "parsed"
-                detail_record["extracted_detail"] = parsed_detail_as_dict(parsed_detail)
-                parsed_detail_page_count += 1
+                detail_source = _detail_source_config(source, card)
+                detail_result, last_live_fetch_at = detail_page_fetcher(
+                    detail_source,
+                    paths=fetch_paths,
+                    force=force,
+                    last_live_fetch_at=last_live_fetch_at,
+                )
+                detail_raw_html_path, _, detail_raw_metadata = _copy_raw_artifacts(
+                    detail_source,
+                    detail_result,
+                    fetch_paths=fetch_paths,
+                    pipeline_paths=pipeline_paths,
+                    raw_subdir="details",
+                )
+                detail_html = detail_raw_html_path.read_text(encoding="utf-8", errors="replace")
+                detail_record["detail_html_source"] = "fetched_html"
+                detail_record["detail_fetch_source_id"] = detail_source.source_id
+                detail_record["detail_fetch_cached"] = detail_result.cached
+                detail_record["detail_raw_html_path"] = detail_raw_metadata["raw_html_path"]
+                detail_record["detail_raw_meta_path"] = detail_raw_metadata["raw_meta_path"]
+                fetched_detail_page_count += 1
+
+        if detail_html is not None:
+            parsed_detail = parse_startup_detail_html(card, detail_html)
+            detail_record["detail_parse_status"] = "parsed"
+            detail_record["extracted_detail"] = parsed_detail_as_dict(parsed_detail)
+            parsed_detail_page_count += 1
+        elif detail_record["detail_parse_status"] == "not_requested" and resolver_was_consulted:
+            detail_record["detail_parse_status"] = "html_not_supplied"
+            detail_record["detail_html_source"] = "resolver_missing"
 
         detail_pages.append(detail_record)
 
     return {
         "detail_page_target_count": len(detail_pages),
+        "fetched_detail_page_count": fetched_detail_page_count,
         "parsed_detail_page_count": parsed_detail_page_count,
         "detail_pages": detail_pages,
-    }
+    }, last_live_fetch_at
 
 
 def _copy_raw_artifacts(
@@ -132,11 +194,14 @@ def _copy_raw_artifacts(
     *,
     fetch_paths: FetchPaths,
     pipeline_paths: PipelinePaths,
+    raw_subdir: str | None = None,
 ) -> tuple[Path, Path, dict[str, object]]:
     cache_html_path = fetch_paths.root / result.cache_html_path
     cache_meta_path = fetch_paths.root / result.cache_meta_path
-    raw_html_path = pipeline_paths.raw_dir / f"{source.source_id}.html"
-    raw_meta_path = pipeline_paths.raw_dir / f"{source.source_id}.json"
+    raw_dir = pipeline_paths.raw_dir if raw_subdir is None else pipeline_paths.raw_dir / raw_subdir
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    raw_html_path = raw_dir / f"{source.source_id}.html"
+    raw_meta_path = raw_dir / f"{source.source_id}.json"
 
     shutil.copyfile(cache_html_path, raw_html_path)
     cache_metadata = json.loads(cache_meta_path.read_text(encoding="utf-8"))
@@ -169,6 +234,7 @@ def _build_snapshot_manifest(
     return {
         "selected_source_count": len(selected_sources),
         "detail_page_target_count": sum(int(source["detail_page_target_count"]) for source in per_source_outputs),
+        "fetched_detail_page_count": sum(int(source["fetched_detail_page_count"]) for source in per_source_outputs),
         "parsed_detail_page_count": sum(int(source["parsed_detail_page_count"]) for source in per_source_outputs),
         "selected_sources": [
             {
@@ -212,8 +278,13 @@ def run_pipeline(
     source_registry: list[SourceConfig] | None = None,
     fetcher: Callable[..., tuple[FetchResult, float | None]] = fetch_source,
     detail_page_html_resolver: Callable[[ParsedStartupCard], str | None] | None = None,
+    fetch_detail_pages: bool = False,
+    detail_page_limit_per_source: int | None = None,
+    detail_page_fetcher: Callable[..., tuple[FetchResult, float | None]] = fetch_source,
 ) -> dict[str, object]:
     _ensure_pipeline_dirs(pipeline_paths)
+    if detail_page_limit_per_source is not None and detail_page_limit_per_source < 0:
+        raise ValueError("detail_page_limit_per_source must be non-negative")
 
     selected_sources = source_registry if source_registry is not None else select_sources(source_id=source_id, limit=limit)
     if not selected_sources:
@@ -245,13 +316,22 @@ def run_pipeline(
             "card_count": len(parsed_cards),
             "cards": parsed_cards_as_dicts(parsed_cards),
         }
+        scaffold_payload, last_live_fetch_at = _build_detail_page_scaffold_payload(
+            source,
+            parsed_cards,
+            fetch_paths=fetch_paths,
+            pipeline_paths=pipeline_paths,
+            force=force,
+            detail_page_html_resolver=detail_page_html_resolver,
+            fetch_detail_pages=fetch_detail_pages,
+            detail_page_limit_per_source=detail_page_limit_per_source,
+            detail_page_fetcher=detail_page_fetcher,
+            last_live_fetch_at=last_live_fetch_at,
+        )
         detail_scaffold_payload = {
             "source_id": source.source_id,
             "source_url": source.url,
-            **_build_detail_page_scaffold_payload(
-                parsed_cards,
-                detail_page_html_resolver=detail_page_html_resolver,
-            ),
+            **scaffold_payload,
         }
         _write_json(interim_path, interim_payload)
         _write_json(detail_scaffold_path, detail_scaffold_payload)
@@ -269,6 +349,7 @@ def run_pipeline(
                 "parsed_card_count": len(parsed_cards),
                 "visible_sample_row_count": sum(1 for row in source_rows if row["included_in_visible_sample"]),
                 "detail_page_target_count": detail_scaffold_payload["detail_page_target_count"],
+                "fetched_detail_page_count": detail_scaffold_payload["fetched_detail_page_count"],
                 "parsed_detail_page_count": detail_scaffold_payload["parsed_detail_page_count"],
             }
         )
@@ -307,6 +388,7 @@ def run_pipeline(
     return {
         "selected_source_count": len(selected_sources),
         "detail_page_target_count": sum(int(source["detail_page_target_count"]) for source in per_source_outputs),
+        "fetched_detail_page_count": sum(int(source["fetched_detail_page_count"]) for source in per_source_outputs),
         "parsed_detail_page_count": sum(int(source["parsed_detail_page_count"]) for source in per_source_outputs),
         "normalized_row_count": len(deduped_rows),
         "visible_sample_row_count": len(visible_rows),
@@ -333,13 +415,30 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--source-id", default=None, help="Run the pipeline for one source id")
     parser.add_argument("--limit", type=int, default=None, help="Only process the first N selected sources")
     parser.add_argument("--force", action="store_true", help="Ignore fresh cache entries and refetch")
+    parser.add_argument(
+        "--fetch-details",
+        action="store_true",
+        help="Explicitly fetch parsed startup detail pages into staged raw/detail artifacts",
+    )
+    parser.add_argument(
+        "--detail-limit-per-source",
+        type=int,
+        default=None,
+        help="Only fetch up to N startup detail pages per selected source when --fetch-details is enabled",
+    )
     return parser
 
 
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
-    summary = run_pipeline(source_id=args.source_id, limit=args.limit, force=args.force)
+    summary = run_pipeline(
+        source_id=args.source_id,
+        limit=args.limit,
+        force=args.force,
+        fetch_detail_pages=args.fetch_details,
+        detail_page_limit_per_source=args.detail_limit_per_source,
+    )
     print(json.dumps(summary, indent=2, sort_keys=True))
     return 0
 

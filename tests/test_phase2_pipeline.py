@@ -11,7 +11,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-from src.build_all import PipelinePaths, run_pipeline
+from src.build_all import PipelinePaths, build_parser, run_pipeline
 from src.config import FetchPaths, SourceConfig
 from src.fetch import FetchResult
 from src.normalize import (
@@ -31,6 +31,36 @@ FIXTURES = ROOT / "tests" / "fixtures"
 
 def read_fixture(name: str) -> str:
     return (FIXTURES / name).read_text(encoding="utf-8")
+
+
+def write_fetch_fixture_result(
+    selected_source: SourceConfig,
+    *,
+    paths: FetchPaths,
+    html_fixture: str,
+) -> FetchResult:
+    paths.cache_dir.mkdir(parents=True, exist_ok=True)
+    paths.failure_snapshot_dir.mkdir(parents=True, exist_ok=True)
+    html_path = paths.cache_dir / f"{selected_source.source_id}.html"
+    meta_path = paths.cache_dir / f"{selected_source.source_id}.json"
+    html_path.write_text(html_fixture, encoding="utf-8")
+    record = FetchResult(
+        source_id=selected_source.source_id,
+        url=selected_source.url,
+        final_url=selected_source.url,
+        parser_strategy=selected_source.parser_strategy,
+        source_group=selected_source.source_group,
+        category_label=selected_source.category_label,
+        content_type="text/html",
+        body_sha256="fixture",
+        bytes_written=html_path.stat().st_size,
+        cache_html_path=html_path.relative_to(paths.root).as_posix(),
+        cache_meta_path=meta_path.relative_to(paths.root).as_posix(),
+        robots={"allowed": True, "effective_delay_seconds": 0.0},
+        cached=False,
+    )
+    meta_path.write_text(json.dumps(record.__dict__, indent=2, sort_keys=True), encoding="utf-8")
+    return record
 
 
 def category_source() -> SourceConfig:
@@ -132,6 +162,13 @@ def test_parse_startup_detail_html_fails_loudly_when_required_label_is_missing()
 
     with pytest.raises(ValueError, match="Pricing"):
         parse_startup_detail_html(card, invalid_html)
+
+
+def test_build_all_parser_accepts_optional_detail_fetch_flags() -> None:
+    args = build_parser().parse_args(["--fetch-details", "--detail-limit-per-source", "2"])
+
+    assert args.fetch_details is True
+    assert args.detail_limit_per_source == 2
 
 
 def test_normalize_parsed_cards_converts_metrics_and_thresholds() -> None:
@@ -520,28 +557,14 @@ def test_run_pipeline_writes_staged_outputs_from_fixture_fetch(tmp_path: Path) -
         force: bool = False,
         last_live_fetch_at: float | None = None,
     ) -> tuple[FetchResult, float | None]:
-        paths.cache_dir.mkdir(parents=True, exist_ok=True)
-        paths.failure_snapshot_dir.mkdir(parents=True, exist_ok=True)
-        html_path = paths.cache_dir / f"{selected_source.source_id}.html"
-        meta_path = paths.cache_dir / f"{selected_source.source_id}.json"
-        html_path.write_text(read_fixture("category_ai_fixture.html"), encoding="utf-8")
-        record = FetchResult(
-            source_id=selected_source.source_id,
-            url=selected_source.url,
-            final_url=selected_source.url,
-            parser_strategy=selected_source.parser_strategy,
-            source_group=selected_source.source_group,
-            category_label=selected_source.category_label,
-            content_type="text/html",
-            body_sha256="fixture",
-            bytes_written=html_path.stat().st_size,
-            cache_html_path=html_path.relative_to(paths.root).as_posix(),
-            cache_meta_path=meta_path.relative_to(paths.root).as_posix(),
-            robots={"allowed": True, "effective_delay_seconds": 0.0},
-            cached=False,
+        return (
+            write_fetch_fixture_result(
+                selected_source,
+                paths=paths,
+                html_fixture=read_fixture("category_ai_fixture.html"),
+            ),
+            last_live_fetch_at,
         )
-        meta_path.write_text(json.dumps(record.__dict__, indent=2, sort_keys=True), encoding="utf-8")
-        return record, last_live_fetch_at
 
     def detail_page_html_resolver(card: ParsedStartupCard) -> str | None:
         if card.detail_url.endswith("/rezi"):
@@ -558,6 +581,7 @@ def test_run_pipeline_writes_staged_outputs_from_fixture_fetch(tmp_path: Path) -
 
     assert summary["selected_source_count"] == 1
     assert summary["detail_page_target_count"] == 2
+    assert summary["fetched_detail_page_count"] == 0
     assert summary["parsed_detail_page_count"] == 1
     assert summary["normalized_row_count"] == 2
     assert summary["visible_sample_row_count"] == 1
@@ -590,7 +614,109 @@ def test_run_pipeline_writes_staged_outputs_from_fixture_fetch(tmp_path: Path) -
     assert detail_scaffolds["detail_pages"][1]["detail_parse_status"] == "html_not_supplied"
     assert detail_scaffolds["detail_pages"][1]["extracted_detail"] is None
     assert snapshot_manifest["detail_page_target_count"] == 2
+    assert snapshot_manifest["fetched_detail_page_count"] == 0
     assert snapshot_manifest["parsed_detail_page_count"] == 1
     assert snapshot_manifest["per_source_outputs"][0]["detail_scaffold_path"].endswith(
         "data/source_pipeline/interim/category--ai.detail_pages.json"
     )
+
+
+def test_run_pipeline_fetches_and_stages_detail_pages_when_requested(tmp_path: Path) -> None:
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    data_dir = workspace / "data"
+    data_dir.mkdir()
+
+    fetch_paths = FetchPaths(
+        root=workspace,
+        data_dir=data_dir,
+        cache_dir=data_dir / "fetch_cache",
+        failure_snapshot_dir=data_dir / "fetch_failures",
+    )
+    pipeline_paths = PipelinePaths(
+        root=workspace,
+        pipeline_dir=data_dir / "source_pipeline",
+        raw_dir=data_dir / "source_pipeline" / "raw",
+        interim_dir=data_dir / "source_pipeline" / "interim",
+        processed_dir=data_dir / "source_pipeline" / "processed",
+        snapshots_dir=data_dir / "source_pipeline" / "snapshots",
+    )
+    source = category_source()
+    detail_fetch_urls: list[str] = []
+
+    def fake_fetcher(
+        selected_source: SourceConfig,
+        *,
+        paths: FetchPaths,
+        force: bool = False,
+        last_live_fetch_at: float | None = None,
+    ) -> tuple[FetchResult, float | None]:
+        return (
+            write_fetch_fixture_result(
+                selected_source,
+                paths=paths,
+                html_fixture=read_fixture("category_ai_fixture.html"),
+            ),
+            last_live_fetch_at,
+        )
+
+    def fake_detail_fetcher(
+        selected_source: SourceConfig,
+        *,
+        paths: FetchPaths,
+        force: bool = False,
+        last_live_fetch_at: float | None = None,
+    ) -> tuple[FetchResult, float | None]:
+        detail_fetch_urls.append(selected_source.url)
+        assert selected_source.parser_strategy == "trustmrr_startup_detail"
+        return (
+            write_fetch_fixture_result(
+                selected_source,
+                paths=paths,
+                html_fixture=read_fixture("startup_rezi_detail_fixture.html"),
+            ),
+            last_live_fetch_at,
+        )
+
+    summary = run_pipeline(
+        source_registry=[source],
+        fetch_paths=fetch_paths,
+        pipeline_paths=pipeline_paths,
+        fetcher=fake_fetcher,
+        fetch_detail_pages=True,
+        detail_page_limit_per_source=1,
+        detail_page_fetcher=fake_detail_fetcher,
+    )
+
+    assert detail_fetch_urls == ["https://trustmrr.com/startup/rezi"]
+    assert summary["selected_source_count"] == 1
+    assert summary["detail_page_target_count"] == 2
+    assert summary["fetched_detail_page_count"] == 1
+    assert summary["parsed_detail_page_count"] == 1
+    assert summary["validation_status"] == "passed"
+
+    detail_scaffolds = json.loads(
+        (pipeline_paths.interim_dir / f"{source.source_id}.detail_pages.json").read_text(encoding="utf-8")
+    )
+    snapshot_manifest = json.loads(
+        (pipeline_paths.snapshots_dir / "run_manifest.json").read_text(encoding="utf-8")
+    )
+
+    assert (pipeline_paths.raw_dir / "details" / "category--ai--detail--rezi.html").exists()
+    assert (pipeline_paths.raw_dir / "details" / "category--ai--detail--rezi.json").exists()
+    assert detail_scaffolds["fetched_detail_page_count"] == 1
+    assert detail_scaffolds["parsed_detail_page_count"] == 1
+    assert detail_scaffolds["detail_pages"][0]["detail_parse_status"] == "parsed"
+    assert detail_scaffolds["detail_pages"][0]["detail_html_source"] == "fetched_html"
+    assert detail_scaffolds["detail_pages"][0]["detail_fetch_source_id"] == "category--ai--detail--rezi"
+    assert detail_scaffolds["detail_pages"][0]["detail_fetch_cached"] is False
+    assert detail_scaffolds["detail_pages"][0]["detail_raw_html_path"].endswith(
+        "data/source_pipeline/raw/details/category--ai--detail--rezi.html"
+    )
+    assert detail_scaffolds["detail_pages"][1]["detail_parse_status"] == "skipped_by_limit"
+    assert detail_scaffolds["detail_pages"][1]["detail_html_source"] == "fetch_skipped_by_limit"
+    assert detail_scaffolds["detail_pages"][1]["detail_raw_html_path"] is None
+    assert snapshot_manifest["detail_page_target_count"] == 2
+    assert snapshot_manifest["fetched_detail_page_count"] == 1
+    assert snapshot_manifest["parsed_detail_page_count"] == 1
+    assert snapshot_manifest["per_source_outputs"][0]["fetched_detail_page_count"] == 1
