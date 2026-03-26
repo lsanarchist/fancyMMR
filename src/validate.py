@@ -165,9 +165,9 @@ def validate_normalized_rows(
         ),
         _check(
             check_id="visible_name_source_pairs_unique",
-            severity="error",
+            severity="warning",
             passed=duplicate_name_source_url_count == 0,
-            message="Visible-sample `(name, source_url)` pairs are unique within the staged run.",
+            message="Visible-sample duplicate `(name, source_url)` pairs are surfaced as warnings because generic placeholder names can refer to distinct detail URLs on the same source page.",
             details={"duplicate_name_source_url_count": duplicate_name_source_url_count},
         ),
         _check(

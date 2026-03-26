@@ -16,6 +16,7 @@ from src.fetch import FetchResult
 from src.normalize import (
     build_override_key,
     build_visible_sample_rows,
+    dedupe_normalized_rows,
     normalize_parsed_cards,
     parse_money_value,
     slugify_startup_name,
@@ -238,6 +239,82 @@ def test_validate_normalized_rows_reports_suspicious_duplicate_candidates() -> N
     assert report["suspicious_duplicate_group_count"] == 1
     assert report["status"] == "passed_with_warnings"
     assert not checks["suspicious_canonical_slug_duplicates"]["passed"]
+
+
+def test_dedupe_normalized_rows_prefers_primary_category_over_special_category_for_same_detail_url() -> None:
+    normalized_rows = [
+        {
+            "name": "Roofclaw",
+            "canonical_slug": "roofclaw",
+            "category": "OpenClaw (special)",
+            "revenue_30d": 55000,
+            "biz_model": "Services / agency / lead-gen",
+            "gtm_model": "Sales-led / outbound / SEO",
+            "source_url": "https://trustmrr.com/special-category/openclaw",
+            "source_group": "special-category",
+            "scraped_at": "2026-03-26T19:00:00Z",
+            "detail_url": "https://trustmrr.com/startup/roofclaw",
+            "included_in_visible_sample": True,
+            "position": 9,
+        },
+        {
+            "name": "Roofclaw",
+            "canonical_slug": "roofclaw",
+            "category": "IoT & Hardware",
+            "revenue_30d": 55000,
+            "biz_model": "Services / agency / lead-gen",
+            "gtm_model": "Sales-led / outbound / SEO",
+            "source_url": "https://trustmrr.com/category/iot-hardware",
+            "source_group": "category",
+            "scraped_at": "2026-03-26T19:00:00Z",
+            "detail_url": "https://trustmrr.com/startup/roofclaw",
+            "included_in_visible_sample": True,
+            "position": 1,
+        },
+    ]
+
+    deduped_rows = dedupe_normalized_rows(normalized_rows)
+
+    assert len(deduped_rows) == 1
+    assert deduped_rows[0]["source_url"] == "https://trustmrr.com/category/iot-hardware"
+    assert deduped_rows[0]["category"] == "IoT & Hardware"
+
+
+def test_validate_normalized_rows_treats_duplicate_name_source_pairs_as_warning() -> None:
+    normalized_rows = [
+        {
+            "name": "Private Enterprise",
+            "canonical_slug": "private-enterprise",
+            "category": "Mobile Apps",
+            "revenue_30d": 32000,
+            "biz_model": "Software / SaaS",
+            "gtm_model": "PLG / inbound software",
+            "source_url": "https://trustmrr.com/category/mobile-apps",
+            "scraped_at": "2026-03-26T19:00:00Z",
+            "detail_url": "https://trustmrr.com/startup/private-enterprise-6",
+            "included_in_visible_sample": True,
+        },
+        {
+            "name": "Private Enterprise",
+            "canonical_slug": "private-enterprise",
+            "category": "Mobile Apps",
+            "revenue_30d": 44000,
+            "biz_model": "Software / SaaS",
+            "gtm_model": "PLG / inbound software",
+            "source_url": "https://trustmrr.com/category/mobile-apps",
+            "scraped_at": "2026-03-26T19:00:00Z",
+            "detail_url": "https://trustmrr.com/startup/private-enterprise-10",
+            "included_in_visible_sample": True,
+        },
+    ]
+
+    report = validate_normalized_rows(normalized_rows)
+    checks = {check["id"]: check for check in report["checks"]}
+
+    assert report["status"] == "passed_with_warnings"
+    assert report["duplicate_name_source_url_count"] == 1
+    assert checks["visible_name_source_pairs_unique"]["severity"] == "warning"
+    assert not checks["visible_name_source_pairs_unique"]["passed"]
 
 
 def test_run_pipeline_writes_staged_outputs_from_fixture_fetch(tmp_path: Path) -> None:

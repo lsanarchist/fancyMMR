@@ -253,3 +253,41 @@ def build_visible_sample_rows(normalized_rows: list[dict[str, object]]) -> list[
             continue
         visible_rows.append({field: row[field] for field in VISIBLE_SAMPLE_ROW_FIELDS})
     return visible_rows
+
+
+def dedupe_normalized_rows(normalized_rows: list[dict[str, object]]) -> list[dict[str, object]]:
+    grouped_rows: dict[str, list[tuple[int, dict[str, object]]]] = {}
+    rows_without_detail_url: list[tuple[int, dict[str, object]]] = []
+
+    for index, row in enumerate(normalized_rows):
+        detail_url = str(row.get("detail_url") or "")
+        if not detail_url:
+            rows_without_detail_url.append((index, row))
+            continue
+        grouped_rows.setdefault(detail_url, []).append((index, row))
+
+    selected_rows: list[tuple[int, dict[str, object]]] = list(rows_without_detail_url)
+    for group in grouped_rows.values():
+        winner = min(group, key=lambda item: (_dedupe_priority(item[1]), item[0]))
+        selected_rows.append(winner)
+
+    selected_rows.sort(key=lambda item: item[0])
+    return [dict(row) for _, row in selected_rows]
+
+
+def _dedupe_priority(row: dict[str, object]) -> tuple[int, int, int, str]:
+    mapped_field_count = int(bool(row.get("biz_model"))) + int(bool(row.get("gtm_model")))
+    source_group = str(row.get("source_group") or "")
+    source_group_priority = 0 if source_group == "category" else 1 if source_group == "special-category" else 2
+    position_value = row.get("position")
+    try:
+        position = int(position_value) if position_value not in (None, "") else 1_000_000
+    except (TypeError, ValueError):
+        position = 1_000_000
+
+    return (
+        -mapped_field_count,
+        source_group_priority,
+        position,
+        str(row.get("source_url") or "").casefold(),
+    )

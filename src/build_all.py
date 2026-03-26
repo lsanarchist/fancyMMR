@@ -23,6 +23,7 @@ from src.normalize import (
     VISIBLE_SAMPLE_ROW_FIELDS,
     build_heuristic_override_report,
     build_visible_sample_rows,
+    dedupe_normalized_rows,
     normalize_parsed_cards,
 )
 from src.parse import parse_source_html, parsed_cards_as_dicts
@@ -209,7 +210,8 @@ def run_pipeline(
             }
         )
 
-    visible_rows = build_visible_sample_rows(normalized_rows)
+    deduped_rows = dedupe_normalized_rows(normalized_rows)
+    visible_rows = build_visible_sample_rows(deduped_rows)
     normalized_rows_path = pipeline_paths.processed_dir / "normalized_rows.csv"
     visible_rows_path = pipeline_paths.processed_dir / "visible_sample_rows.csv"
     heuristic_override_report_path = pipeline_paths.processed_dir / "heuristic_override_report.json"
@@ -217,23 +219,20 @@ def run_pipeline(
     validation_path = pipeline_paths.processed_dir / "validation_report.json"
     snapshot_path = pipeline_paths.snapshots_dir / "run_manifest.json"
 
-    _write_csv(normalized_rows_path, normalized_rows, NORMALIZED_ROW_FIELDS)
+    _write_csv(normalized_rows_path, deduped_rows, NORMALIZED_ROW_FIELDS)
     _write_csv(visible_rows_path, visible_rows, VISIBLE_SAMPLE_ROW_FIELDS)
-    heuristic_override_report = build_heuristic_override_report(normalized_rows)
-    suspicious_duplicates_report = build_suspicious_duplicates_report(normalized_rows)
+    heuristic_override_report = build_heuristic_override_report(deduped_rows)
+    suspicious_duplicates_report = build_suspicious_duplicates_report(deduped_rows)
     _write_json(heuristic_override_report_path, heuristic_override_report)
     _write_json(suspicious_duplicates_path, suspicious_duplicates_report)
-    validation_report = validate_normalized_rows(
-        normalized_rows,
-        suspicious_duplicates_report=suspicious_duplicates_report,
-    )
+    validation_report = validate_normalized_rows(deduped_rows, suspicious_duplicates_report=suspicious_duplicates_report)
     write_validation_report(validation_path, validation_report)
     ensure_validation_passes(validation_report)
 
     snapshot_manifest = _build_snapshot_manifest(
         selected_sources=selected_sources,
         per_source_outputs=per_source_outputs,
-        normalized_rows=normalized_rows,
+        normalized_rows=deduped_rows,
         visible_rows=visible_rows,
         heuristic_override_report=heuristic_override_report,
         suspicious_duplicates_report=suspicious_duplicates_report,
@@ -244,7 +243,7 @@ def run_pipeline(
 
     return {
         "selected_source_count": len(selected_sources),
-        "normalized_row_count": len(normalized_rows),
+        "normalized_row_count": len(deduped_rows),
         "visible_sample_row_count": len(visible_rows),
         "fully_mapped_visible_row_count": heuristic_override_report["fully_mapped_visible_row_count"],
         "suspicious_duplicate_group_count": suspicious_duplicates_report["group_count"],
