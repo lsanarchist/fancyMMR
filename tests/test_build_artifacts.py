@@ -125,6 +125,8 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert source_pipeline_diagnostics["detail_page_target_count"] is None
     assert source_pipeline_diagnostics["failed_detail_page_count"] is None
     assert source_pipeline_diagnostics["detail_parse_failure_source_count"] is None
+    assert source_pipeline_diagnostics["detail_parse_status_counts"] is None
+    assert source_pipeline_diagnostics["detail_field_population_counts"] is None
     assert source_pipeline_diagnostics["detail_parse_failure_sources"] == []
     assert validation_report["status"] in {"passed", "passed_with_warnings"}
     assert validation_report["sample_row_count"] == seed_metrics["sample_size"]
@@ -192,15 +194,23 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert diagnostics["parsed_detail_page_count"] == 0
     assert diagnostics["failed_detail_page_count"] == 0
     assert diagnostics["detail_parse_failure_source_count"] == 0
+    assert diagnostics["detail_parse_status_counts"]["not_requested"] == 852
+    assert diagnostics["detail_parse_status_counts"]["parsed"] == 0
+    assert diagnostics["detail_field_population_counts"]["problem_solved"] == 0
+    assert diagnostics["detail_field_population_counts"]["founder_name"] == 0
     assert diagnostics["detail_parse_failure_sources"] == []
     assert diagnostics["fully_mapped_visible_row_count"] == 249
     assert diagnostics["source_pages"]
     assert diagnostics["source_pages"][0]["parsed_card_count"] >= diagnostics["source_pages"][-1]["parsed_card_count"]
     assert "failed_detail_page_count" in diagnostics["source_pages"][0]
+    assert "detail_parse_status_counts" in diagnostics["source_pages"][0]
+    assert "detail_field_population_counts" in diagnostics["source_pages"][0]
     assert pipeline_manifest["source_pipeline_diagnostics"]["available"] is True
     assert pipeline_manifest["source_pipeline_diagnostics"]["path"] == "data/source_pipeline_diagnostics.json"
     assert pipeline_manifest["source_pipeline_diagnostics"]["failed_detail_page_count"] == 0
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_failure_source_count"] == 0
+    assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_status_counts"]["not_requested"] == 852
+    assert pipeline_manifest["source_pipeline_diagnostics"]["detail_field_population_counts"]["problem_solved"] == 0
 
 
 def test_validation_report_fails_for_missing_columns_and_threshold_violations() -> None:

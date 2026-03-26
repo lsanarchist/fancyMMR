@@ -345,6 +345,18 @@ def source_pipeline_warning_summary(source_pipeline_diagnostics: dict[str, objec
     return ", ".join(warning_ids) if warning_ids else "none"
 
 
+def detail_field_population_summary(source_pipeline_diagnostics: dict[str, object]) -> str:
+    counts = source_pipeline_diagnostics.get("detail_field_population_counts", {}) or {}
+    parse_counts = source_pipeline_diagnostics.get("detail_parse_status_counts", {}) or {}
+    return (
+        f"{int(counts.get('problem_solved', 0))} problem solved, "
+        f"{int(counts.get('pricing_summary', 0))} pricing, "
+        f"{int(counts.get('target_audience', 0))} audience, "
+        f"{int(counts.get('founder_name', 0))} founder names across "
+        f"{int(parse_counts.get('parsed', 0))} parsed detail pages."
+    )
+
+
 def build_index_page(
     metrics: dict[str, object],
     validation_report: dict[str, object],
@@ -556,7 +568,7 @@ def build_data_page(
             (
                 "source_pipeline_diagnostics.json",
                 "Source-pipeline diagnostics",
-                "Promotion provenance, override coverage, duplicate review, and per-source parser output counts.",
+                "Promotion provenance, override coverage, duplicate review, per-source parser output counts, and shared detail-field coverage.",
             ),
             ("pipeline_manifest.json", "Pipeline manifest", "Build command, input dataset hash, and copied-output inventory."),
         ]
@@ -624,6 +636,10 @@ def build_data_page(
     <h3>Detail-page staging</h3>
     <p>{html.escape(str(source_pipeline_diagnostics['parsed_detail_page_count']))} parsed, {html.escape(str(source_pipeline_diagnostics['failed_detail_page_count']))} failed, {html.escape(str(source_pipeline_diagnostics['fetched_detail_page_count']))} fetched across {html.escape(str(source_pipeline_diagnostics['detail_page_target_count']))} target detail pages.</p>
   </article>
+  <article class="callout-card">
+    <h3>Detail-field coverage</h3>
+    <p>{html.escape(detail_field_population_summary(source_pipeline_diagnostics))}</p>
+  </article>
 </div>
 """
         diagnostics_table = render_table(
@@ -658,12 +674,54 @@ def build_data_page(
             diagnostics_failure_section = (
                 '<p class="section-note">No source pages in the active manifest currently report staged detail parse failures.</p>'
             )
+        coverage_rows = [
+            row
+            for row in sorted(
+                source_pipeline_diagnostics["source_pages"],
+                key=lambda row: (
+                    -int(row.get("parsed_detail_page_count", 0)),
+                    -int((row.get("detail_field_population_counts", {}) or {}).get("problem_solved", 0)),
+                    -int((row.get("detail_field_population_counts", {}) or {}).get("pricing_summary", 0)),
+                    str(row.get("source_id") or ""),
+                ),
+            )
+            if int(row.get("parsed_detail_page_count", 0)) > 0
+            or any(int(value) > 0 for value in (row.get("detail_field_population_counts", {}) or {}).values())
+        ]
+        if coverage_rows:
+            diagnostics_coverage_section = render_table(
+                ["Source page", "Parsed details", "Problem solved", "Pricing", "Audience", "Founder names"],
+                [
+                    [
+                        f'<a href="{html.escape(row["source_url"], quote=True)}">{html.escape(row["source_url"])}</a>',
+                        html.escape(f"{int(row['parsed_detail_page_count']):,}"),
+                        html.escape(
+                            f"{int((row.get('detail_field_population_counts', {}) or {}).get('problem_solved', 0)):,}"
+                        ),
+                        html.escape(
+                            f"{int((row.get('detail_field_population_counts', {}) or {}).get('pricing_summary', 0)):,}"
+                        ),
+                        html.escape(
+                            f"{int((row.get('detail_field_population_counts', {}) or {}).get('target_audience', 0)):,}"
+                        ),
+                        html.escape(
+                            f"{int((row.get('detail_field_population_counts', {}) or {}).get('founder_name', 0)):,}"
+                        ),
+                    ]
+                    for row in coverage_rows[:10]
+                ],
+            )
+        else:
+            diagnostics_coverage_section = (
+                '<p class="section-note">No staged detail rows in the active manifest currently populate the shared detail fields.</p>'
+            )
         diagnostics_section = section(
             "Source-pipeline diagnostics",
             "The promoted bundle keeps the staged parser/override/duplicate provenance visible instead of burying it inside the repo-only staging directory.",
             diagnostics_cards
             + diagnostics_table
             + diagnostics_failure_section
+            + diagnostics_coverage_section
             + (
                 f'<p class="section-note">Staged validation: <strong>{html.escape(status_label(str(source_pipeline_diagnostics["validation_status"])))}</strong>. '
                 f'Run-manifest validation: <strong>{html.escape(status_label(str(source_pipeline_diagnostics["run_manifest_validation_status"])))}</strong>. '

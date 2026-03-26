@@ -224,6 +224,18 @@ def _load_optional_json(relative_path: str | None) -> dict[str, object] | None:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _find_generated_output_path(run_manifest: dict[str, object], filename: str) -> str | None:
+    for relative_path in run_manifest.get("generated_outputs", []):
+        relative_path_str = str(relative_path)
+        if relative_path_str == filename or relative_path_str.endswith(f"/{filename}"):
+            return relative_path_str
+    return None
+
+
+def _int_dict(value: dict[str, object] | None) -> dict[str, int]:
+    return {str(key): int(count) for key, count in (value or {}).items()}
+
+
 def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[str, object]:
     publication_input = read_publication_input()
     report_paths = {
@@ -231,6 +243,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "validation_report_path": publication_input.source_pipeline_validation_report_path,
         "override_report_path": publication_input.source_pipeline_override_report_path,
         "duplicates_report_path": publication_input.source_pipeline_duplicates_report_path,
+        "detail_field_coverage_path": None,
     }
     report = {
         "schema_version": 1,
@@ -255,6 +268,8 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "parsed_detail_page_count": None,
         "failed_detail_page_count": None,
         "detail_parse_failure_source_count": None,
+        "detail_parse_status_counts": None,
+        "detail_field_population_counts": None,
         "fully_mapped_visible_row_count": None,
         "alias_resolved_visible_row_count": None,
         "unmapped_visible_row_count": None,
@@ -297,13 +312,30 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         )
         return report
 
+    detail_field_coverage_path = _find_generated_output_path(run_manifest, "detail_field_coverage.json")
+    report_paths["detail_field_coverage_path"] = detail_field_coverage_path
+    detail_field_coverage = _load_optional_json(detail_field_coverage_path)
+    if detail_field_coverage is None:
+        report["missing_report_paths"] = (
+            [detail_field_coverage_path] if detail_field_coverage_path else ["data/source_pipeline/processed/detail_field_coverage.json"]
+        )
+        report["message"] = (
+            "The publication manifest references staged source-pipeline diagnostics, "
+            "but the detail-field coverage summary could not be loaded."
+        )
+        return report
+
     selected_sources_by_id = {
         str(source["source_id"]): source for source in run_manifest.get("selected_sources", [])
+    }
+    coverage_sources_by_id = {
+        str(source["source_id"]): source for source in detail_field_coverage.get("sources", [])
     }
     source_pages = []
     for source_output in run_manifest.get("per_source_outputs", []):
         source_id = str(source_output["source_id"])
         source_metadata = selected_sources_by_id.get(source_id, {})
+        coverage_metadata = coverage_sources_by_id.get(source_id, {})
         source_pages.append(
             {
                 "source_id": source_id,
@@ -317,6 +349,16 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
                 "fetched_detail_page_count": int(source_output.get("fetched_detail_page_count") or 0),
                 "parsed_detail_page_count": int(source_output.get("parsed_detail_page_count") or 0),
                 "failed_detail_page_count": int(source_output.get("failed_detail_page_count") or 0),
+                "detail_parse_status_counts": _int_dict(
+                    coverage_metadata.get("parse_status_counts")
+                    if isinstance(coverage_metadata, dict)
+                    else None
+                ),
+                "detail_field_population_counts": _int_dict(
+                    coverage_metadata.get("field_population_counts")
+                    if isinstance(coverage_metadata, dict)
+                    else None
+                ),
                 "raw_html_path": source_output.get("raw_html_path"),
                 "interim_path": source_output.get("interim_path"),
             }
@@ -364,6 +406,16 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
             "parsed_detail_page_count": int(run_manifest.get("parsed_detail_page_count") or 0),
             "failed_detail_page_count": int(run_manifest.get("failed_detail_page_count") or 0),
             "detail_parse_failure_source_count": len(detail_parse_failure_sources),
+            "detail_parse_status_counts": _int_dict(
+                detail_field_coverage.get("aggregate", {}).get("parse_status_counts")
+                if isinstance(detail_field_coverage.get("aggregate"), dict)
+                else None
+            ),
+            "detail_field_population_counts": _int_dict(
+                detail_field_coverage.get("aggregate", {}).get("field_population_counts")
+                if isinstance(detail_field_coverage.get("aggregate"), dict)
+                else None
+            ),
             "fully_mapped_visible_row_count": int(override_report["fully_mapped_visible_row_count"]),
             "alias_resolved_visible_row_count": int(override_report["alias_resolved_visible_row_count"]),
             "unmapped_visible_row_count": int(override_report["unmapped_visible_row_count"]),
@@ -476,6 +528,8 @@ def write_pipeline_manifest(
             "parsed_detail_page_count": source_pipeline_diagnostics_report["parsed_detail_page_count"],
             "failed_detail_page_count": source_pipeline_diagnostics_report["failed_detail_page_count"],
             "detail_parse_failure_source_count": source_pipeline_diagnostics_report["detail_parse_failure_source_count"],
+            "detail_parse_status_counts": source_pipeline_diagnostics_report["detail_parse_status_counts"],
+            "detail_field_population_counts": source_pipeline_diagnostics_report["detail_field_population_counts"],
         },
         "source_page_count": source_coverage_report["source_page_count"],
         "generated_outputs": [

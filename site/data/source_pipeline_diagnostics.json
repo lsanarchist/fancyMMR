@@ -1,9 +1,26 @@
 {
   "alias_resolved_visible_row_count": 24,
   "available": true,
+  "detail_field_population_counts": {
+    "business_detail_badges_json": 0,
+    "founder_name": 0,
+    "founder_quote": 0,
+    "founder_role": 0,
+    "pricing_summary": 0,
+    "problem_solved": 0,
+    "product_updates_heading_present": 0,
+    "target_audience": 0
+  },
   "detail_page_target_count": 852,
   "detail_parse_failure_source_count": 0,
   "detail_parse_failure_sources": [],
+  "detail_parse_status_counts": {
+    "html_not_supplied": 0,
+    "not_requested": 852,
+    "parse_failed": 0,
+    "parsed": 0,
+    "skipped_by_limit": 0
+  },
   "duplicate_detail_url_count": 0,
   "duplicate_name_source_url_count": 0,
   "expected_source_count": 30,
@@ -33,6 +50,7 @@
   "publication_dataset_path": "data/promoted_visible_sample.csv",
   "published_visible_sample_row_count": 249,
   "report_paths": {
+    "detail_field_coverage_path": "data/source_pipeline/processed/detail_field_coverage.json",
     "duplicates_report_path": "data/source_pipeline/processed/suspicious_duplicates.json",
     "override_report_path": "data/source_pipeline/processed/heuristic_override_report.json",
     "run_manifest_path": "data/source_pipeline/snapshots/run_manifest.json",
@@ -45,7 +63,24 @@
   "source_pages": [
     {
       "category_label": "AI",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--ai.json",
@@ -60,7 +95,24 @@
     },
     {
       "category_label": "SaaS",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--saas.json",
@@ -75,7 +127,24 @@
     },
     {
       "category_label": "Marketing",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--marketing.json",
@@ -90,7 +159,24 @@
     },
     {
       "category_label": "Content Creation",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--content-creation.json",
@@ -105,7 +191,24 @@
     },
     {
       "category_label": "Education",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--education.json",
@@ -120,7 +223,24 @@
     },
     {
       "category_label": "Mobile Apps",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--mobile-apps.json",
@@ -135,7 +255,24 @@
     },
     {
       "category_label": "E-commerce",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--ecommerce.json",
@@ -150,7 +287,24 @@
     },
     {
       "category_label": "Analytics",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--analytics.json",
@@ -165,7 +319,24 @@
     },
     {
       "category_label": "Developer Tools",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--developer-tools.json",
@@ -180,7 +351,24 @@
     },
     {
       "category_label": "OpenClaw (special)",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/special-category--openclaw.json",
@@ -195,7 +383,24 @@
     },
     {
       "category_label": "Health & Fitness",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--health-fitness.json",
@@ -210,7 +415,24 @@
     },
     {
       "category_label": "Marketplace",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--marketplace.json",
@@ -225,7 +447,24 @@
     },
     {
       "category_label": "Social Media",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--social-media.json",
@@ -240,7 +479,24 @@
     },
     {
       "category_label": "Sales",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--sales.json",
@@ -255,7 +511,24 @@
     },
     {
       "category_label": "Design Tools",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--design-tools.json",
@@ -270,7 +543,24 @@
     },
     {
       "category_label": "Productivity",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--productivity.json",
@@ -285,7 +575,24 @@
     },
     {
       "category_label": "Community",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--community.json",
@@ -300,7 +607,24 @@
     },
     {
       "category_label": "Entertainment",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--entertainment.json",
@@ -315,7 +639,24 @@
     },
     {
       "category_label": "Fintech",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--fintech.json",
@@ -330,7 +671,24 @@
     },
     {
       "category_label": "Games",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--games.json",
@@ -345,7 +703,24 @@
     },
     {
       "category_label": "Real Estate",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--real-estate.json",
@@ -360,7 +735,24 @@
     },
     {
       "category_label": "Recruiting & HR",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--recruiting.json",
@@ -375,7 +767,24 @@
     },
     {
       "category_label": "Travel",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--travel.json",
@@ -390,7 +799,24 @@
     },
     {
       "category_label": "Customer Support",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--customer-support.json",
@@ -405,7 +831,24 @@
     },
     {
       "category_label": "Security",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--security.json",
@@ -420,7 +863,24 @@
     },
     {
       "category_label": "No-Code",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--no-code.json",
@@ -435,7 +895,24 @@
     },
     {
       "category_label": "Utilities",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 30,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--utilities.json",
@@ -450,7 +927,24 @@
     },
     {
       "category_label": "News & Magazines",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 22,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 22,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--news-magazines.json",
@@ -465,7 +959,24 @@
     },
     {
       "category_label": "Legal",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 13,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 13,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--legal.json",
@@ -480,7 +991,24 @@
     },
     {
       "category_label": "IoT & Hardware",
+      "detail_field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
       "detail_page_target_count": 7,
+      "detail_parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 7,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
       "failed_detail_page_count": 0,
       "fetched_detail_page_count": 0,
       "interim_path": "data/source_pipeline/interim/category--iot-hardware.json",
