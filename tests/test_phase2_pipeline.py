@@ -156,6 +156,39 @@ def test_parse_startup_detail_html_extracts_labeled_fields_from_fixture() -> Non
     assert detail.product_updates_heading_present is True
 
 
+def test_parse_startup_detail_html_extracts_shared_fields_from_second_fixture_shape() -> None:
+    card = ParsedStartupCard(
+        source_id="category--mobile-apps",
+        source_url="https://trustmrr.com/category/mobile-apps",
+        parser_strategy="trustmrr_category_listing",
+        source_group="category",
+        category_label="Mobile Apps",
+        position=1,
+        detail_path="/startup/flibbo-ai",
+        detail_url="https://trustmrr.com/startup/flibbo-ai",
+        name="Flibbo",
+        description="AI-powered assistant for posts, visuals, and music.",
+        revenue_30d_text="$6.6k",
+        mrr_text="$6.2k",
+        total_revenue_text="$72k",
+    )
+
+    detail = parse_startup_detail_html(card, read_fixture("startup_flibbo_ai_detail_fixture.html"))
+
+    assert detail.problem_solved == (
+        "Effortlessly create viral content with AI-generated post ideas, realistic visuals, and original music."
+    )
+    assert detail.pricing_summary == "Free · In-App Purchases"
+    assert detail.target_audience == "Content creators, influencers, and businesses"
+    assert detail.business_detail_badges == ("B2C", "~10,000 users")
+    assert detail.founder_name == "Flibbo"
+    assert detail.founder_role == "Founder of flibbo AI"
+    assert detail.founder_quote == (
+        "Flibbo is an all in one AI creation platform with image, video, music, prompts, tutorials, and a social feed."
+    )
+    assert detail.product_updates_heading_present is True
+
+
 def test_parse_startup_detail_html_fails_loudly_when_required_label_is_missing() -> None:
     card = parse_source_html(category_source(), read_fixture("category_ai_fixture.html"))[0]
     invalid_html = read_fixture("startup_rezi_detail_fixture.html").replace("Pricing", "Price ladder", 1)
