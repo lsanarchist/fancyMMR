@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Methodology | TrustMRR visible sample</title>
+  <meta name="description" content="Methodology and data caveats for the TrustMRR visible-sample static site.">
+  <link rel="stylesheet" href="assets/site.css">
+</head>
+<body class="page-methodology">
+  <div class="page-backdrop"></div>
+  <header class="topbar">
+    <div class="site-shell topbar-inner">
+      <a class="brand" href="index.html">
+        <span class="brand-kicker">fancyMMR</span>
+        <span class="brand-title">TrustMRR visible-sample research</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a class="nav-link" href="index.html">Overview</a><a class="nav-link is-active" href="methodology.html">Methodology</a><a class="nav-link" href="data.html">Data</a>
+      </nav>
+    </div>
+  </header>
+  <main class="site-shell">
+    
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">Methodology and caveats</p>
+    <h1>How the visible sample is defined, validated, and limited</h1>
+    <p class="hero-lede">The methodology page keeps the inclusion rule, heuristic-field caveats, and publication limitations visible in the site itself so the static bundle does not outgrow its evidence.</p>
+    <div class="hero-meta">
+      <span class="status-pill is-warning">Passed with warnings</span>
+      <a class="button" href="data.html">Inspect data</a>
+      <a class="button button-secondary" href="methodology.html">Read methodology</a>
+    </div>
+  </div>
+  <div class="hero-panel">
+    
+<div class="hero-aside">
+  <p class="eyebrow">Current warnings</p>
+  <p class="hero-aside-value">3 biz_model / 1 gtm_model</p>
+  <p class="hero-aside-note">Heuristic label gaps are surfaced as warnings, while missing provenance, threshold violations, and duplicate (name, source_url) pairs still fail the build.</p>
+</div>
+
+  </div>
+</section>
+
+<section class="section-card">
+  <div class="section-head">
+    <h2>Methodology</h2>
+    <p>Rendered directly from the repository methodology document to keep the site aligned with the source docs.</p>
+  </div>
+  <div class="prose"><h1>Methodology</h1>
+<h2>Scope</h2>
+<p>This repository packages a <strong>visible public sample</strong> of startups from public TrustMRR pages where <code>Revenue (30d) &gt;= $5,000</code>. It is intended for research, not as an official platform export or a full platform export.</p>
+<h2>Inclusion rule</h2>
+<p>A startup is included when a visible public row in the source sample showed a 30-day revenue value of at least $5,000.</p>
+<h2>Metrics</h2>
+<ul><li><strong>Startup share</strong> = category startup count / total visible startups</li><li><strong>Revenue share</strong> = category visible revenue / total visible revenue</li><li><strong>Performance index</strong> = revenue share / startup share</li><li><strong>Revenue concentration curve</strong> sorts startups by <code>revenue_30d</code> descending and plots cumulative revenue captured by the top X% of startups</li></ul>
+<h2>Derived labels</h2>
+<p>Two columns are heuristic and should be treated as analyst judgments rather than first-party platform taxonomy:</p>
+<ul><li><code>biz_model</code></li><li><code>gtm_model</code></li></ul>
+<p>For the staged live source pipeline, deterministic override maps and alias rules live under <code>data/source_pipeline/overrides/</code>; see <code>docs/source_pipeline_overrides.md</code>.</p>
+<h2>Current pipeline shape</h2>
+<ul><li><code>python src/build_all.py --limit 1</code> fetches and stages live public-page outputs under <code>data/source_pipeline/</code> for smoke verification</li><li><code>python src/build_artifacts.py</code> rebuilds the currently published analytics bundle from the checked-in <code>data/visible_sample.csv</code> seed dataset</li><li><code>python src/build_site.py</code> turns the published analytics bundle into the static <code>site/</code> output that GitHub Pages serves without a runtime server</li><li><code>.github/workflows/build.yml</code> and <code>.github/workflows/pages.yml</code> pin Python 3.12 and run the deterministic local publication path on GitHub-hosted runners</li></ul>
+<h2>Validation and provenance artifacts</h2>
+<p>The published bundle keeps machine-readable validation and provenance outputs alongside the charts and summary tables:</p>
+<ul><li><code>data/validation_report.json</code></li><li><code>data/source_coverage_report.json</code></li><li><code>data/pipeline_manifest.json</code></li></ul>
+<p>Those files describe the current seed-bundle validation status, the visible source-page coverage, and the generated outputs that belong to the current publication build.</p>
+<h2>Publication and licensing shape</h2>
+<ul><li><code>LICENSE-CODE-MIT.txt</code> covers the original code and original documentation in this repository</li><li><code>DATA-NOTICE.md</code> remains the publication notice for the source-derived data bundle and generated artifacts such as CSV/JSON outputs, charts, and the static site</li><li>The repository intentionally keeps those scopes separate instead of presenting the mixed-content bundle as one blanket open-source data license</li><li>The repository intentionally does <strong>not</strong> ship a blanket root <code>LICENSE</code> file, because a single detected license badge on GitHub would overstate the rights granted for the mixed code/data bundle</li><li>Any public republication should preserve the visible-sample framing, the methodology caveats, and the data notice together</li></ul>
+<h2>Limitations</h2>
+<ol><li>This is not a full database export and does not claim platform-wide coverage.</li><li>Values reflect the visible sample captured for this research bundle.</li><li>Category/business-model/GTM labels can simplify messy real-world companies.</li><li>Some source pages may have changed since the sample was assembled.</li><li>Any public republication should preserve the caveat that this is a <strong>source-derived visible sample</strong>.</li></ol>
+<h2>Rebuild</h2>
+<p>From the repository root:</p>
+<pre><code>python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python src/build_artifacts.py
+python src/build_site.py
+python src/build_all.py --limit 1</code></pre></div>
+</section>
+
+<section class="section-card">
+  <div class="section-head">
+    <h2>Data notice</h2>
+    <p>Publication caveats from the repository root stay visible in the static site too.</p>
+  </div>
+  <div class="prose"><h1>Data notice</h1>
+<p>This bundle is an independent research artifact built from public visible pages and is <strong>not affiliated with TrustMRR</strong>.</p>
+<h2>What this means</h2>
+<ul><li>Startup names, category labels, and source URLs point back to public pages for verification.</li><li>The processed CSVs are a <strong>derived research sample</strong>, not an official export or API dump.</li><li><code>LICENSE-CODE-MIT.txt</code> applies to the original code and original documentation only; it does not relicense the source-derived data bundle.</li><li>Keep this notice with any redistributed CSV/JSON outputs, charts, or static-site artifacts that are built from the visible sample.</li><li>Before public release, review the source website's terms and your own intended use of source-derived data.</li><li>If you publish this repository, keep the scope note intact so readers do not mistake it for full platform coverage.</li></ul></div>
+</section>
+
+<section class="section-card">
+  <div class="section-head">
+    <h2>Validation checks</h2>
+    <p>The seed bundle keeps warnings and failures explicit instead of silently smoothing them away.</p>
+  </div>
+  <ul class="check-list">
+<li class="check-item check-pass">
+  <strong>All required visible-sample columns are present.</strong>
+  <span>required_columns_present</span>
+</li>
+
+<li class="check-item check-pass">
+  <strong>The visible sample contains at least one row.</strong>
+  <span>row_count_positive</span>
+</li>
+
+<li class="check-item check-pass">
+  <strong>`revenue_30d` contains no null values.</strong>
+  <span>revenue_values_non_null</span>
+</li>
+
+<li class="check-item check-pass">
+  <strong>All visible startups meet the $5,000 inclusion threshold.</strong>
+  <span>revenue_threshold_respected</span>
+</li>
+
+<li class="check-item check-pass">
+  <strong>Every row preserves a `source_url`.</strong>
+  <span>source_url_present</span>
+</li>
+
+<li class="check-item check-pass">
+  <strong>No duplicate `(name, source_url)` pairs were detected.</strong>
+  <span>duplicate_name_source_url_pairs</span>
+</li>
+
+<li class="check-item check-pass">
+  <strong>Duplicate startup names are tracked as a warning-only signal in the current bundle.</strong>
+  <span>duplicate_names</span>
+</li>
+
+<li class="check-item check-warn">
+  <strong>Heuristic label nulls are surfaced as warnings rather than hard failures for the seed bundle.</strong>
+  <span>heuristic_label_completeness</span>
+</li>
+</ul>
+</section>
+
+  </main>
+  <footer class="site-shell site-footer">
+    <p>This static site is a source-derived visible sample research artifact. It is not a full platform export and is not affiliated with TrustMRR.</p>
+    <p>Build inputs live in <code>data/</code>, <code>charts/</code>, <code>docs/</code>, and <code>DATA-NOTICE.md</code>; regenerate the site with <code>python src/build_site.py</code>.</p>
+  </footer>
+</body>
+</html>

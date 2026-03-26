@@ -1,0 +1,397 @@
+{
+  "source_page_count": 30,
+  "source_pages": [
+    {
+      "categories": [
+        "AI"
+      ],
+      "max_revenue_usd": 472000,
+      "median_revenue_usd": 31000.0,
+      "min_revenue_usd": 5100,
+      "revenue_share": 0.06491763872996534,
+      "source_url": "https://trustmrr.com/category/ai",
+      "startup_count": 23,
+      "startup_share": 0.10043668122270742,
+      "total_revenue_usd": 1577200
+    },
+    {
+      "categories": [
+        "SaaS"
+      ],
+      "max_revenue_usd": 993000,
+      "median_revenue_usd": 24500.0,
+      "min_revenue_usd": 6800,
+      "revenue_share": 0.07623665385216954,
+      "source_url": "https://trustmrr.com/category/saas",
+      "startup_count": 22,
+      "startup_share": 0.09606986899563319,
+      "total_revenue_usd": 1852200
+    },
+    {
+      "categories": [
+        "Marketing"
+      ],
+      "max_revenue_usd": 709000,
+      "median_revenue_usd": 35000.0,
+      "min_revenue_usd": 6100,
+      "revenue_share": 0.0639874214871951,
+      "source_url": "https://trustmrr.com/category/marketing",
+      "startup_count": 17,
+      "startup_share": 0.07423580786026202,
+      "total_revenue_usd": 1554600
+    },
+    {
+      "categories": [
+        "Content Creation"
+      ],
+      "max_revenue_usd": 3100000,
+      "median_revenue_usd": 17000.0,
+      "min_revenue_usd": 5000,
+      "revenue_share": 0.13780798011146142,
+      "source_url": "https://trustmrr.com/category/content-creation",
+      "startup_count": 15,
+      "startup_share": 0.06550218340611354,
+      "total_revenue_usd": 3348100
+    },
+    {
+      "categories": [
+        "Mobile Apps"
+      ],
+      "max_revenue_usd": 46000,
+      "median_revenue_usd": 12500.0,
+      "min_revenue_usd": 6500,
+      "revenue_share": 0.00960675683462713,
+      "source_url": "https://trustmrr.com/category/mobile-apps",
+      "startup_count": 14,
+      "startup_share": 0.0611353711790393,
+      "total_revenue_usd": 233400
+    },
+    {
+      "categories": [
+        "Education"
+      ],
+      "max_revenue_usd": 269000,
+      "median_revenue_usd": 37000.0,
+      "min_revenue_usd": 6300,
+      "revenue_share": 0.03028968446701845,
+      "source_url": "https://trustmrr.com/category/education",
+      "startup_count": 13,
+      "startup_share": 0.056768558951965066,
+      "total_revenue_usd": 735900
+    },
+    {
+      "categories": [
+        "Developer Tools"
+      ],
+      "max_revenue_usd": 47000,
+      "median_revenue_usd": 9100.0,
+      "min_revenue_usd": 5300,
+      "revenue_share": 0.008034442734015493,
+      "source_url": "https://trustmrr.com/category/developer-tools",
+      "startup_count": 13,
+      "startup_share": 0.056768558951965066,
+      "total_revenue_usd": 195200
+    },
+    {
+      "categories": [
+        "E-commerce"
+      ],
+      "max_revenue_usd": 7100000,
+      "median_revenue_usd": 36500.0,
+      "min_revenue_usd": 6700,
+      "revenue_share": 0.4576339553989644,
+      "source_url": "https://trustmrr.com/category/ecommerce",
+      "startup_count": 12,
+      "startup_share": 0.05240174672489083,
+      "total_revenue_usd": 11118400
+    },
+    {
+      "categories": [
+        "Social Media"
+      ],
+      "max_revenue_usd": 83000,
+      "median_revenue_usd": 21500.0,
+      "min_revenue_usd": 6600,
+      "revenue_share": 0.0104052619014299,
+      "source_url": "https://trustmrr.com/category/social-media",
+      "startup_count": 10,
+      "startup_share": 0.043668122270742356,
+      "total_revenue_usd": 252800
+    },
+    {
+      "categories": [
+        "Analytics"
+      ],
+      "max_revenue_usd": 216000,
+      "median_revenue_usd": 19000.0,
+      "min_revenue_usd": 7500,
+      "revenue_share": 0.015241568362735332,
+      "source_url": "https://trustmrr.com/category/analytics",
+      "startup_count": 9,
+      "startup_share": 0.039301310043668124,
+      "total_revenue_usd": 370300
+    },
+    {
+      "categories": [
+        "OpenClaw (special)"
+      ],
+      "max_revenue_usd": 119000,
+      "median_revenue_usd": 14000.0,
+      "min_revenue_usd": 6000,
+      "revenue_share": 0.009191040279229814,
+      "source_url": "https://trustmrr.com/special-category/openclaw",
+      "startup_count": 9,
+      "startup_share": 0.039301310043668124,
+      "total_revenue_usd": 223300
+    },
+    {
+      "categories": [
+        "Marketplace"
+      ],
+      "max_revenue_usd": 189000,
+      "median_revenue_usd": 40500.0,
+      "min_revenue_usd": 9700,
+      "revenue_share": 0.018715477003877278,
+      "source_url": "https://trustmrr.com/category/marketplace",
+      "startup_count": 8,
+      "startup_share": 0.034934497816593885,
+      "total_revenue_usd": 454700
+    },
+    {
+      "categories": [
+        "Health & Fitness"
+      ],
+      "max_revenue_usd": 203000,
+      "median_revenue_usd": 13000.0,
+      "min_revenue_usd": 5600,
+      "revenue_share": 0.013582818146645043,
+      "source_url": "https://trustmrr.com/category/health-fitness",
+      "startup_count": 7,
+      "startup_share": 0.03056768558951965,
+      "total_revenue_usd": 330000
+    },
+    {
+      "categories": [
+        "Sales"
+      ],
+      "max_revenue_usd": 80000,
+      "median_revenue_usd": 11000.0,
+      "min_revenue_usd": 5400,
+      "revenue_share": 0.0058488438140553356,
+      "source_url": "https://trustmrr.com/category/sales",
+      "startup_count": 7,
+      "startup_share": 0.03056768558951965,
+      "total_revenue_usd": 142100
+    },
+    {
+      "categories": [
+        "Productivity"
+      ],
+      "max_revenue_usd": 223000,
+      "median_revenue_usd": 20000.0,
+      "min_revenue_usd": 5700,
+      "revenue_share": 0.013488150020168427,
+      "source_url": "https://trustmrr.com/category/productivity",
+      "startup_count": 5,
+      "startup_share": 0.021834061135371178,
+      "total_revenue_usd": 327700
+    },
+    {
+      "categories": [
+        "Design Tools"
+      ],
+      "max_revenue_usd": 60000,
+      "median_revenue_usd": 12000.0,
+      "min_revenue_usd": 5500,
+      "revenue_share": 0.004712826296335932,
+      "source_url": "https://trustmrr.com/category/design-tools",
+      "startup_count": 5,
+      "startup_share": 0.021834061135371178,
+      "total_revenue_usd": 114500
+    },
+    {
+      "categories": [
+        "Entertainment"
+      ],
+      "max_revenue_usd": 380000,
+      "median_revenue_usd": 33000.0,
+      "min_revenue_usd": 12000,
+      "revenue_share": 0.01885130518534373,
+      "source_url": "https://trustmrr.com/category/entertainment",
+      "startup_count": 4,
+      "startup_share": 0.017467248908296942,
+      "total_revenue_usd": 458000
+    },
+    {
+      "categories": [
+        "Real Estate"
+      ],
+      "max_revenue_usd": 85000,
+      "median_revenue_usd": 14500.0,
+      "min_revenue_usd": 5600,
+      "revenue_share": 0.004922742576784082,
+      "source_url": "https://trustmrr.com/category/real-estate",
+      "startup_count": 4,
+      "startup_share": 0.017467248908296942,
+      "total_revenue_usd": 119600
+    },
+    {
+      "categories": [
+        "Games"
+      ],
+      "max_revenue_usd": 39000,
+      "median_revenue_usd": 17000.0,
+      "min_revenue_usd": 9700,
+      "revenue_share": 0.0034039365476592276,
+      "source_url": "https://trustmrr.com/category/games",
+      "startup_count": 4,
+      "startup_share": 0.017467248908296942,
+      "total_revenue_usd": 82700
+    },
+    {
+      "categories": [
+        "Travel"
+      ],
+      "max_revenue_usd": 38000,
+      "median_revenue_usd": 13500.0,
+      "min_revenue_usd": 7800,
+      "revenue_share": 0.0029964520032598765,
+      "source_url": "https://trustmrr.com/category/travel",
+      "startup_count": 4,
+      "startup_share": 0.017467248908296942,
+      "total_revenue_usd": 72800
+    },
+    {
+      "categories": [
+        "Community"
+      ],
+      "max_revenue_usd": 22000,
+      "median_revenue_usd": 18500.0,
+      "min_revenue_usd": 12000,
+      "revenue_share": 0.002922363904278176,
+      "source_url": "https://trustmrr.com/category/community",
+      "startup_count": 4,
+      "startup_share": 0.017467248908296942,
+      "total_revenue_usd": 71000
+    },
+    {
+      "categories": [
+        "Fintech"
+      ],
+      "max_revenue_usd": 17000,
+      "median_revenue_usd": 12350.0,
+      "min_revenue_usd": 6900,
+      "revenue_share": 0.0020003786725059066,
+      "source_url": "https://trustmrr.com/category/fintech",
+      "startup_count": 4,
+      "startup_share": 0.017467248908296942,
+      "total_revenue_usd": 48600
+    },
+    {
+      "categories": [
+        "Recruiting & HR"
+      ],
+      "max_revenue_usd": 21000,
+      "median_revenue_usd": 10250.0,
+      "min_revenue_usd": 5300,
+      "revenue_share": 0.0019262905735242062,
+      "source_url": "https://trustmrr.com/category/recruiting",
+      "startup_count": 4,
+      "startup_share": 0.017467248908296942,
+      "total_revenue_usd": 46800
+    },
+    {
+      "categories": [
+        "Security"
+      ],
+      "max_revenue_usd": 264000,
+      "median_revenue_usd": 55000.0,
+      "min_revenue_usd": 40000,
+      "revenue_share": 0.014776459741350214,
+      "source_url": "https://trustmrr.com/category/security",
+      "startup_count": 3,
+      "startup_share": 0.013100436681222707,
+      "total_revenue_usd": 359000
+    },
+    {
+      "categories": [
+        "Customer Support"
+      ],
+      "max_revenue_usd": 36000,
+      "median_revenue_usd": 21000.0,
+      "min_revenue_usd": 9900,
+      "revenue_share": 0.0027536076788198588,
+      "source_url": "https://trustmrr.com/category/customer-support",
+      "startup_count": 3,
+      "startup_share": 0.013100436681222707,
+      "total_revenue_usd": 66900
+    },
+    {
+      "categories": [
+        "Utilities"
+      ],
+      "max_revenue_usd": 12000,
+      "median_revenue_usd": 8550.0,
+      "min_revenue_usd": 5100,
+      "revenue_share": 0.0007038369403261522,
+      "source_url": "https://trustmrr.com/category/utilities",
+      "startup_count": 2,
+      "startup_share": 0.008733624454148471,
+      "total_revenue_usd": 17100
+    },
+    {
+      "categories": [
+        "IoT & Hardware"
+      ],
+      "max_revenue_usd": 55000,
+      "median_revenue_usd": 55000.0,
+      "min_revenue_usd": 55000,
+      "revenue_share": 0.002263803024440841,
+      "source_url": "https://trustmrr.com/category/iot-hardware",
+      "startup_count": 1,
+      "startup_share": 0.004366812227074236,
+      "total_revenue_usd": 55000
+    },
+    {
+      "categories": [
+        "Legal"
+      ],
+      "max_revenue_usd": 55000,
+      "median_revenue_usd": 55000.0,
+      "min_revenue_usd": 55000,
+      "revenue_share": 0.002263803024440841,
+      "source_url": "https://trustmrr.com/category/legal",
+      "startup_count": 1,
+      "startup_share": 0.004366812227074236,
+      "total_revenue_usd": 55000
+    },
+    {
+      "categories": [
+        "News & Magazines"
+      ],
+      "max_revenue_usd": 7200,
+      "median_revenue_usd": 7200.0,
+      "min_revenue_usd": 7200,
+      "revenue_share": 0.00029635239592680095,
+      "source_url": "https://trustmrr.com/category/news-magazines",
+      "startup_count": 1,
+      "startup_share": 0.004366812227074236,
+      "total_revenue_usd": 7200
+    },
+    {
+      "categories": [
+        "No-Code"
+      ],
+      "max_revenue_usd": 5300,
+      "median_revenue_usd": 5300.0,
+      "min_revenue_usd": 5300,
+      "revenue_share": 0.00021814829144611736,
+      "source_url": "https://trustmrr.com/category/no-code",
+      "startup_count": 1,
+      "startup_share": 0.004366812227074236,
+      "total_revenue_usd": 5300
+    }
+  ],
+  "total_visible_revenue_usd": 24295400,
+  "total_visible_startups": 229
+}

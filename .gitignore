@@ -2,6 +2,8 @@
 __pycache__/
 *.pyc
 .venv/
+.pytest_cache/
+.tmp/
 
 # Local autonomous control-plane files should never be committed.
 .agent/
@@ -16,3 +18,7 @@ QUEUE_PROMPT.md
 
 # Local bootstrap bundle should not be committed.
 trustmrr_visible_sample_github_release.zip
+
+# Local fetch caches and failure snapshots should stay untracked.
+data/fetch_cache/
+data/fetch_failures/

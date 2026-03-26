@@ -1,0 +1,129 @@
+{
+  "build_command": "python src/build_artifacts.py",
+  "entrypoint": "src/build_artifacts.py",
+  "generated_outputs": [
+    {
+      "bytes": 2777,
+      "path": "data/category_summary.csv",
+      "sha256": "16597f365d92b8fbf33c1814b7ccd560b2e864d231f4d9f0fe71d5a2225bfccb"
+    },
+    {
+      "bytes": 515,
+      "path": "data/business_model_summary.csv",
+      "sha256": "434facfa5df32cae140c60e5652ab85bd8f6feaf77a4d85100bb4cb57aba7997"
+    },
+    {
+      "bytes": 525,
+      "path": "data/gtm_model_summary.csv",
+      "sha256": "8527f4317f7278c7227d7ffab4a52583301052be0c0ccaaa4fd5d7b5877fbe8f"
+    },
+    {
+      "bytes": 441,
+      "path": "data/revenue_band_summary.csv",
+      "sha256": "78e9166bf926a0483f03a1406f8dfcfb9d97e961b35b75c96271d414337a13f9"
+    },
+    {
+      "bytes": 1239,
+      "path": "data/public_source_pages.csv",
+      "sha256": "3f45dbaa8ed0830c4f34a1e3815a0e6f2d15d6cef833a88325a266d673fe1fc5"
+    },
+    {
+      "bytes": 544,
+      "path": "data/metrics.json",
+      "sha256": "e25145d3e57c24c9cfb961fe45f4b4dacee069032a84de5d54d4ed07a9534c7f"
+    },
+    {
+      "bytes": 2524,
+      "path": "data/validation_report.json",
+      "sha256": "340be65dd2191e928506e61fc41922c3590391f6415f5029bd3125fca84e407f"
+    },
+    {
+      "bytes": 11513,
+      "path": "data/source_coverage_report.json",
+      "sha256": "708346ebf9734349b5d3bf23bd5787404c211196292024efb1556877fe2557f0"
+    },
+    {
+      "bytes": 274864,
+      "path": "charts/category_share_map.png",
+      "sha256": "9725a852d556d65f1753d83ed4ea36daa1cc16c481c0dc4ccba17ed494b196b8"
+    },
+    {
+      "bytes": 290925,
+      "path": "charts/category_share_map.svg",
+      "sha256": "9de3f0d7adf909f392d08d41baf8877f551cbe489c50fe0c291d2d1dc9d7dde3"
+    },
+    {
+      "bytes": 153224,
+      "path": "charts/top_categories_revenue.png",
+      "sha256": "7cb88ff526c5fa2a95e84431fa054825c662f26f736faac97371f7a6459e678b"
+    },
+    {
+      "bytes": 70018,
+      "path": "charts/top_categories_revenue.svg",
+      "sha256": "373aca2fcd75654deb73d5beeb9b6ab865d4aa932ef2cb0f9733452fa7962940"
+    },
+    {
+      "bytes": 125748,
+      "path": "charts/category_over_index.png",
+      "sha256": "c40d32154c74c39e34ea81070fe6e4c509b67fa72755fdc041bf2952b67746e6"
+    },
+    {
+      "bytes": 59850,
+      "path": "charts/category_over_index.svg",
+      "sha256": "d3e3879d4c3dc27e56ef90a07a124c43f1516e12ac44a3a1cd0f5ad27384537b"
+    },
+    {
+      "bytes": 217907,
+      "path": "charts/model_mix.png",
+      "sha256": "a06fc182bbb8e6c10a3b5d62e95e757dc1dba68f599cbca6ccafaa6fc8647463"
+    },
+    {
+      "bytes": 102498,
+      "path": "charts/model_mix.svg",
+      "sha256": "e7356e451a1fcee52fa4d118be5e8207bba4b106226cc778967ad0de4ddb9b7a"
+    },
+    {
+      "bytes": 198552,
+      "path": "charts/distribution_and_concentration.png",
+      "sha256": "8ed30cd5796dc1b0f0910c165e7873c306b61189b99b6b8091583519d50efe70"
+    },
+    {
+      "bytes": 91481,
+      "path": "charts/distribution_and_concentration.svg",
+      "sha256": "7342497968d1cb80780f25ecdcb8bbc08cf114dfb95fb082417bfe81c63ff5cd"
+    },
+    {
+      "bytes": 5170,
+      "path": "README.md",
+      "sha256": "0ab2bb2ed3b0e835a16a9c4d2407aa9570b8e156d7116d170b5712cc7154a389"
+    }
+  ],
+  "input_dataset": {
+    "columns": [
+      "name",
+      "category",
+      "revenue_30d",
+      "biz_model",
+      "gtm_model",
+      "source_url",
+      "revenue_band"
+    ],
+    "path": "data/visible_sample.csv",
+    "rows": 229,
+    "sha256": "ed351da92c2eb1421509cc9de2e3bd0302e62e1089b061793658d36af0996213"
+  },
+  "metrics_snapshot": {
+    "dominant_category": "E-commerce",
+    "gini_coefficient": 0.8274485658380962,
+    "sample_size": 229,
+    "total_visible_revenue_usd": 24295400
+  },
+  "project": "fancyMMR / TrustMRR visible-sample research pipeline",
+  "python_version_floor": "3.12",
+  "source_page_count": 30,
+  "validation": {
+    "report_path": "data/validation_report.json",
+    "source_coverage_report_path": "data/source_coverage_report.json",
+    "status": "passed_with_warnings"
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "checks": [
+    {
+      "details": {
+        "missing_columns": []
+      },
+      "id": "required_columns_present",
+      "message": "All required visible-sample columns are present.",
+      "passed": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "row_count": 229
+      },
+      "id": "row_count_positive",
+      "message": "The visible sample contains at least one row.",
+      "passed": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "null_revenue_count": 0
+      },
+      "id": "revenue_values_non_null",
+      "message": "`revenue_30d` contains no null values.",
+      "passed": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "below_threshold_count": 0,
+        "min_revenue_30d": 5000.0,
+        "threshold_usd": 5000
+      },
+      "id": "revenue_threshold_respected",
+      "message": "All visible startups meet the $5,000 inclusion threshold.",
+      "passed": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "missing_source_url_count": 0
+      },
+      "id": "source_url_present",
+      "message": "Every row preserves a `source_url`.",
+      "passed": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "duplicate_name_source_url_count": 0
+      },
+      "id": "duplicate_name_source_url_pairs",
+      "message": "No duplicate `(name, source_url)` pairs were detected.",
+      "passed": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "duplicate_name_count": 0
+      },
+      "id": "duplicate_names",
+      "message": "Duplicate startup names are tracked as a warning-only signal in the current bundle.",
+      "passed": true,
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "biz_model_null_count": 3,
+        "gtm_model_null_count": 1
+      },
+      "id": "heuristic_label_completeness",
+      "message": "Heuristic label nulls are surfaced as warnings rather than hard failures for the seed bundle.",
+      "passed": false,
+      "severity": "warning"
+    }
+  ],
+  "duplicate_name_count": 0,
+  "duplicate_name_source_url_count": 0,
+  "min_revenue_30d": 5000.0,
+  "missing_columns": [],
+  "null_counts": {
+    "biz_model": 3,
+    "category": 0,
+    "gtm_model": 1,
+    "name": 0,
+    "revenue_30d": 0,
+    "source_url": 0
+  },
+  "required_columns": [
+    "name",
+    "category",
+    "revenue_30d",
+    "biz_model",
+    "gtm_model",
+    "source_url"
+  ],
+  "sample_row_count": 229,
+  "source_page_count": 30,
+  "status": "passed_with_warnings"
+}

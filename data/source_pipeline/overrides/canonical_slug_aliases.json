@@ -1,0 +1,8 @@
+{
+  "aliases": {
+    "https://trustmrr.com/category/ai::parakeet-chat": "parakeet"
+  },
+  "generated_from": "observed live/source-pipeline drift vs seed visible sample",
+  "override_key_format": "<source_url>::<observed_slug>",
+  "schema_version": 1
+}
