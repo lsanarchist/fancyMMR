@@ -231,6 +231,52 @@ def test_normalize_parsed_cards_applies_direct_override_key() -> None:
     assert row["heuristic_override_source"] == "tracked_override"
 
 
+def test_normalize_parsed_cards_disambiguates_same_source_name_collision_with_detail_slug() -> None:
+    cards = [
+        ParsedStartupCard(
+            source_id="category--design-tools",
+            source_url="https://trustmrr.com/category/design-tools",
+            parser_strategy="trustmrr_category_listing",
+            source_group="category",
+            category_label="Design Tools",
+            position=1,
+            detail_path="/startup/sleek",
+            detail_url="https://trustmrr.com/startup/sleek",
+            name="Sleek",
+            description="First design workflow tool.",
+            revenue_30d_text="$25k",
+            mrr_text="$27k",
+            total_revenue_text="$1.2M",
+            badge="FOR SALE",
+        ),
+        ParsedStartupCard(
+            source_id="category--design-tools",
+            source_url="https://trustmrr.com/category/design-tools",
+            parser_strategy="trustmrr_category_listing",
+            source_group="category",
+            category_label="Design Tools",
+            position=2,
+            detail_path="/startup/sleek-1",
+            detail_url="https://trustmrr.com/startup/sleek-1",
+            name="Sleek",
+            description="Second design workflow tool.",
+            revenue_30d_text="$7.8k",
+            mrr_text="$8.1k",
+            total_revenue_text="$210k",
+            badge="FOR SALE",
+        ),
+    ]
+
+    rows = normalize_parsed_cards(cards, scraped_at="2026-03-26T19:00:00Z")
+
+    assert rows[0]["canonical_slug"] == "sleek"
+    assert rows[0]["biz_model"] == "Software / SaaS"
+    assert rows[1]["canonical_slug"] == "sleek-1"
+    assert rows[1]["canonical_slug_source"] == "detail_slug_collision"
+    assert rows[1]["biz_model"] == "Software / SaaS"
+    assert rows[1]["gtm_model"] == "PLG / inbound software"
+
+
 def test_validate_normalized_rows_reports_suspicious_duplicate_candidates() -> None:
     normalized_rows = [
         {
@@ -271,6 +317,40 @@ def test_validate_normalized_rows_reports_suspicious_duplicate_candidates() -> N
     assert report["suspicious_duplicate_group_count"] == 1
     assert report["status"] == "passed_with_warnings"
     assert not checks["suspicious_canonical_slug_duplicates"]["passed"]
+
+
+def test_build_suspicious_duplicates_report_ignores_non_visible_collisions() -> None:
+    normalized_rows = [
+        {
+            "name": "Private Enterprise",
+            "canonical_slug": "private-enterprise",
+            "category": "Marketing",
+            "revenue_30d": 41000,
+            "biz_model": "Services / agency / lead-gen",
+            "gtm_model": "Sales-led / outbound / SEO",
+            "source_url": "https://trustmrr.com/category/marketing",
+            "scraped_at": "2026-03-26T19:00:00Z",
+            "detail_url": "https://trustmrr.com/startup/hype-social-media-strategy",
+            "included_in_visible_sample": True,
+        },
+        {
+            "name": "Private Enterprise",
+            "canonical_slug": "private-enterprise",
+            "category": "Real Estate",
+            "revenue_30d": 186,
+            "biz_model": "",
+            "gtm_model": "",
+            "source_url": "https://trustmrr.com/category/real-estate",
+            "scraped_at": "2026-03-26T19:00:00Z",
+            "detail_url": "https://trustmrr.com/startup/private-enterprise",
+            "included_in_visible_sample": False,
+        },
+    ]
+
+    report = build_suspicious_duplicates_report(normalized_rows)
+
+    assert report["group_count"] == 0
+    assert report["row_count"] == 0
 
 
 def test_dedupe_normalized_rows_prefers_primary_category_over_special_category_for_same_detail_url() -> None:
@@ -347,6 +427,42 @@ def test_validate_normalized_rows_treats_duplicate_name_source_pairs_as_warning(
     assert report["duplicate_name_source_url_count"] == 1
     assert checks["visible_name_source_pairs_unique"]["severity"] == "warning"
     assert not checks["visible_name_source_pairs_unique"]["passed"]
+
+
+def test_validate_normalized_rows_accepts_disambiguated_name_source_pairs() -> None:
+    normalized_rows = [
+        {
+            "name": "Private Enterprise",
+            "canonical_slug": "private-enterprise-mobile-apps",
+            "category": "Mobile Apps",
+            "revenue_30d": 32000,
+            "biz_model": "Consumer app / subscription",
+            "gtm_model": "App-store / paid social / consumer",
+            "source_url": "https://trustmrr.com/category/mobile-apps",
+            "scraped_at": "2026-03-26T19:00:00Z",
+            "detail_url": "https://trustmrr.com/startup/private-enterprise-6",
+            "included_in_visible_sample": True,
+        },
+        {
+            "name": "Private Enterprise",
+            "canonical_slug": "private-enterprise-health-wellness-app",
+            "category": "Mobile Apps",
+            "revenue_30d": 44000,
+            "biz_model": "Consumer app / subscription",
+            "gtm_model": "App-store / paid social / consumer",
+            "source_url": "https://trustmrr.com/category/mobile-apps",
+            "scraped_at": "2026-03-26T19:00:00Z",
+            "detail_url": "https://trustmrr.com/startup/private-enterprise-10",
+            "included_in_visible_sample": True,
+        },
+    ]
+
+    report = validate_normalized_rows(normalized_rows)
+    checks = {check["id"]: check for check in report["checks"]}
+
+    assert report["status"] == "passed"
+    assert report["duplicate_name_source_url_count"] == 0
+    assert checks["visible_name_source_pairs_unique"]["passed"]
 
 
 def test_run_pipeline_writes_staged_outputs_from_fixture_fetch(tmp_path: Path) -> None:

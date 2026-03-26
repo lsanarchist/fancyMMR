@@ -243,6 +243,7 @@ def normalize_parsed_cards(cards: list[ParsedStartupCard], *, scraped_at: str) -
             }
         )
 
+    _disambiguate_same_source_name_collisions(normalized_rows, override_maps=override_maps)
     return normalized_rows
 
 
@@ -253,6 +254,86 @@ def build_visible_sample_rows(normalized_rows: list[dict[str, object]]) -> list[
             continue
         visible_rows.append({field: row[field] for field in VISIBLE_SAMPLE_ROW_FIELDS})
     return visible_rows
+
+
+def _disambiguate_same_source_name_collisions(
+    normalized_rows: list[dict[str, object]],
+    *,
+    override_maps: dict[str, dict[str, str]],
+) -> None:
+    groups: dict[tuple[str, str], list[dict[str, object]]] = {}
+    for row in normalized_rows:
+        source_url = str(row.get("source_url") or "")
+        name = str(row.get("name") or "").casefold()
+        if not source_url or not name:
+            continue
+        groups.setdefault((source_url, name), []).append(row)
+
+    for rows in groups.values():
+        detail_urls = {str(row.get("detail_url") or "") for row in rows if row.get("detail_url")}
+        if len(rows) <= 1 or len(detail_urls) <= 1:
+            continue
+
+        canonical_groups: dict[str, list[dict[str, object]]] = {}
+        for row in rows:
+            canonical_groups.setdefault(str(row.get("canonical_slug") or ""), []).append(row)
+
+        for colliding_rows in canonical_groups.values():
+            if len(colliding_rows) <= 1:
+                continue
+
+            winner = min(colliding_rows, key=_same_source_collision_priority)
+            for row in colliding_rows:
+                if row is winner:
+                    continue
+
+                detail_slug = str(row.get("detail_slug") or "")
+                if not detail_slug or detail_slug == str(row.get("canonical_slug") or ""):
+                    continue
+
+                row["canonical_slug"] = detail_slug
+                row["canonical_slug_source"] = "detail_slug_collision"
+                _refresh_heuristic_override_fields(row, override_maps=override_maps)
+
+
+def _same_source_collision_priority(row: dict[str, object]) -> tuple[int, int, int, int, str]:
+    mapped_field_count = int(bool(row.get("biz_model"))) + int(bool(row.get("gtm_model")))
+    revenue_value = row.get("revenue_30d")
+    try:
+        revenue = int(revenue_value) if revenue_value not in (None, "") else 0
+    except (TypeError, ValueError):
+        revenue = 0
+
+    position_value = row.get("position")
+    try:
+        position = int(position_value) if position_value not in (None, "") else 1_000_000
+    except (TypeError, ValueError):
+        position = 1_000_000
+
+    return (
+        0 if row.get("included_in_visible_sample") else 1,
+        -mapped_field_count,
+        -revenue,
+        position,
+        str(row.get("detail_url") or "").casefold(),
+    )
+
+
+def _refresh_heuristic_override_fields(
+    row: dict[str, object],
+    *,
+    override_maps: dict[str, dict[str, str]],
+) -> None:
+    heuristic_override_key = build_override_key(
+        str(row.get("source_url") or ""),
+        str(row.get("canonical_slug") or ""),
+    )
+    biz_model = override_maps["biz_model"].get(heuristic_override_key, "")
+    gtm_model = override_maps["gtm_model"].get(heuristic_override_key, "")
+    row["heuristic_override_key"] = heuristic_override_key
+    row["biz_model"] = biz_model
+    row["gtm_model"] = gtm_model
+    row["heuristic_override_source"] = "tracked_override" if biz_model or gtm_model else ""
 
 
 def dedupe_normalized_rows(normalized_rows: list[dict[str, object]]) -> list[dict[str, object]]:

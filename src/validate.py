@@ -59,7 +59,8 @@ def _duplicate_count(values: list[object]) -> int:
 
 def build_suspicious_duplicates_report(normalized_rows: list[dict[str, object]]) -> dict[str, object]:
     groups_by_slug: dict[str, list[dict[str, object]]] = {}
-    for row in normalized_rows:
+    visible_rows = [row for row in normalized_rows if row.get("included_in_visible_sample")]
+    for row in visible_rows:
         canonical_slug = str(row.get("canonical_slug") or "")
         if not canonical_slug:
             continue
@@ -106,9 +107,11 @@ def validate_normalized_rows(
     )
     duplicate_name_source_url_count = _duplicate_count(
         [
-            (row["name"], row["source_url"])
+            (row["name"], row["source_url"], row["canonical_slug"])
             for row in visible_rows
-            if row.get("name") not in (None, "") and row.get("source_url") not in (None, "")
+            if row.get("name") not in (None, "")
+            and row.get("source_url") not in (None, "")
+            and row.get("canonical_slug") not in (None, "")
         ]
     )
     below_threshold_visible_count = sum(
@@ -167,7 +170,7 @@ def validate_normalized_rows(
             check_id="visible_name_source_pairs_unique",
             severity="warning",
             passed=duplicate_name_source_url_count == 0,
-            message="Visible-sample duplicate `(name, source_url)` pairs are surfaced as warnings because generic placeholder names can refer to distinct detail URLs on the same source page.",
+            message="Visible-sample duplicate `(name, source_url)` pairs are surfaced as warnings only when they still collapse onto the same canonical slug after same-source disambiguation.",
             details={"duplicate_name_source_url_count": duplicate_name_source_url_count},
         ),
         _check(
