@@ -89,6 +89,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "source_pipeline_diagnostics.json" in data_html
     assert "pipeline_manifest.json" in data_html
     assert "Source-pipeline diagnostics" in data_html
+    assert "Detail-page staging" in data_html
+    assert "Detail parse failures" in data_html
 
 
 def test_build_site_is_deterministic_across_rebuilds(tmp_path: Path) -> None:

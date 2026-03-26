@@ -620,16 +620,21 @@ def build_data_page(
     <h3>Warning-only staged checks</h3>
     <p>{html.escape(source_pipeline_warning_summary(source_pipeline_diagnostics))}</p>
   </article>
+  <article class="callout-card">
+    <h3>Detail-page staging</h3>
+    <p>{html.escape(str(source_pipeline_diagnostics['parsed_detail_page_count']))} parsed, {html.escape(str(source_pipeline_diagnostics['failed_detail_page_count']))} failed, {html.escape(str(source_pipeline_diagnostics['fetched_detail_page_count']))} fetched across {html.escape(str(source_pipeline_diagnostics['detail_page_target_count']))} target detail pages.</p>
+  </article>
 </div>
 """
         diagnostics_table = render_table(
-            ["Source page", "Parser", "Parsed cards", "Visible rows"],
+            ["Source page", "Parser", "Parsed cards", "Visible rows", "Failed details"],
             [
                 [
                     f'<a href="{html.escape(row["source_url"], quote=True)}">{html.escape(row["source_url"])}</a>',
                     html.escape(str(row.get("parser_strategy") or "unknown")),
                     html.escape(f"{int(row['parsed_card_count']):,}"),
                     html.escape(f"{int(row['visible_sample_row_count']):,}"),
+                    html.escape(f"{int(row['failed_detail_page_count']):,}"),
                 ]
                 for row in source_pipeline_diagnostics["source_pages"][:10]
             ],
@@ -642,7 +647,8 @@ def build_data_page(
             + (
                 f'<p class="section-note">Staged validation: <strong>{html.escape(status_label(str(source_pipeline_diagnostics["validation_status"])))}</strong>. '
                 f'Run-manifest validation: <strong>{html.escape(status_label(str(source_pipeline_diagnostics["run_manifest_validation_status"])))}</strong>. '
-                f'Suspicious duplicate groups: <strong>{html.escape(str(source_pipeline_diagnostics["suspicious_duplicate_group_count"]))}</strong>.</p>'
+                f'Suspicious duplicate groups: <strong>{html.escape(str(source_pipeline_diagnostics["suspicious_duplicate_group_count"]))}</strong>. '
+                f'Detail parse failures: <strong>{html.escape(str(source_pipeline_diagnostics["failed_detail_page_count"]))}</strong>.</p>'
             ),
         )
     else:
