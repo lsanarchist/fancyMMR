@@ -64,6 +64,34 @@ DEFAULT_PIPELINE_PATHS = PipelinePaths(
     snapshots_dir=ROOT / "data" / "source_pipeline" / "snapshots",
 )
 
+DETAIL_PAGE_ROW_FIELDS = [
+    "source_id",
+    "source_url",
+    "source_group",
+    "category_label",
+    "position",
+    "name",
+    "detail_slug",
+    "detail_path",
+    "detail_url",
+    "detail_parser_strategy",
+    "detail_parse_status",
+    "detail_html_source",
+    "detail_parse_error",
+    "detail_fetch_source_id",
+    "detail_fetch_cached",
+    "detail_raw_html_path",
+    "detail_raw_meta_path",
+    "problem_solved",
+    "pricing_summary",
+    "target_audience",
+    "business_detail_badges_json",
+    "founder_name",
+    "founder_role",
+    "founder_quote",
+    "product_updates_heading_present",
+]
+
 
 def _ensure_pipeline_dirs(paths: PipelinePaths) -> None:
     paths.pipeline_dir.mkdir(parents=True, exist_ok=True)
@@ -87,6 +115,10 @@ def _write_csv(path: Path, rows: list[dict[str, object]], fieldnames: list[str])
 
 def _relative_to_root(path: Path, *, root: Path) -> str:
     return path.relative_to(root).as_posix()
+
+
+def _json_compact(value: object) -> str:
+    return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
 
 
 def _detail_source_config(source: SourceConfig, card: ParsedStartupCard) -> SourceConfig:
@@ -225,6 +257,42 @@ def _copy_raw_artifacts(
     return raw_html_path, raw_meta_path, raw_metadata
 
 
+def _detail_page_row(source: SourceConfig, detail_record: dict[str, object]) -> dict[str, object]:
+    extracted_detail = detail_record.get("extracted_detail") or {}
+    business_detail_badges = extracted_detail.get("business_detail_badges")
+    return {
+        "source_id": source.source_id,
+        "source_url": source.url,
+        "source_group": source.source_group,
+        "category_label": source.category_label,
+        "position": detail_record.get("position"),
+        "name": detail_record.get("name"),
+        "detail_slug": detail_record.get("detail_slug"),
+        "detail_path": detail_record.get("detail_path"),
+        "detail_url": detail_record.get("detail_url"),
+        "detail_parser_strategy": detail_record.get("detail_parser_strategy"),
+        "detail_parse_status": detail_record.get("detail_parse_status"),
+        "detail_html_source": detail_record.get("detail_html_source"),
+        "detail_parse_error": detail_record.get("detail_parse_error"),
+        "detail_fetch_source_id": detail_record.get("detail_fetch_source_id"),
+        "detail_fetch_cached": detail_record.get("detail_fetch_cached"),
+        "detail_raw_html_path": detail_record.get("detail_raw_html_path"),
+        "detail_raw_meta_path": detail_record.get("detail_raw_meta_path"),
+        "problem_solved": extracted_detail.get("problem_solved"),
+        "pricing_summary": extracted_detail.get("pricing_summary"),
+        "target_audience": extracted_detail.get("target_audience"),
+        "business_detail_badges_json": (
+            _json_compact(list(business_detail_badges))
+            if business_detail_badges is not None
+            else None
+        ),
+        "founder_name": extracted_detail.get("founder_name"),
+        "founder_role": extracted_detail.get("founder_role"),
+        "founder_quote": extracted_detail.get("founder_quote"),
+        "product_updates_heading_present": extracted_detail.get("product_updates_heading_present"),
+    }
+
+
 def _scraped_at_from_path(path: Path) -> str:
     return datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).isoformat().replace("+00:00", "Z")
 
@@ -273,6 +341,7 @@ def _build_snapshot_manifest(
                 pipeline_paths.processed_dir / "suspicious_duplicates.json",
                 root=pipeline_paths.root,
             ),
+            _relative_to_root(pipeline_paths.processed_dir / "detail_page_rows.csv", root=pipeline_paths.root),
             _relative_to_root(pipeline_paths.processed_dir / "validation_report.json", root=pipeline_paths.root),
         ],
     }
@@ -301,6 +370,7 @@ def run_pipeline(
         raise ValueError("No source pages were selected for the pipeline run.")
 
     per_source_outputs: list[dict[str, object]] = []
+    detail_page_rows: list[dict[str, object]] = []
     normalized_rows: list[dict[str, object]] = []
     last_live_fetch_at: float | None = None
 
@@ -345,6 +415,9 @@ def run_pipeline(
         }
         _write_json(interim_path, interim_payload)
         _write_json(detail_scaffold_path, detail_scaffold_payload)
+        detail_page_rows.extend(
+            _detail_page_row(source, detail_record) for detail_record in detail_scaffold_payload["detail_pages"]
+        )
 
         scraped_at = _scraped_at_from_path(raw_html_path)
         source_rows = normalize_parsed_cards(parsed_cards, scraped_at=scraped_at)
@@ -369,6 +442,7 @@ def run_pipeline(
     visible_rows = build_visible_sample_rows(deduped_rows)
     normalized_rows_path = pipeline_paths.processed_dir / "normalized_rows.csv"
     visible_rows_path = pipeline_paths.processed_dir / "visible_sample_rows.csv"
+    detail_rows_path = pipeline_paths.processed_dir / "detail_page_rows.csv"
     heuristic_override_report_path = pipeline_paths.processed_dir / "heuristic_override_report.json"
     suspicious_duplicates_path = pipeline_paths.processed_dir / "suspicious_duplicates.json"
     validation_path = pipeline_paths.processed_dir / "validation_report.json"
@@ -376,6 +450,7 @@ def run_pipeline(
 
     _write_csv(normalized_rows_path, deduped_rows, NORMALIZED_ROW_FIELDS)
     _write_csv(visible_rows_path, visible_rows, VISIBLE_SAMPLE_ROW_FIELDS)
+    _write_csv(detail_rows_path, detail_page_rows, DETAIL_PAGE_ROW_FIELDS)
     heuristic_override_report = build_heuristic_override_report(deduped_rows)
     suspicious_duplicates_report = build_suspicious_duplicates_report(deduped_rows)
     _write_json(heuristic_override_report_path, heuristic_override_report)
@@ -409,6 +484,7 @@ def run_pipeline(
         "validation_status": validation_report["status"],
         "normalized_rows_path": _relative_to_root(normalized_rows_path, root=pipeline_paths.root),
         "visible_rows_path": _relative_to_root(visible_rows_path, root=pipeline_paths.root),
+        "detail_rows_path": _relative_to_root(detail_rows_path, root=pipeline_paths.root),
         "heuristic_override_report_path": _relative_to_root(
             heuristic_override_report_path,
             root=pipeline_paths.root,
