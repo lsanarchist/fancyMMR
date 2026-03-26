@@ -71,12 +71,15 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert 'loading="lazy"' in index_html
     assert 'href="/' not in index_html
     assert 'src="/' not in index_html
+    assert "249 startups" in index_html
+    assert "9 duplicate startup names" in index_html
 
     assert "not a full database export" in methodology_html.lower()
     assert "source-derived visible sample" in methodology_html.lower()
     assert "passed with warnings" in methodology_html.lower()
     assert "data/source_pipeline/" in methodology_html
     assert "license-code-mit.txt" in methodology_html.lower()
+    assert "9 duplicate names / 0 heuristic gaps" in methodology_html
 
     assert "metrics.json" in data_html
     assert "publication_input.json" in data_html

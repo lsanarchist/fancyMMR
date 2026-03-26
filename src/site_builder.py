@@ -315,28 +315,44 @@ def render_checks(validation_report: dict[str, object]) -> str:
     return f'<ul class="check-list">{"".join(items)}</ul>'
 
 
+def warning_summary(validation_report: dict[str, object]) -> str:
+    warning_bits: list[str] = []
+    duplicate_name_count = int(validation_report.get("duplicate_name_count", 0))
+    null_counts = validation_report["null_counts"]
+
+    if duplicate_name_count:
+        label = "duplicate startup name" if duplicate_name_count == 1 else "duplicate startup names"
+        warning_bits.append(f"{duplicate_name_count} {label}")
+    if null_counts["biz_model"]:
+        warning_bits.append(f"{null_counts['biz_model']} null biz_model values")
+    if null_counts["gtm_model"]:
+        warning_bits.append(f"{null_counts['gtm_model']} null gtm_model values")
+
+    return ", ".join(warning_bits) if warning_bits else "No outstanding warnings in the current validation layer"
+
+
+def methodology_warning_snapshot(validation_report: dict[str, object]) -> str:
+    duplicate_name_count = int(validation_report.get("duplicate_name_count", 0))
+    heuristic_gap_count = int(validation_report["null_counts"]["biz_model"]) + int(validation_report["null_counts"]["gtm_model"])
+    duplicate_label = "duplicate name" if duplicate_name_count == 1 else "duplicate names"
+    heuristic_label = "heuristic gap" if heuristic_gap_count == 1 else "heuristic gaps"
+    return f"{duplicate_name_count} {duplicate_label} / {heuristic_gap_count} {heuristic_label}"
+
+
 def build_index_page(
     metrics: dict[str, object],
     validation_report: dict[str, object],
     category_rows: list[dict[str, str]],
 ) -> str:
-    warning_bits = []
-    null_counts = validation_report["null_counts"]
-    if null_counts["biz_model"]:
-        warning_bits.append(f"{null_counts['biz_model']} null biz_model values")
-    if null_counts["gtm_model"]:
-        warning_bits.append(f"{null_counts['gtm_model']} null gtm_model values")
-    warning_summary = ", ".join(warning_bits) if warning_bits else "No outstanding warnings in the current validation layer."
-
     hero = hero_section(
         eyebrow="Static GitHub Pages bundle",
         title="Visible startup revenue research, published as a fully static site",
         lede="This site packages the current processed TrustMRR visible sample into a Pages-friendly publication flow: summary metrics, charts, methodology, and machine-readable provenance live together with no runtime server.",
         status=str(validation_report["status"]),
-        aside_html="""
+        aside_html=f"""
 <div class="hero-aside">
   <p class="eyebrow">Current build snapshot</p>
-  <p class="hero-aside-value">229 startups</p>
+  <p class="hero-aside-value">{int(metrics["sample_size"])} startups</p>
   <p class="hero-aside-note">30 public source pages, deterministic charts, and validation/manifests copied into the published site output.</p>
 </div>
 """,
@@ -417,7 +433,7 @@ def build_index_page(
     <p>Not a full platform export, not an official dataset, and not a claim of platform-wide coverage.</p>
   </article>
 </div>
-<p class="section-note">Validation status: <strong>{html.escape(status_label(str(validation_report["status"])))}</strong>. Warning summary: {html.escape(warning_summary)}.</p>
+<p class="section-note">Validation status: <strong>{html.escape(status_label(str(validation_report["status"])))}</strong>. Warning summary: {html.escape(warning_summary(validation_report))}.</p>
 """,
         ),
         section(
@@ -453,9 +469,9 @@ def build_methodology_page(
         status=str(validation_report["status"]),
         aside_html=f"""
 <div class="hero-aside">
-  <p class="eyebrow">Current warnings</p>
-  <p class="hero-aside-value">{validation_report['null_counts']['biz_model']} biz_model / {validation_report['null_counts']['gtm_model']} gtm_model</p>
-  <p class="hero-aside-note">Heuristic label gaps are surfaced as warnings, while missing provenance, threshold violations, and duplicate (name, source_url) pairs still fail the build.</p>
+  <p class="eyebrow">Warning-only signals</p>
+  <p class="hero-aside-value">{html.escape(methodology_warning_snapshot(validation_report))}</p>
+  <p class="hero-aside-note">Warning-only checks currently cover duplicate startup names and heuristic label gaps, while missing provenance, threshold violations, and duplicate (name, source_url) pairs still fail the build.</p>
 </div>
 """,
     )

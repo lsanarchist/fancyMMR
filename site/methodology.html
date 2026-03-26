@@ -36,9 +36,9 @@
   <div class="hero-panel">
     
 <div class="hero-aside">
-  <p class="eyebrow">Current warnings</p>
-  <p class="hero-aside-value">3 biz_model / 1 gtm_model</p>
-  <p class="hero-aside-note">Heuristic label gaps are surfaced as warnings, while missing provenance, threshold violations, and duplicate (name, source_url) pairs still fail the build.</p>
+  <p class="eyebrow">Warning-only signals</p>
+  <p class="hero-aside-value">9 duplicate names / 0 heuristic gaps</p>
+  <p class="hero-aside-note">Warning-only checks currently cover duplicate startup names and heuristic label gaps, while missing provenance, threshold violations, and duplicate (name, source_url) pairs still fail the build.</p>
 </div>
 
   </div>
@@ -130,12 +130,12 @@ python src/build_all.py --limit 1</code></pre>
   <span>duplicate_name_source_url_pairs</span>
 </li>
 
-<li class="check-item check-pass">
+<li class="check-item check-warn">
   <strong>Duplicate startup names are tracked as a warning-only signal in the current bundle.</strong>
   <span>duplicate_names</span>
 </li>
 
-<li class="check-item check-warn">
+<li class="check-item check-pass">
   <strong>Heuristic label nulls are surfaced as warnings rather than hard failures for the seed bundle.</strong>
   <span>heuristic_label_completeness</span>
 </li>

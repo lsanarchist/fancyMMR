@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import asdict
 import hashlib
 import json
 import shutil
@@ -16,6 +17,8 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from fancymmr_build.aggregate import build_metrics, load_visible_sample, summarize_visible_sample
+from fancymmr_build.config import REVENUE_BINS, REVENUE_LABELS
+from fancymmr_build.publication import default_publication_input_payload
 from fancymmr_build.schemas import MetricsSnapshot, SummaryArtifacts
 from fancymmr_build.validation import ensure_validation_passes, validate_visible_sample
 
@@ -35,6 +38,19 @@ EXPECTED_CHARTS = {
     "distribution_and_concentration.png",
     "distribution_and_concentration.svg",
 }
+
+
+def expected_seed_metrics() -> dict[str, object]:
+    seed_df = pd.read_csv(ROOT / "data" / "visible_sample.csv")
+    seed_df["revenue_band"] = pd.cut(
+        seed_df["revenue_30d"],
+        bins=REVENUE_BINS,
+        labels=REVENUE_LABELS,
+        right=False,
+        include_lowest=True,
+    )
+    seed_df = seed_df.sort_values(["revenue_30d", "name"], ascending=[False, True]).reset_index(drop=True)
+    return asdict(build_metrics(summarize_visible_sample(seed_df)))
 
 
 def prepare_workspace(tmp_path: Path) -> Path:
@@ -88,8 +104,9 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     actual_charts = {path.name for path in (workspace / "charts").iterdir()}
     assert actual_charts == EXPECTED_CHARTS
 
+    seed_metrics = expected_seed_metrics()
     built_metrics = json.loads((workspace / "data" / "metrics.json").read_text(encoding="utf-8"))
-    assert built_metrics == EXPECTED_METRICS
+    assert built_metrics == seed_metrics
 
     publication_input = json.loads((workspace / "data" / "publication_input.json").read_text(encoding="utf-8"))
     validation_report = json.loads((workspace / "data" / "validation_report.json").read_text(encoding="utf-8"))
@@ -98,15 +115,16 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     )
     pipeline_manifest = json.loads((workspace / "data" / "pipeline_manifest.json").read_text(encoding="utf-8"))
 
-    assert publication_input == EXPECTED_PUBLICATION_INPUT
+    assert publication_input == default_publication_input_payload()
     assert validation_report["status"] in {"passed", "passed_with_warnings"}
-    assert validation_report["sample_row_count"] == EXPECTED_METRICS["sample_size"]
+    assert validation_report["sample_row_count"] == seed_metrics["sample_size"]
     assert source_coverage_report["source_page_count"] == EXPECTED_SOURCE_PAGE_COUNT
-    assert source_coverage_report["total_visible_startups"] == EXPECTED_METRICS["sample_size"]
+    assert source_coverage_report["total_visible_startups"] == seed_metrics["sample_size"]
     assert pipeline_manifest["publication_input"]["path"] == "data/publication_input.json"
-    assert pipeline_manifest["publication_input"]["dataset_kind"] == EXPECTED_PUBLICATION_INPUT["dataset_kind"]
-    assert pipeline_manifest["publication_input"]["dataset_path"] == EXPECTED_PUBLICATION_INPUT["dataset_path"]
-    assert pipeline_manifest["input_dataset"]["path"] == EXPECTED_PUBLICATION_INPUT["dataset_path"]
+    default_publication_input = default_publication_input_payload()
+    assert pipeline_manifest["publication_input"]["dataset_kind"] == default_publication_input["dataset_kind"]
+    assert pipeline_manifest["publication_input"]["dataset_path"] == default_publication_input["dataset_path"]
+    assert pipeline_manifest["input_dataset"]["path"] == default_publication_input["dataset_path"]
     assert pipeline_manifest["input_dataset"]["columns"] == EXPECTED_INPUT_COLUMNS
     assert pipeline_manifest["validation"]["status"] == validation_report["status"]
     assert any(

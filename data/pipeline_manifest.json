@@ -3,24 +3,24 @@
   "entrypoint": "src/build_artifacts.py",
   "generated_outputs": [
     {
-      "bytes": 2777,
+      "bytes": 2767,
       "path": "data/category_summary.csv",
-      "sha256": "16597f365d92b8fbf33c1814b7ccd560b2e864d231f4d9f0fe71d5a2225bfccb"
+      "sha256": "c0b1aae9658adac534772975456a11ce52f2df1a099a7f53466f8e6d401090be"
     },
     {
       "bytes": 515,
       "path": "data/business_model_summary.csv",
-      "sha256": "434facfa5df32cae140c60e5652ab85bd8f6feaf77a4d85100bb4cb57aba7997"
+      "sha256": "c3f67db681b5cd0c3c2b18f1b4252d58bf8faa47c4650246c7757c38c0fc3aa9"
     },
     {
-      "bytes": 525,
+      "bytes": 526,
       "path": "data/gtm_model_summary.csv",
-      "sha256": "8527f4317f7278c7227d7ffab4a52583301052be0c0ccaaa4fd5d7b5877fbe8f"
+      "sha256": "ed5393c3d6c319f9036cea485d501a13663f60766e9e86ccb497d25b02a268fb"
     },
     {
-      "bytes": 441,
+      "bytes": 439,
       "path": "data/revenue_band_summary.csv",
-      "sha256": "78e9166bf926a0483f03a1406f8dfcfb9d97e961b35b75c96271d414337a13f9"
+      "sha256": "480ca5b4b0aecd757aaab338b8959a22331dbcedc5dc92895d89dd298c920fbb"
     },
     {
       "bytes": 1239,
@@ -30,77 +30,77 @@
     {
       "bytes": 544,
       "path": "data/metrics.json",
-      "sha256": "e25145d3e57c24c9cfb961fe45f4b4dacee069032a84de5d54d4ed07a9534c7f"
+      "sha256": "c67a2e6238c1da03a4161f008e03c3b908eb9560b87ecb34d3572b7477a23e59"
     },
     {
       "bytes": 2524,
       "path": "data/validation_report.json",
-      "sha256": "340be65dd2191e928506e61fc41922c3590391f6415f5029bd3125fca84e407f"
+      "sha256": "31ab744923a8dd805b8b240c6278dbf8640192528a826c27d68951d93b9146eb"
     },
     {
-      "bytes": 11513,
+      "bytes": 11509,
       "path": "data/source_coverage_report.json",
-      "sha256": "708346ebf9734349b5d3bf23bd5787404c211196292024efb1556877fe2557f0"
+      "sha256": "1063d12d8aa30809c2c9a8f0d95caa0a3cf04474b784e3729143c03963063515"
     },
     {
-      "bytes": 274864,
+      "bytes": 275582,
       "path": "charts/category_share_map.png",
-      "sha256": "9725a852d556d65f1753d83ed4ea36daa1cc16c481c0dc4ccba17ed494b196b8"
+      "sha256": "13185123b4b8ef7574679616de20fabe1bd28ab1ac05d551fa39a5149b845a34"
     },
     {
-      "bytes": 290925,
+      "bytes": 290835,
       "path": "charts/category_share_map.svg",
-      "sha256": "9de3f0d7adf909f392d08d41baf8877f551cbe489c50fe0c291d2d1dc9d7dde3"
+      "sha256": "6b9eae9bbd9023b8712f08e8eaab114e50d84e644a2459f2e683ca409ad656b7"
     },
     {
-      "bytes": 153224,
+      "bytes": 154724,
       "path": "charts/top_categories_revenue.png",
-      "sha256": "7cb88ff526c5fa2a95e84431fa054825c662f26f736faac97371f7a6459e678b"
+      "sha256": "7d6369740b8eb4686c169a627a60ecbc2420a5f62360125532d64768eac9aaa9"
     },
     {
-      "bytes": 70018,
+      "bytes": 72471,
       "path": "charts/top_categories_revenue.svg",
-      "sha256": "373aca2fcd75654deb73d5beeb9b6ab865d4aa932ef2cb0f9733452fa7962940"
+      "sha256": "9eb1495bf4f0794de9bcd901cdeed594af21ff0f22859a014434038deb0eafac"
     },
     {
-      "bytes": 125748,
+      "bytes": 128430,
       "path": "charts/category_over_index.png",
-      "sha256": "c40d32154c74c39e34ea81070fe6e4c509b67fa72755fdc041bf2952b67746e6"
+      "sha256": "e719fa1e77cd870f5ce1ef0962a993723f99ddcb7dded43c3432d8364ab7a82b"
     },
     {
-      "bytes": 59850,
+      "bytes": 61756,
       "path": "charts/category_over_index.svg",
-      "sha256": "d3e3879d4c3dc27e56ef90a07a124c43f1516e12ac44a3a1cd0f5ad27384537b"
+      "sha256": "d2e931baacf74f0a1ae2495c1e43bd91b9e30f7bcb0bcf1d260dde864d02550a"
     },
     {
-      "bytes": 217907,
+      "bytes": 218699,
       "path": "charts/model_mix.png",
-      "sha256": "a06fc182bbb8e6c10a3b5d62e95e757dc1dba68f599cbca6ccafaa6fc8647463"
+      "sha256": "4172122c770aa1ed970d21bf47a2c88b494b452c317c49030778c54476d14c87"
     },
     {
-      "bytes": 102498,
+      "bytes": 102520,
       "path": "charts/model_mix.svg",
-      "sha256": "e7356e451a1fcee52fa4d118be5e8207bba4b106226cc778967ad0de4ddb9b7a"
+      "sha256": "fa920541fda75718be2fbe20d3376e443e9c55fd4cd65e34c85a9631c474c234"
     },
     {
-      "bytes": 198552,
+      "bytes": 203301,
       "path": "charts/distribution_and_concentration.png",
-      "sha256": "8ed30cd5796dc1b0f0910c165e7873c306b61189b99b6b8091583519d50efe70"
+      "sha256": "668f48fe5fa7ce83d59c364edf9aa6d91f3b02f6b0b3666b638679ab5fa7a52c"
     },
     {
-      "bytes": 91481,
+      "bytes": 93332,
       "path": "charts/distribution_and_concentration.svg",
-      "sha256": "7342497968d1cb80780f25ecdcb8bbc08cf114dfb95fb082417bfe81c63ff5cd"
+      "sha256": "a1079d59663086df51023b9b7fafea92b7387b6e76856b6769b3c4fbf81f5c9a"
     },
     {
-      "bytes": 604,
+      "bytes": 1346,
       "path": "data/publication_input.json",
-      "sha256": "eb5f785a4ac14f54c99819463112cce468cd92e6e892d75227b19b704c0e6f76"
+      "sha256": "5449d32556a0cf18036f0e574cea151eeb8e276563211dff8202b88fcecc556d"
     },
     {
-      "bytes": 5958,
+      "bytes": 5910,
       "path": "README.md",
-      "sha256": "3870af078ad459d762a84e4cafa41c98a432f56b7ed3b0ef9a7400369f90fb52"
+      "sha256": "9bbbb20ba1793c5b366bd53b00a309237e7a2a4d7b3ae89f5b2d34f38939fda2"
     }
   ],
   "input_dataset": {
@@ -113,35 +113,44 @@
       "source_url",
       "revenue_band"
     ],
-    "path": "data/visible_sample.csv",
-    "rows": 229,
-    "sha256": "ed351da92c2eb1421509cc9de2e3bd0302e62e1089b061793658d36af0996213"
+    "path": "data/promoted_visible_sample.csv",
+    "rows": 249,
+    "sha256": "b658c1ec4398021fc983aa49c1664f792f60c84c7aa89723db45c6d5bffbb458"
   },
   "metrics_snapshot": {
     "dominant_category": "E-commerce",
-    "gini_coefficient": 0.8274485658380962,
-    "sample_size": 229,
-    "total_visible_revenue_usd": 24295400
+    "gini_coefficient": 0.8274531107143713,
+    "sample_size": 249,
+    "total_visible_revenue_usd": 24385500
   },
   "project": "fancyMMR / TrustMRR visible-sample research pipeline",
   "promotion_command": "python src/promote_live_bundle.py",
   "publication_input": {
-    "dataset_kind": "seed_visible_sample",
-    "dataset_path": "data/visible_sample.csv",
-    "expected_source_count": null,
+    "dataset_kind": "source_pipeline_promotion",
+    "dataset_path": "data/promoted_visible_sample.csv",
+    "expected_source_count": 30,
     "path": "data/publication_input.json",
-    "promoted_at": null,
-    "promoted_dataset_sha256": null,
-    "promoted_from_visible_rows_path": null,
-    "promotion_gate_summary": null,
-    "selected_source_count": null,
-    "source_label": "Checked-in seed visible-sample dataset",
-    "source_pipeline_duplicates_report_path": null,
-    "source_pipeline_override_report_path": null,
-    "source_pipeline_run_manifest_path": null,
-    "source_pipeline_validation_report_path": null,
-    "staged_visible_rows_sha256": null,
-    "uses_default_seed_dataset": true
+    "promoted_at": "2026-03-26T21:51:11.876780Z",
+    "promoted_dataset_sha256": "b658c1ec4398021fc983aa49c1664f792f60c84c7aa89723db45c6d5bffbb458",
+    "promoted_from_visible_rows_path": "data/source_pipeline/processed/visible_sample_rows.csv",
+    "promotion_gate_summary": {
+      "expected_source_count": 30,
+      "fully_mapped_visible_row_count": 249,
+      "run_manifest_validation_status": "passed",
+      "selected_source_count": 30,
+      "suspicious_duplicate_group_count": 0,
+      "unmapped_visible_row_count": 0,
+      "validation_status": "passed",
+      "visible_sample_row_count": 249
+    },
+    "selected_source_count": 30,
+    "source_label": "Promoted from staged source-pipeline visible rows",
+    "source_pipeline_duplicates_report_path": "data/source_pipeline/processed/suspicious_duplicates.json",
+    "source_pipeline_override_report_path": "data/source_pipeline/processed/heuristic_override_report.json",
+    "source_pipeline_run_manifest_path": "data/source_pipeline/snapshots/run_manifest.json",
+    "source_pipeline_validation_report_path": "data/source_pipeline/processed/validation_report.json",
+    "staged_visible_rows_sha256": "a8e5b45b07a941fa70e41728500f21f056e5438f9ae364cbb8522b6ffe6fbca8",
+    "uses_default_seed_dataset": false
   },
   "python_version_floor": "3.12",
   "source_page_count": 30,

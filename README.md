@@ -13,11 +13,11 @@ Independent, GitHub-ready packaging of a **visible public sample** of startups w
 
 ## Key takeaways
 
-- Visible sample size: **229 startups**
-- Total visible 30-day revenue: **$24.30M**
-- Median visible 30-day revenue: **$19.0k**
-- Top 10 startups capture **70.4%** of visible revenue
-- The largest category is **E-commerce**, accounting for **45.8%** of visible revenue with **5.2%** of visible startups
+- Visible sample size: **249 startups**
+- Total visible 30-day revenue: **$24.39M**
+- Median visible 30-day revenue: **$17.0k**
+- Top 10 startups capture **69.6%** of visible revenue
+- The largest category is **E-commerce**, accounting for **45.6%** of visible revenue with **5.6%** of visible startups
 
 ## Main charts
 
@@ -85,10 +85,10 @@ This repository is based on a **source-derived visible sample**, not a full plat
 
 ## Pipeline status
 
-- `data/publication_input.json` is the publication-source contract; it currently points at `data/visible_sample.csv` as the active published dataset
+- `data/publication_input.json` is the publication-source contract; it currently points at `data/promoted_visible_sample.csv` as the active published dataset
 - `python src/build_all.py --limit 1` is the staged live-source smoke path; it writes repo-local outputs under `data/source_pipeline/` without mutating the published bundle yet
 - `python src/promote_live_bundle.py` projects `data/source_pipeline/processed/visible_sample_rows.csv` into `data/promoted_visible_sample.csv` and updates `data/publication_input.json` only after the staged validation is `passed`, unmapped visible rows are `0`, suspicious duplicate groups are `0`, and the staged run covers every source in `data/public_source_pages.csv`
-- The repo still publishes the checked-in seed bundle by default until the promotion command is run deliberately after a full staged source-registry pass.
+- The repo is currently publishing a promoted live bundle via `data/promoted_visible_sample.csv`.
 
 ## Rebuild
 

@@ -21,7 +21,7 @@ from src.fancymmr_build.publication import (
     default_publication_input_payload,
     write_publication_input_payload,
 )
-from src.normalize import revenue_band_for_value
+from src.normalize import detail_slug_from_path, revenue_band_for_value, slugify_startup_name
 
 
 PUBLIC_SOURCE_REGISTRY = "data/public_source_pages.csv"
@@ -55,6 +55,94 @@ def _sha256(path: Path) -> str:
         return hashlib.file_digest(handle, "sha256").hexdigest()
 
 
+def _humanize_slug(value: str) -> str:
+    replacements = {
+        "ai": "AI",
+        "api": "API",
+        "b2b": "B2B",
+        "b2c": "B2C",
+        "gmv": "GMV",
+        "hr": "HR",
+        "ios": "iOS",
+        "llc": "LLC",
+        "saas": "SaaS",
+        "seo": "SEO",
+        "ui": "UI",
+        "ux": "UX",
+    }
+    tokens = [token for token in value.split("-") if token]
+    if not tokens:
+        return value
+    return " ".join(replacements.get(token.casefold(), token.title()) for token in tokens)
+
+
+def _merged_publication_name(base_name: str, humanized_slug: str) -> str:
+    if humanized_slug.casefold() == base_name.casefold():
+        return base_name
+    base_prefix = f"{base_name.casefold()} "
+    if humanized_slug.casefold().startswith(base_prefix):
+        suffix = humanized_slug[len(base_name) :].strip()
+        if suffix:
+            return f"{base_name} {suffix}" if suffix.isdigit() else f"{base_name} ({suffix})"
+    return humanized_slug
+
+
+def _publication_name_candidates(row: dict[str, str]) -> list[str]:
+    base_name = row["name"].strip()
+    candidates = [base_name]
+    base_slug = slugify_startup_name(base_name)
+
+    canonical_slug = str(row.get("canonical_slug") or "").strip()
+    if canonical_slug and canonical_slug != base_slug:
+        candidates.append(_merged_publication_name(base_name, _humanize_slug(canonical_slug)))
+
+    detail_slug = detail_slug_from_path(str(row.get("detail_path") or ""))
+    if detail_slug and detail_slug != base_slug:
+        candidates.append(_merged_publication_name(base_name, _humanize_slug(detail_slug)))
+
+    position = str(row.get("position") or "").strip()
+    if position:
+        candidates.append(f"{base_name} #{position}")
+
+    seen: set[str] = set()
+    unique_candidates: list[str] = []
+    for candidate in candidates:
+        normalized = candidate.casefold()
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        unique_candidates.append(candidate)
+    return unique_candidates
+
+
+def _resolve_publication_names(rows: list[dict[str, str]]) -> list[str]:
+    groups: dict[tuple[str, str], list[int]] = {}
+    for index, row in enumerate(rows):
+        groups.setdefault((row["name"].strip(), row["source_url"].strip()), []).append(index)
+
+    resolved_names = [row["name"].strip() for row in rows]
+    for (_, _), indexes in groups.items():
+        if len(indexes) <= 1:
+            continue
+
+        used_in_group: set[str] = set()
+        for index in indexes:
+            for candidate in _publication_name_candidates(rows[index]):
+                normalized = candidate.casefold()
+                if normalized in used_in_group:
+                    continue
+                resolved_names[index] = candidate
+                used_in_group.add(normalized)
+                break
+            else:
+                raise ValueError(
+                    "Could not disambiguate duplicate publication names for "
+                    f"{rows[index]['name']!r} from {rows[index]['source_url']!r}."
+                )
+
+    return resolved_names
+
+
 def _project_publication_rows(rows: list[dict[str, str]]) -> list[dict[str, object]]:
     if not rows:
         raise ValueError("No staged visible rows were found to promote.")
@@ -63,15 +151,16 @@ def _project_publication_rows(rows: list[dict[str, str]]) -> list[dict[str, obje
     if missing_columns:
         raise ValueError(f"Staged visible rows are missing required publication columns: {missing_columns}")
 
+    resolved_names = _resolve_publication_names(rows)
     projected_rows: list[dict[str, object]] = []
-    for row in rows:
+    for row, resolved_name in zip(rows, resolved_names):
         revenue_30d = int(row["revenue_30d"])
         revenue_band = row.get("revenue_band") or revenue_band_for_value(revenue_30d)
         if revenue_band is None:
             raise ValueError(f"Visible row {row['name']!r} is below the publication threshold.")
 
         projected_row = {
-            "name": row["name"].strip(),
+            "name": resolved_name,
             "category": row["category"].strip(),
             "revenue_30d": revenue_30d,
             "biz_model": row["biz_model"].strip(),
@@ -89,6 +178,17 @@ def _project_publication_rows(rows: list[dict[str, str]]) -> list[dict[str, obje
                 f"Visible row {row['name']!r} is missing required publication values: {missing_values}"
             )
         projected_rows.append(projected_row)
+
+    duplicate_pairs: dict[tuple[str, str], int] = {}
+    for row in projected_rows:
+        key = (str(row["name"]), str(row["source_url"]))
+        duplicate_pairs[key] = duplicate_pairs.get(key, 0) + 1
+    repeated = [key for key, count in duplicate_pairs.items() if count > 1]
+    if repeated:
+        raise ValueError(
+            "Projected publication rows still contain duplicate `(name, source_url)` pairs after disambiguation: "
+            + ", ".join(f"{name!r} @ {source_url}" for name, source_url in repeated)
+        )
 
     projected_rows.sort(
         key=lambda row: (

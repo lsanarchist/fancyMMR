@@ -45,7 +45,57 @@ def write_staged_artifacts(
     unmapped_visible_row_count: int = 0,
     selected_source_count: int = 2,
     run_manifest_validation_status: str = "passed",
+    visible_rows: list[dict[str, object]] | None = None,
 ) -> None:
+    rows = visible_rows or [
+        {
+            "name": "Alpha",
+            "canonical_slug": "alpha",
+            "category": "AI",
+            "revenue_30d": 25000,
+            "biz_model": "Software / SaaS",
+            "gtm_model": "PLG / inbound software",
+            "revenue_band": "$10k–$50k",
+            "source_url": "https://example.com/category/ai",
+            "source_id": "category--ai",
+            "source_group": "category",
+            "parser_strategy": "fixture",
+            "detail_url": "https://example.com/startup/alpha",
+            "detail_path": "/startup/alpha",
+            "position": 1,
+            "badge": "",
+            "description": "Alpha description",
+            "heuristic_override_key": "https://example.com/category/ai::alpha",
+            "heuristic_override_source": "tracked_override",
+            "mrr": 26000,
+            "total_revenue": 100000,
+            "scraped_at": "2026-03-26T20:00:00Z",
+        },
+        {
+            "name": "Beta",
+            "canonical_slug": "beta",
+            "category": "Productivity",
+            "revenue_30d": 12000,
+            "biz_model": "" if unmapped_visible_row_count else "Software / SaaS",
+            "gtm_model": "" if unmapped_visible_row_count else "PLG / inbound software",
+            "revenue_band": "$10k–$50k",
+            "source_url": "https://example.com/category/productivity",
+            "source_id": "category--productivity",
+            "source_group": "category",
+            "parser_strategy": "fixture",
+            "detail_url": "https://example.com/startup/beta",
+            "detail_path": "/startup/beta",
+            "position": 1,
+            "badge": "",
+            "description": "Beta description",
+            "heuristic_override_key": "https://example.com/category/productivity::beta",
+            "heuristic_override_source": "tracked_override" if not unmapped_visible_row_count else "",
+            "mrr": 13000,
+            "total_revenue": 50000,
+            "scraped_at": "2026-03-26T20:00:00Z",
+        },
+    ]
+
     visible_rows_path = workspace / "data" / "source_pipeline" / "processed" / "visible_sample_rows.csv"
     with visible_rows_path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(
@@ -75,56 +125,7 @@ def write_staged_artifacts(
             ],
         )
         writer.writeheader()
-        writer.writerows(
-            [
-                {
-                    "name": "Alpha",
-                    "canonical_slug": "alpha",
-                    "category": "AI",
-                    "revenue_30d": 25000,
-                    "biz_model": "Software / SaaS",
-                    "gtm_model": "PLG / inbound software",
-                    "revenue_band": "$10k–$50k",
-                    "source_url": "https://example.com/category/ai",
-                    "source_id": "category--ai",
-                    "source_group": "category",
-                    "parser_strategy": "fixture",
-                    "detail_url": "https://example.com/startup/alpha",
-                    "detail_path": "/startup/alpha",
-                    "position": 1,
-                    "badge": "",
-                    "description": "Alpha description",
-                    "heuristic_override_key": "https://example.com/category/ai::alpha",
-                    "heuristic_override_source": "tracked_override",
-                    "mrr": 26000,
-                    "total_revenue": 100000,
-                    "scraped_at": "2026-03-26T20:00:00Z",
-                },
-                {
-                    "name": "Beta",
-                    "canonical_slug": "beta",
-                    "category": "Productivity",
-                    "revenue_30d": 12000,
-                    "biz_model": "" if unmapped_visible_row_count else "Software / SaaS",
-                    "gtm_model": "" if unmapped_visible_row_count else "PLG / inbound software",
-                    "revenue_band": "$10k–$50k",
-                    "source_url": "https://example.com/category/productivity",
-                    "source_id": "category--productivity",
-                    "source_group": "category",
-                    "parser_strategy": "fixture",
-                    "detail_url": "https://example.com/startup/beta",
-                    "detail_path": "/startup/beta",
-                    "position": 1,
-                    "badge": "",
-                    "description": "Beta description",
-                    "heuristic_override_key": "https://example.com/category/productivity::beta",
-                    "heuristic_override_source": "tracked_override" if not unmapped_visible_row_count else "",
-                    "mrr": 13000,
-                    "total_revenue": 50000,
-                    "scraped_at": "2026-03-26T20:00:00Z",
-                },
-            ]
-        )
+        writer.writerows(rows)
 
     (workspace / "data" / "source_pipeline" / "processed" / "heuristic_override_report.json").write_text(
         json.dumps(
@@ -132,11 +133,11 @@ def write_staged_artifacts(
                 "schema_version": 1,
                 "override_key_format": "<source_url>::<canonical_slug>",
                 "override_files": [],
-                "total_row_count": 2,
-                "visible_sample_row_count": 2,
-                "biz_model_override_count": 2 - unmapped_visible_row_count,
-                "gtm_model_override_count": 2 - unmapped_visible_row_count,
-                "fully_mapped_visible_row_count": 2 - unmapped_visible_row_count,
+                "total_row_count": len(rows),
+                "visible_sample_row_count": len(rows),
+                "biz_model_override_count": len(rows) - unmapped_visible_row_count,
+                "gtm_model_override_count": len(rows) - unmapped_visible_row_count,
+                "fully_mapped_visible_row_count": len(rows) - unmapped_visible_row_count,
                 "alias_resolved_visible_row_count": 0,
                 "unmapped_visible_row_count": unmapped_visible_row_count,
                 "unmapped_visible_rows": [] if not unmapped_visible_row_count else [{"name": "Beta"}],
@@ -154,8 +155,8 @@ def write_staged_artifacts(
         json.dumps(
             {
                 "status": "passed",
-                "parsed_row_count": 2,
-                "visible_sample_row_count": 2,
+                "parsed_row_count": len(rows),
+                "visible_sample_row_count": len(rows),
                 "excluded_below_threshold_count": 0,
                 "threshold_usd": 5000,
                 "missing_required_field_counts": {},
@@ -179,9 +180,9 @@ def write_staged_artifacts(
                 "selected_source_count": selected_source_count,
                 "selected_sources": [],
                 "per_source_outputs": [],
-                "normalized_row_count": 2,
-                "visible_sample_row_count": 2,
-                "fully_mapped_visible_row_count": 2 - unmapped_visible_row_count,
+                "normalized_row_count": len(rows),
+                "visible_sample_row_count": len(rows),
+                "fully_mapped_visible_row_count": len(rows) - unmapped_visible_row_count,
                 "suspicious_duplicate_group_count": 0,
                 "validation_status": run_manifest_validation_status,
                 "generated_outputs": [],
@@ -283,3 +284,126 @@ def test_promote_live_bundle_refuses_partial_source_registry_runs(tmp_path: Path
         assert "full registered source set" in str(error)
     else:
         raise AssertionError("Expected promote_live_bundle() to reject partial source-registry runs.")
+
+
+def test_promote_live_bundle_disambiguates_duplicate_publication_names(tmp_path: Path) -> None:
+    workspace = prepare_workspace(tmp_path)
+    write_source_registry(
+        workspace,
+        [
+            "https://example.com/category/mobile-apps",
+            "https://example.com/category/design-tools",
+        ],
+    )
+    write_staged_artifacts(
+        workspace,
+        visible_rows=[
+            {
+                "name": "Private Enterprise",
+                "canonical_slug": "private-enterprise-mobile-apps",
+                "category": "Mobile Apps",
+                "revenue_30d": 32000,
+                "biz_model": "Consumer app / subscription",
+                "gtm_model": "App-store / paid social / consumer",
+                "revenue_band": "$10k–$50k",
+                "source_url": "https://example.com/category/mobile-apps",
+                "source_id": "category--mobile-apps",
+                "source_group": "category",
+                "parser_strategy": "fixture",
+                "detail_url": "https://example.com/startup/private-enterprise-6",
+                "detail_path": "/startup/private-enterprise-6",
+                "position": 2,
+                "badge": "",
+                "description": "",
+                "heuristic_override_key": "https://example.com/category/mobile-apps::private-enterprise-mobile-apps",
+                "heuristic_override_source": "tracked_override",
+                "mrr": 49000,
+                "total_revenue": 116000,
+                "scraped_at": "2026-03-26T20:00:00Z",
+            },
+            {
+                "name": "Private Enterprise",
+                "canonical_slug": "private-enterprise-health-wellness-app",
+                "category": "Mobile Apps",
+                "revenue_30d": 44000,
+                "biz_model": "Consumer app / subscription",
+                "gtm_model": "App-store / paid social / consumer",
+                "revenue_band": "$10k–$50k",
+                "source_url": "https://example.com/category/mobile-apps",
+                "source_id": "category--mobile-apps",
+                "source_group": "category",
+                "parser_strategy": "fixture",
+                "detail_url": "https://example.com/startup/private-enterprise-10",
+                "detail_path": "/startup/private-enterprise-10",
+                "position": 3,
+                "badge": "",
+                "description": "",
+                "heuristic_override_key": "https://example.com/category/mobile-apps::private-enterprise-health-wellness-app",
+                "heuristic_override_source": "tracked_override",
+                "mrr": 23000,
+                "total_revenue": 86000,
+                "scraped_at": "2026-03-26T20:00:00Z",
+            },
+            {
+                "name": "Sleek",
+                "canonical_slug": "sleek",
+                "category": "Design Tools",
+                "revenue_30d": 25000,
+                "biz_model": "Software / SaaS",
+                "gtm_model": "PLG / inbound software",
+                "revenue_band": "$10k–$50k",
+                "source_url": "https://example.com/category/design-tools",
+                "source_id": "category--design-tools",
+                "source_group": "category",
+                "parser_strategy": "fixture",
+                "detail_url": "https://example.com/startup/sleek",
+                "detail_path": "/startup/sleek",
+                "position": 8,
+                "badge": "",
+                "description": "",
+                "heuristic_override_key": "https://example.com/category/design-tools::sleek",
+                "heuristic_override_source": "tracked_override",
+                "mrr": 0,
+                "total_revenue": 104000,
+                "scraped_at": "2026-03-26T20:00:00Z",
+            },
+            {
+                "name": "Sleek",
+                "canonical_slug": "sleek-1",
+                "category": "Design Tools",
+                "revenue_30d": 7800,
+                "biz_model": "Software / SaaS",
+                "gtm_model": "PLG / inbound software",
+                "revenue_band": "$5k–$10k",
+                "source_url": "https://example.com/category/design-tools",
+                "source_id": "category--design-tools",
+                "source_group": "category",
+                "parser_strategy": "fixture",
+                "detail_url": "https://example.com/startup/sleek-1",
+                "detail_path": "/startup/sleek-1",
+                "position": 17,
+                "badge": "",
+                "description": "",
+                "heuristic_override_key": "https://example.com/category/design-tools::sleek-1",
+                "heuristic_override_source": "tracked_override",
+                "mrr": 25000,
+                "total_revenue": 7800,
+                "scraped_at": "2026-03-26T20:00:00Z",
+            },
+        ],
+    )
+
+    promote_live_bundle(root=workspace)
+
+    promoted_dataset = workspace / "data" / "promoted_visible_sample.csv"
+    with promoted_dataset.open(encoding="utf-8", newline="") as handle:
+        promoted_rows = list(csv.DictReader(handle))
+
+    promoted_pairs = {(row["name"], row["source_url"]) for row in promoted_rows}
+    assert len(promoted_pairs) == len(promoted_rows)
+    assert ("Private Enterprise (Health Wellness App)", "https://example.com/category/mobile-apps") in promoted_pairs
+    assert ("Private Enterprise", "https://example.com/category/mobile-apps") in promoted_pairs
+    assert ("Sleek", "https://example.com/category/design-tools") in promoted_pairs
+    assert ("Sleek 1", "https://example.com/category/design-tools") in promoted_pairs
+
+    run_build_commands(workspace)
