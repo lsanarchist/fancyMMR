@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import sys
 
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -21,7 +22,7 @@ from src.normalize import (
     parse_money_value,
     slugify_startup_name,
 )
-from src.parse import ParsedStartupCard, parse_source_html
+from src.parse import ParsedStartupCard, parse_source_html, parse_startup_detail_html
 from src.validate import build_suspicious_duplicates_report, validate_normalized_rows
 
 
@@ -106,6 +107,31 @@ def test_parse_source_html_accepts_gmv_as_third_metric_label() -> None:
     assert cards[0].total_revenue_text == "$878.6M"
     assert cards[1].name == "easytools"
     assert cards[1].total_revenue_label == "GMV"
+
+
+def test_parse_startup_detail_html_extracts_labeled_fields_from_fixture() -> None:
+    card = parse_source_html(category_source(), read_fixture("category_ai_fixture.html"))[0]
+
+    detail = parse_startup_detail_html(card, read_fixture("startup_rezi_detail_fixture.html"))
+
+    assert detail.problem_solved == (
+        "Streamlines resume creation and optimization to improve chances of getting interview callbacks."
+    )
+    assert detail.pricing_summary == "Free: $0/mo, Pro: $29/mo, Lifetime: $149 one-time"
+    assert detail.target_audience == "Job Seekers"
+    assert detail.business_detail_badges == ("B2C", "~4,005,400 users")
+    assert detail.founder_name == "Jacob Jacquet"
+    assert detail.founder_role == "Founder of Rezi"
+    assert detail.founder_quote == "Open to conversations to better understand market demand."
+    assert detail.product_updates_heading_present is True
+
+
+def test_parse_startup_detail_html_fails_loudly_when_required_label_is_missing() -> None:
+    card = parse_source_html(category_source(), read_fixture("category_ai_fixture.html"))[0]
+    invalid_html = read_fixture("startup_rezi_detail_fixture.html").replace("Pricing", "Price ladder", 1)
+
+    with pytest.raises(ValueError, match="Pricing"):
+        parse_startup_detail_html(card, invalid_html)
 
 
 def test_normalize_parsed_cards_converts_metrics_and_thresholds() -> None:
@@ -517,14 +543,22 @@ def test_run_pipeline_writes_staged_outputs_from_fixture_fetch(tmp_path: Path) -
         meta_path.write_text(json.dumps(record.__dict__, indent=2, sort_keys=True), encoding="utf-8")
         return record, last_live_fetch_at
 
+    def detail_page_html_resolver(card: ParsedStartupCard) -> str | None:
+        if card.detail_url.endswith("/rezi"):
+            return read_fixture("startup_rezi_detail_fixture.html")
+        return None
+
     summary = run_pipeline(
         source_registry=[source],
         fetch_paths=fetch_paths,
         pipeline_paths=pipeline_paths,
         fetcher=fake_fetcher,
+        detail_page_html_resolver=detail_page_html_resolver,
     )
 
     assert summary["selected_source_count"] == 1
+    assert summary["detail_page_target_count"] == 2
+    assert summary["parsed_detail_page_count"] == 1
     assert summary["normalized_row_count"] == 2
     assert summary["visible_sample_row_count"] == 1
     assert summary["validation_status"] == "passed"
@@ -534,9 +568,29 @@ def test_run_pipeline_writes_staged_outputs_from_fixture_fetch(tmp_path: Path) -
     assert (pipeline_paths.raw_dir / f"{source.source_id}.html").exists()
     assert (pipeline_paths.raw_dir / f"{source.source_id}.json").exists()
     assert (pipeline_paths.interim_dir / f"{source.source_id}.json").exists()
+    assert (pipeline_paths.interim_dir / f"{source.source_id}.detail_pages.json").exists()
     assert (pipeline_paths.processed_dir / "normalized_rows.csv").exists()
     assert (pipeline_paths.processed_dir / "visible_sample_rows.csv").exists()
     assert (pipeline_paths.processed_dir / "heuristic_override_report.json").exists()
     assert (pipeline_paths.processed_dir / "suspicious_duplicates.json").exists()
     assert (pipeline_paths.processed_dir / "validation_report.json").exists()
     assert (pipeline_paths.snapshots_dir / "run_manifest.json").exists()
+
+    detail_scaffolds = json.loads(
+        (pipeline_paths.interim_dir / f"{source.source_id}.detail_pages.json").read_text(encoding="utf-8")
+    )
+    snapshot_manifest = json.loads(
+        (pipeline_paths.snapshots_dir / "run_manifest.json").read_text(encoding="utf-8")
+    )
+    assert detail_scaffolds["detail_page_target_count"] == 2
+    assert detail_scaffolds["parsed_detail_page_count"] == 1
+    assert detail_scaffolds["detail_pages"][0]["detail_parse_status"] == "parsed"
+    assert detail_scaffolds["detail_pages"][0]["detail_slug"] == "rezi"
+    assert detail_scaffolds["detail_pages"][0]["extracted_detail"]["target_audience"] == "Job Seekers"
+    assert detail_scaffolds["detail_pages"][1]["detail_parse_status"] == "html_not_supplied"
+    assert detail_scaffolds["detail_pages"][1]["extracted_detail"] is None
+    assert snapshot_manifest["detail_page_target_count"] == 2
+    assert snapshot_manifest["parsed_detail_page_count"] == 1
+    assert snapshot_manifest["per_source_outputs"][0]["detail_scaffold_path"].endswith(
+        "data/source_pipeline/interim/category--ai.detail_pages.json"
+    )

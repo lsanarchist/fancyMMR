@@ -24,9 +24,17 @@ from src.normalize import (
     build_heuristic_override_report,
     build_visible_sample_rows,
     dedupe_normalized_rows,
+    detail_slug_from_path,
     normalize_parsed_cards,
 )
-from src.parse import parse_source_html, parsed_cards_as_dicts
+from src.parse import (
+    DETAIL_PAGE_PARSER_STRATEGY,
+    ParsedStartupCard,
+    parse_source_html,
+    parse_startup_detail_html,
+    parsed_cards_as_dicts,
+    parsed_detail_as_dict,
+)
 from src.validate import (
     build_suspicious_duplicates_report,
     ensure_validation_passes,
@@ -79,6 +87,45 @@ def _relative_to_root(path: Path, *, root: Path) -> str:
     return path.relative_to(root).as_posix()
 
 
+def _build_detail_page_scaffold_payload(
+    parsed_cards: list[ParsedStartupCard],
+    *,
+    detail_page_html_resolver: Callable[[ParsedStartupCard], str | None] | None,
+) -> dict[str, object]:
+    detail_pages: list[dict[str, object]] = []
+    parsed_detail_page_count = 0
+
+    for card in parsed_cards:
+        detail_record: dict[str, object] = {
+            "position": card.position,
+            "name": card.name,
+            "detail_path": card.detail_path,
+            "detail_url": card.detail_url,
+            "detail_slug": detail_slug_from_path(card.detail_path),
+            "detail_parser_strategy": DETAIL_PAGE_PARSER_STRATEGY,
+            "detail_parse_status": "not_requested",
+            "extracted_detail": None,
+        }
+
+        if detail_page_html_resolver is not None:
+            detail_html = detail_page_html_resolver(card)
+            if detail_html is None:
+                detail_record["detail_parse_status"] = "html_not_supplied"
+            else:
+                parsed_detail = parse_startup_detail_html(card, detail_html)
+                detail_record["detail_parse_status"] = "parsed"
+                detail_record["extracted_detail"] = parsed_detail_as_dict(parsed_detail)
+                parsed_detail_page_count += 1
+
+        detail_pages.append(detail_record)
+
+    return {
+        "detail_page_target_count": len(detail_pages),
+        "parsed_detail_page_count": parsed_detail_page_count,
+        "detail_pages": detail_pages,
+    }
+
+
 def _copy_raw_artifacts(
     source: SourceConfig,
     result: FetchResult,
@@ -121,6 +168,8 @@ def _build_snapshot_manifest(
 ) -> dict[str, object]:
     return {
         "selected_source_count": len(selected_sources),
+        "detail_page_target_count": sum(int(source["detail_page_target_count"]) for source in per_source_outputs),
+        "parsed_detail_page_count": sum(int(source["parsed_detail_page_count"]) for source in per_source_outputs),
         "selected_sources": [
             {
                 "source_id": source.source_id,
@@ -162,6 +211,7 @@ def run_pipeline(
     pipeline_paths: PipelinePaths = DEFAULT_PIPELINE_PATHS,
     source_registry: list[SourceConfig] | None = None,
     fetcher: Callable[..., tuple[FetchResult, float | None]] = fetch_source,
+    detail_page_html_resolver: Callable[[ParsedStartupCard], str | None] | None = None,
 ) -> dict[str, object]:
     _ensure_pipeline_dirs(pipeline_paths)
 
@@ -188,13 +238,23 @@ def run_pipeline(
         )
         parsed_cards = parse_source_html(source, raw_html_path.read_text(encoding="utf-8", errors="replace"))
         interim_path = pipeline_paths.interim_dir / f"{source.source_id}.json"
+        detail_scaffold_path = pipeline_paths.interim_dir / f"{source.source_id}.detail_pages.json"
         interim_payload = {
             "source_id": source.source_id,
             "source_url": source.url,
             "card_count": len(parsed_cards),
             "cards": parsed_cards_as_dicts(parsed_cards),
         }
+        detail_scaffold_payload = {
+            "source_id": source.source_id,
+            "source_url": source.url,
+            **_build_detail_page_scaffold_payload(
+                parsed_cards,
+                detail_page_html_resolver=detail_page_html_resolver,
+            ),
+        }
         _write_json(interim_path, interim_payload)
+        _write_json(detail_scaffold_path, detail_scaffold_payload)
 
         scraped_at = _scraped_at_from_path(raw_html_path)
         source_rows = normalize_parsed_cards(parsed_cards, scraped_at=scraped_at)
@@ -205,8 +265,11 @@ def run_pipeline(
                 "source_url": source.url,
                 "raw_html_path": raw_metadata["raw_html_path"],
                 "interim_path": _relative_to_root(interim_path, root=pipeline_paths.root),
+                "detail_scaffold_path": _relative_to_root(detail_scaffold_path, root=pipeline_paths.root),
                 "parsed_card_count": len(parsed_cards),
                 "visible_sample_row_count": sum(1 for row in source_rows if row["included_in_visible_sample"]),
+                "detail_page_target_count": detail_scaffold_payload["detail_page_target_count"],
+                "parsed_detail_page_count": detail_scaffold_payload["parsed_detail_page_count"],
             }
         )
 
@@ -243,6 +306,8 @@ def run_pipeline(
 
     return {
         "selected_source_count": len(selected_sources),
+        "detail_page_target_count": sum(int(source["detail_page_target_count"]) for source in per_source_outputs),
+        "parsed_detail_page_count": sum(int(source["parsed_detail_page_count"]) for source in per_source_outputs),
         "normalized_row_count": len(deduped_rows),
         "visible_sample_row_count": len(visible_rows),
         "fully_mapped_visible_row_count": heuristic_override_report["fully_mapped_visible_row_count"],

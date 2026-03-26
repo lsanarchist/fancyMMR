@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+from html import unescape
 from html.parser import HTMLParser
+import re
 
 from .config import SourceConfig
 
@@ -13,6 +15,12 @@ METRIC_LABEL_ALIASES = {
 }
 STARTUP_CARD_CLASS_TOKENS = ("flex", "flex-col", "rounded-lg")
 TRUSTMRR_BASE_URL = "https://trustmrr.com"
+DETAIL_PAGE_PARSER_STRATEGY = "trustmrr_startup_detail"
+DETAIL_PAGE_REQUIRED_LABELS = ("Problem solved", "Pricing", "Target audience")
+BUSINESS_DETAILS_LABEL = "Business details"
+PRODUCT_UPDATES_HEADING = "Product updates"
+HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+HTML_TAG_RE = re.compile(r"<[^>]+>")
 
 
 def _normalize_text(value: str) -> str:
@@ -36,6 +44,18 @@ class ParsedStartupCard:
     total_revenue_text: str
     total_revenue_label: str = "Total"
     badge: str | None = None
+
+
+@dataclass(frozen=True)
+class ParsedStartupDetail:
+    problem_solved: str
+    pricing_summary: str
+    target_audience: str
+    business_detail_badges: tuple[str, ...]
+    founder_name: str | None = None
+    founder_role: str | None = None
+    founder_quote: str | None = None
+    product_updates_heading_present: bool = False
 
 
 @dataclass
@@ -202,3 +222,113 @@ def parse_source_html(source: SourceConfig, html: str) -> list[ParsedStartupCard
 
 def parsed_cards_as_dicts(cards: list[ParsedStartupCard]) -> list[dict[str, object]]:
     return [asdict(card) for card in cards]
+
+
+def _clean_html_fragment(fragment: str) -> str:
+    without_comments = HTML_COMMENT_RE.sub("", fragment)
+    without_tags = HTML_TAG_RE.sub(" ", without_comments)
+    return _normalize_text(unescape(without_tags))
+
+
+def _extract_labeled_detail_value(html: str, *, label: str, detail_url: str) -> str:
+    pattern = re.compile(
+        rf"<p[^>]*>\s*{re.escape(label)}\s*</p>\s*<p[^>]*>(?P<value>.*?)</p>",
+        re.IGNORECASE | re.DOTALL,
+    )
+    match = pattern.search(html)
+    if match is None:
+        raise ValueError(f"Missing detail label {label!r} for {detail_url}")
+
+    value = _clean_html_fragment(match.group("value"))
+    if not value:
+        raise ValueError(f"Missing detail value after {label!r} for {detail_url}")
+    return value
+
+
+def _extract_business_detail_badges(html: str, *, detail_url: str) -> tuple[str, ...]:
+    pattern = re.compile(
+        rf"<p[^>]*>\s*{re.escape(BUSINESS_DETAILS_LABEL)}\s*</p>\s*<div[^>]*>(?P<badges>.*?)</div>",
+        re.IGNORECASE | re.DOTALL,
+    )
+    match = pattern.search(html)
+    if match is None:
+        raise ValueError(f"Missing detail label {BUSINESS_DETAILS_LABEL!r} for {detail_url}")
+
+    badges = tuple(
+        badge
+        for badge in (
+            _clean_html_fragment(fragment)
+            for fragment in re.findall(r"<span[^>]*>(.*?)</span>", match.group("badges"), re.IGNORECASE | re.DOTALL)
+        )
+        if badge
+    )
+    if not badges:
+        raise ValueError(f"Missing business-detail badge values for {detail_url}")
+    return badges
+
+
+def _extract_optional_founder_context(html: str) -> tuple[str | None, str | None]:
+    match = re.search(
+        r"<p[^>]*>\s*(?P<name>[^<]+?)\s*</p>\s*<p[^>]*>\s*(?P<role>Founder of\s*.*?)</p>",
+        html,
+        re.IGNORECASE | re.DOTALL,
+    )
+    if match is None:
+        return None, None
+
+    founder_name = _clean_html_fragment(match.group("name")) or None
+    founder_role = _clean_html_fragment(match.group("role")) or None
+    return founder_name, founder_role
+
+
+def _extract_optional_founder_quote(html: str) -> str | None:
+    match = re.search(
+        r'<p[^>]*class="[^"]*whitespace-pre-wrap[^"]*"[^>]*>(?P<quote>.*?)</p>',
+        html,
+        re.IGNORECASE | re.DOTALL,
+    )
+    if match is None:
+        return None
+    return _clean_html_fragment(match.group("quote")) or None
+
+
+def parse_startup_detail_html(card: ParsedStartupCard, html: str) -> ParsedStartupDetail:
+    detail_values = {
+        "problem_solved": _extract_labeled_detail_value(
+            html,
+            label=DETAIL_PAGE_REQUIRED_LABELS[0],
+            detail_url=card.detail_url,
+        ),
+        "pricing_summary": _extract_labeled_detail_value(
+            html,
+            label=DETAIL_PAGE_REQUIRED_LABELS[1],
+            detail_url=card.detail_url,
+        ),
+        "target_audience": _extract_labeled_detail_value(
+            html,
+            label=DETAIL_PAGE_REQUIRED_LABELS[2],
+            detail_url=card.detail_url,
+        ),
+    }
+    founder_name, founder_role = _extract_optional_founder_context(html)
+
+    return ParsedStartupDetail(
+        problem_solved=detail_values["problem_solved"],
+        pricing_summary=detail_values["pricing_summary"],
+        target_audience=detail_values["target_audience"],
+        business_detail_badges=_extract_business_detail_badges(html, detail_url=card.detail_url),
+        founder_name=founder_name,
+        founder_role=founder_role,
+        founder_quote=_extract_optional_founder_quote(html),
+        product_updates_heading_present=bool(
+            re.search(
+                rf"<h[1-6][^>]*>\s*{re.escape(PRODUCT_UPDATES_HEADING)}\s*</h[1-6]>",
+                html,
+                re.IGNORECASE | re.DOTALL,
+            )
+        ),
+    )
+
+
+def parsed_detail_as_dict(detail: ParsedStartupDetail) -> dict[str, object]:
+    return asdict(detail)
