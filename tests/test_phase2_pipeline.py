@@ -637,6 +637,7 @@ def test_run_pipeline_writes_staged_outputs_from_fixture_fetch(tmp_path: Path) -
     assert summary["detail_page_target_count"] == 2
     assert summary["fetched_detail_page_count"] == 0
     assert summary["parsed_detail_page_count"] == 1
+    assert summary["failed_detail_page_count"] == 0
     assert summary["normalized_row_count"] == 2
     assert summary["visible_sample_row_count"] == 1
     assert summary["validation_status"] == "passed"
@@ -662,14 +663,17 @@ def test_run_pipeline_writes_staged_outputs_from_fixture_fetch(tmp_path: Path) -
     )
     assert detail_scaffolds["detail_page_target_count"] == 2
     assert detail_scaffolds["parsed_detail_page_count"] == 1
+    assert detail_scaffolds["failed_detail_page_count"] == 0
     assert detail_scaffolds["detail_pages"][0]["detail_parse_status"] == "parsed"
     assert detail_scaffolds["detail_pages"][0]["detail_slug"] == "rezi"
     assert detail_scaffolds["detail_pages"][0]["extracted_detail"]["target_audience"] == "Job Seekers"
     assert detail_scaffolds["detail_pages"][1]["detail_parse_status"] == "html_not_supplied"
+    assert detail_scaffolds["detail_pages"][1]["detail_parse_error"] is None
     assert detail_scaffolds["detail_pages"][1]["extracted_detail"] is None
     assert snapshot_manifest["detail_page_target_count"] == 2
     assert snapshot_manifest["fetched_detail_page_count"] == 0
     assert snapshot_manifest["parsed_detail_page_count"] == 1
+    assert snapshot_manifest["failed_detail_page_count"] == 0
     assert snapshot_manifest["per_source_outputs"][0]["detail_scaffold_path"].endswith(
         "data/source_pipeline/interim/category--ai.detail_pages.json"
     )
@@ -747,6 +751,7 @@ def test_run_pipeline_fetches_and_stages_detail_pages_when_requested(tmp_path: P
     assert summary["detail_page_target_count"] == 2
     assert summary["fetched_detail_page_count"] == 1
     assert summary["parsed_detail_page_count"] == 1
+    assert summary["failed_detail_page_count"] == 0
     assert summary["validation_status"] == "passed"
 
     detail_scaffolds = json.loads(
@@ -760,10 +765,12 @@ def test_run_pipeline_fetches_and_stages_detail_pages_when_requested(tmp_path: P
     assert (pipeline_paths.raw_dir / "details" / "category--ai--detail--rezi.json").exists()
     assert detail_scaffolds["fetched_detail_page_count"] == 1
     assert detail_scaffolds["parsed_detail_page_count"] == 1
+    assert detail_scaffolds["failed_detail_page_count"] == 0
     assert detail_scaffolds["detail_pages"][0]["detail_parse_status"] == "parsed"
     assert detail_scaffolds["detail_pages"][0]["detail_html_source"] == "fetched_html"
     assert detail_scaffolds["detail_pages"][0]["detail_fetch_source_id"] == "category--ai--detail--rezi"
     assert detail_scaffolds["detail_pages"][0]["detail_fetch_cached"] is False
+    assert detail_scaffolds["detail_pages"][0]["detail_parse_error"] is None
     assert detail_scaffolds["detail_pages"][0]["detail_raw_html_path"].endswith(
         "data/source_pipeline/raw/details/category--ai--detail--rezi.html"
     )
@@ -773,4 +780,82 @@ def test_run_pipeline_fetches_and_stages_detail_pages_when_requested(tmp_path: P
     assert snapshot_manifest["detail_page_target_count"] == 2
     assert snapshot_manifest["fetched_detail_page_count"] == 1
     assert snapshot_manifest["parsed_detail_page_count"] == 1
+    assert snapshot_manifest["failed_detail_page_count"] == 0
     assert snapshot_manifest["per_source_outputs"][0]["fetched_detail_page_count"] == 1
+
+
+def test_run_pipeline_records_sparse_detail_parse_failures_without_aborting(tmp_path: Path) -> None:
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    data_dir = workspace / "data"
+    data_dir.mkdir()
+
+    fetch_paths = FetchPaths(
+        root=workspace,
+        data_dir=data_dir,
+        cache_dir=data_dir / "fetch_cache",
+        failure_snapshot_dir=data_dir / "fetch_failures",
+    )
+    pipeline_paths = PipelinePaths(
+        root=workspace,
+        pipeline_dir=data_dir / "source_pipeline",
+        raw_dir=data_dir / "source_pipeline" / "raw",
+        interim_dir=data_dir / "source_pipeline" / "interim",
+        processed_dir=data_dir / "source_pipeline" / "processed",
+        snapshots_dir=data_dir / "source_pipeline" / "snapshots",
+    )
+    source = category_source()
+
+    def fake_fetcher(
+        selected_source: SourceConfig,
+        *,
+        paths: FetchPaths,
+        force: bool = False,
+        last_live_fetch_at: float | None = None,
+    ) -> tuple[FetchResult, float | None]:
+        return (
+            write_fetch_fixture_result(
+                selected_source,
+                paths=paths,
+                html_fixture=read_fixture("category_ai_fixture.html"),
+            ),
+            last_live_fetch_at,
+        )
+
+    def detail_page_html_resolver(card: ParsedStartupCard) -> str | None:
+        if card.detail_url.endswith("/rezi"):
+            return read_fixture("startup_post_bridge_sparse_detail_fixture.html")
+        return None
+
+    summary = run_pipeline(
+        source_registry=[source],
+        fetch_paths=fetch_paths,
+        pipeline_paths=pipeline_paths,
+        fetcher=fake_fetcher,
+        detail_page_html_resolver=detail_page_html_resolver,
+    )
+
+    detail_scaffolds = json.loads(
+        (pipeline_paths.interim_dir / f"{source.source_id}.detail_pages.json").read_text(encoding="utf-8")
+    )
+    snapshot_manifest = json.loads(
+        (pipeline_paths.snapshots_dir / "run_manifest.json").read_text(encoding="utf-8")
+    )
+
+    assert summary["selected_source_count"] == 1
+    assert summary["detail_page_target_count"] == 2
+    assert summary["fetched_detail_page_count"] == 0
+    assert summary["parsed_detail_page_count"] == 0
+    assert summary["failed_detail_page_count"] == 1
+    assert summary["validation_status"] == "passed"
+    assert detail_scaffolds["detail_page_target_count"] == 2
+    assert detail_scaffolds["parsed_detail_page_count"] == 0
+    assert detail_scaffolds["failed_detail_page_count"] == 1
+    assert detail_scaffolds["detail_pages"][0]["detail_parse_status"] == "parse_failed"
+    assert "Problem solved" in detail_scaffolds["detail_pages"][0]["detail_parse_error"]
+    assert detail_scaffolds["detail_pages"][0]["detail_html_source"] == "provided_html"
+    assert detail_scaffolds["detail_pages"][0]["extracted_detail"] is None
+    assert detail_scaffolds["detail_pages"][1]["detail_parse_status"] == "html_not_supplied"
+    assert detail_scaffolds["detail_pages"][1]["detail_parse_error"] is None
+    assert snapshot_manifest["failed_detail_page_count"] == 1
+    assert snapshot_manifest["per_source_outputs"][0]["failed_detail_page_count"] == 1

@@ -117,6 +117,7 @@ def _build_detail_page_scaffold_payload(
     detail_pages: list[dict[str, object]] = []
     fetched_detail_page_count = 0
     parsed_detail_page_count = 0
+    failed_detail_page_count = 0
 
     for card in parsed_cards:
         detail_record: dict[str, object] = {
@@ -132,6 +133,7 @@ def _build_detail_page_scaffold_payload(
             "detail_fetch_cached": None,
             "detail_raw_html_path": None,
             "detail_raw_meta_path": None,
+            "detail_parse_error": None,
             "extracted_detail": None,
         }
         resolver_was_consulted = detail_page_html_resolver is not None
@@ -170,10 +172,16 @@ def _build_detail_page_scaffold_payload(
                 fetched_detail_page_count += 1
 
         if detail_html is not None:
-            parsed_detail = parse_startup_detail_html(card, detail_html)
-            detail_record["detail_parse_status"] = "parsed"
-            detail_record["extracted_detail"] = parsed_detail_as_dict(parsed_detail)
-            parsed_detail_page_count += 1
+            try:
+                parsed_detail = parse_startup_detail_html(card, detail_html)
+            except ValueError as exc:
+                detail_record["detail_parse_status"] = "parse_failed"
+                detail_record["detail_parse_error"] = str(exc)
+                failed_detail_page_count += 1
+            else:
+                detail_record["detail_parse_status"] = "parsed"
+                detail_record["extracted_detail"] = parsed_detail_as_dict(parsed_detail)
+                parsed_detail_page_count += 1
         elif detail_record["detail_parse_status"] == "not_requested" and resolver_was_consulted:
             detail_record["detail_parse_status"] = "html_not_supplied"
             detail_record["detail_html_source"] = "resolver_missing"
@@ -184,6 +192,7 @@ def _build_detail_page_scaffold_payload(
         "detail_page_target_count": len(detail_pages),
         "fetched_detail_page_count": fetched_detail_page_count,
         "parsed_detail_page_count": parsed_detail_page_count,
+        "failed_detail_page_count": failed_detail_page_count,
         "detail_pages": detail_pages,
     }, last_live_fetch_at
 
@@ -236,6 +245,7 @@ def _build_snapshot_manifest(
         "detail_page_target_count": sum(int(source["detail_page_target_count"]) for source in per_source_outputs),
         "fetched_detail_page_count": sum(int(source["fetched_detail_page_count"]) for source in per_source_outputs),
         "parsed_detail_page_count": sum(int(source["parsed_detail_page_count"]) for source in per_source_outputs),
+        "failed_detail_page_count": sum(int(source["failed_detail_page_count"]) for source in per_source_outputs),
         "selected_sources": [
             {
                 "source_id": source.source_id,
@@ -351,6 +361,7 @@ def run_pipeline(
                 "detail_page_target_count": detail_scaffold_payload["detail_page_target_count"],
                 "fetched_detail_page_count": detail_scaffold_payload["fetched_detail_page_count"],
                 "parsed_detail_page_count": detail_scaffold_payload["parsed_detail_page_count"],
+                "failed_detail_page_count": detail_scaffold_payload["failed_detail_page_count"],
             }
         )
 
@@ -390,6 +401,7 @@ def run_pipeline(
         "detail_page_target_count": sum(int(source["detail_page_target_count"]) for source in per_source_outputs),
         "fetched_detail_page_count": sum(int(source["fetched_detail_page_count"]) for source in per_source_outputs),
         "parsed_detail_page_count": sum(int(source["parsed_detail_page_count"]) for source in per_source_outputs),
+        "failed_detail_page_count": sum(int(source["failed_detail_page_count"]) for source in per_source_outputs),
         "normalized_row_count": len(deduped_rows),
         "visible_sample_row_count": len(visible_rows),
         "fully_mapped_visible_row_count": heuristic_override_report["fully_mapped_visible_row_count"],
