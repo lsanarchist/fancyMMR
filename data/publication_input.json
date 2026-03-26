@@ -1,0 +1,17 @@
+{
+  "dataset_kind": "seed_visible_sample",
+  "dataset_path": "data/visible_sample.csv",
+  "expected_source_count": null,
+  "promoted_at": null,
+  "promoted_from_visible_rows_path": null,
+  "promoted_dataset_sha256": null,
+  "promotion_gate_summary": null,
+  "schema_version": 1,
+  "selected_source_count": null,
+  "source_pipeline_duplicates_report_path": null,
+  "source_pipeline_override_report_path": null,
+  "source_label": "Checked-in seed visible-sample dataset",
+  "source_pipeline_run_manifest_path": null,
+  "source_pipeline_validation_report_path": null,
+  "staged_visible_rows_sha256": null
+}

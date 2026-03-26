@@ -4,6 +4,8 @@ Use this checklist before drafting or publishing a tagged GitHub release.
 
 ## Deterministic build status
 - [ ] Run `python -m pytest`.
+- [ ] If you intend to publish a live-source-backed bundle, run `python src/promote_live_bundle.py --dry-run` first and confirm the promotion gates stay clean for a full staged run across `data/public_source_pages.csv` rather than a `--limit 1` smoke.
+- [ ] If you intentionally want the published bundle to switch to the staged live-source dataset, run `python src/promote_live_bundle.py` before the rebuild commands below.
 - [ ] Run `python src/build_artifacts.py`.
 - [ ] Run `python src/build_site.py`.
 - [ ] Optionally run `python src/build_all.py --limit 1` if you want the release notes to mention the latest staged live-source smoke.
@@ -17,7 +19,7 @@ Use this checklist before drafting or publishing a tagged GitHub release.
 - [ ] Re-read `README.md` and confirm the positioning still matches the story you want to publish.
 - [ ] Re-read `docs/methodology.md` and confirm the current pipeline status section still matches repo reality.
 - [ ] Re-check the caveat that this is a **visible public sample**, not a full platform export.
-- [ ] Spot-check a few `source_url` links from `data/visible_sample.csv`.
+- [ ] Spot-check a few `source_url` links from the dataset currently named in `data/publication_input.json`.
 
 ## Legal / attribution
 - [ ] Confirm `LICENSE-CODE-MIT.txt` has the copyright holder and year you want for original code/docs.

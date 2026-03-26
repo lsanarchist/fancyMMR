@@ -61,11 +61,12 @@
 <ul><li><code>biz_model</code></li><li><code>gtm_model</code></li></ul>
 <p>For the staged live source pipeline, deterministic override maps and alias rules live under <code>data/source_pipeline/overrides/</code>; see <code>docs/source_pipeline_overrides.md</code>.</p>
 <h2>Current pipeline shape</h2>
-<ul><li><code>python src/build_all.py --limit 1</code> fetches and stages live public-page outputs under <code>data/source_pipeline/</code> for smoke verification</li><li><code>python src/build_artifacts.py</code> rebuilds the currently published analytics bundle from the checked-in <code>data/visible_sample.csv</code> seed dataset</li><li><code>python src/build_site.py</code> turns the published analytics bundle into the static <code>site/</code> output that GitHub Pages serves without a runtime server</li><li><code>.github/workflows/build.yml</code> and <code>.github/workflows/pages.yml</code> pin Python 3.12 and run the deterministic local publication path on GitHub-hosted runners</li></ul>
+<ul><li><code>python src/build_all.py --limit 1</code> fetches and stages live public-page outputs under <code>data/source_pipeline/</code> for smoke verification</li><li><code>data/publication_input.json</code> is the publication-source contract for the analytics/site build; it currently points at the checked-in seed dataset and can later point at a promoted live-source dataset</li><li><code>python src/promote_live_bundle.py</code> promotes <code>data/source_pipeline/processed/visible_sample_rows.csv</code> into <code>data/promoted_visible_sample.csv</code> and updates <code>data/publication_input.json</code> only when the staged validation is <code>passed</code>, unmapped visible rows are <code>0</code>, suspicious duplicate groups are <code>0</code>, and the staged run covers every source currently listed in <code>data/public_source_pages.csv</code></li><li><code>python src/build_artifacts.py</code> rebuilds the currently active published analytics bundle from the dataset selected by <code>data/publication_input.json</code></li><li><code>python src/build_site.py</code> turns the published analytics bundle into the static <code>site/</code> output that GitHub Pages serves without a runtime server</li><li><code>.github/workflows/build.yml</code> and <code>.github/workflows/pages.yml</code> pin Python 3.12 and run the deterministic local publication path on GitHub-hosted runners</li></ul>
 <h2>Validation and provenance artifacts</h2>
 <p>The published bundle keeps machine-readable validation and provenance outputs alongside the charts and summary tables:</p>
 <ul><li><code>data/validation_report.json</code></li><li><code>data/source_coverage_report.json</code></li><li><code>data/pipeline_manifest.json</code></li></ul>
 <p>Those files describe the current seed-bundle validation status, the visible source-page coverage, and the generated outputs that belong to the current publication build.</p>
+<p>The published bundle now also keeps <code>data/publication_input.json</code> alongside those generated outputs so the active dataset path and any live-source promotion provenance stay explicit.</p>
 <h2>Publication and licensing shape</h2>
 <ul><li><code>LICENSE-CODE-MIT.txt</code> covers the original code and original documentation in this repository</li><li><code>DATA-NOTICE.md</code> remains the publication notice for the source-derived data bundle and generated artifacts such as CSV/JSON outputs, charts, and the static site</li><li>The repository intentionally keeps those scopes separate instead of presenting the mixed-content bundle as one blanket open-source data license</li><li>The repository intentionally does <strong>not</strong> ship a blanket root <code>LICENSE</code> file, because a single detected license badge on GitHub would overstate the rights granted for the mixed code/data bundle</li><li>Any public republication should preserve the visible-sample framing, the methodology caveats, and the data notice together</li></ul>
 <h2>Limitations</h2>
@@ -75,9 +76,11 @@
 <pre><code>python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+python src/promote_live_bundle.py --dry-run
 python src/build_artifacts.py
 python src/build_site.py
-python src/build_all.py --limit 1</code></pre></div>
+python src/build_all.py --limit 1</code></pre>
+<p><code>python src/build_all.py --limit 1</code> remains a smoke check; the promotion command is intentionally gated so that partial source-registry runs cannot become the published dataset by accident.</p></div>
 </section>
 
 <section class="section-card">

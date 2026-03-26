@@ -55,6 +55,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert (site_root / "assets" / "charts" / "category_share_map.png").exists()
     assert (site_root / "assets" / "charts" / "category_share_map.svg").exists()
     assert (site_root / "data" / "metrics.json").exists()
+    assert (site_root / "data" / "publication_input.json").exists()
     assert (site_root / "data" / "validation_report.json").exists()
     assert (site_root / "data" / "source_coverage_report.json").exists()
     assert (site_root / "data" / "pipeline_manifest.json").exists()
@@ -78,6 +79,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "license-code-mit.txt" in methodology_html.lower()
 
     assert "metrics.json" in data_html
+    assert "publication_input.json" in data_html
     assert "validation_report.json" in data_html
     assert "source_coverage_report.json" in data_html
     assert "pipeline_manifest.json" in data_html

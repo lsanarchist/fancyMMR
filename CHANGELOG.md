@@ -3,6 +3,7 @@
 ## Unreleased
 - Added deterministic GitHub Actions rebuild and GitHub Pages deployment workflows for the static `site/` bundle.
 - Added a staged public-source fetch -> parse -> normalize -> validate pipeline under `data/source_pipeline/`, including tracked heuristic overrides and duplicate-review reporting.
+- Added an explicit publication input manifest plus a gated `python src/promote_live_bundle.py` handoff so the published analytics/site bundle can switch from the seed dataset to promoted staged live-source rows only after a full registry-backed staged pass clears the promotion gates.
 - Finalized the publication contract: `LICENSE-CODE-MIT.txt` covers original code/docs, `DATA-NOTICE.md` stays attached to the source-derived data bundle and generated artifacts, and the repo intentionally does not publish a blanket root `LICENSE` file.
 
 ## v1.0.0

@@ -27,7 +27,9 @@ For the staged live source pipeline, deterministic override maps and alias rules
 ## Current pipeline shape
 
 - `python src/build_all.py --limit 1` fetches and stages live public-page outputs under `data/source_pipeline/` for smoke verification
-- `python src/build_artifacts.py` rebuilds the currently published analytics bundle from the checked-in `data/visible_sample.csv` seed dataset
+- `data/publication_input.json` is the publication-source contract for the analytics/site build; it currently points at the checked-in seed dataset and can later point at a promoted live-source dataset
+- `python src/promote_live_bundle.py` promotes `data/source_pipeline/processed/visible_sample_rows.csv` into `data/promoted_visible_sample.csv` and updates `data/publication_input.json` only when the staged validation is `passed`, unmapped visible rows are `0`, suspicious duplicate groups are `0`, and the staged run covers every source currently listed in `data/public_source_pages.csv`
+- `python src/build_artifacts.py` rebuilds the currently active published analytics bundle from the dataset selected by `data/publication_input.json`
 - `python src/build_site.py` turns the published analytics bundle into the static `site/` output that GitHub Pages serves without a runtime server
 - `.github/workflows/build.yml` and `.github/workflows/pages.yml` pin Python 3.12 and run the deterministic local publication path on GitHub-hosted runners
 
@@ -40,6 +42,8 @@ The published bundle keeps machine-readable validation and provenance outputs al
 - `data/pipeline_manifest.json`
 
 Those files describe the current seed-bundle validation status, the visible source-page coverage, and the generated outputs that belong to the current publication build.
+
+The published bundle now also keeps `data/publication_input.json` alongside those generated outputs so the active dataset path and any live-source promotion provenance stay explicit.
 
 ## Publication and licensing shape
 
@@ -65,7 +69,10 @@ From the repository root:
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+python src/promote_live_bundle.py --dry-run
 python src/build_artifacts.py
 python src/build_site.py
 python src/build_all.py --limit 1
 ```
+
+`python src/build_all.py --limit 1` remains a smoke check; the promotion command is intentionally gated so that partial source-registry runs cannot become the published dataset by accident.

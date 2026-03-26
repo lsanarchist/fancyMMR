@@ -25,6 +25,7 @@ NORMALIZED_ROW_FIELDS = [
     "mrr_display",
     "total_revenue",
     "total_revenue_display",
+    "total_revenue_label",
     "revenue_band",
     "included_in_visible_sample",
     "source_url",
@@ -61,6 +62,7 @@ VISIBLE_SAMPLE_ROW_FIELDS = [
     "heuristic_override_source",
     "mrr",
     "total_revenue",
+    "total_revenue_label",
     "scraped_at",
 ]
 
@@ -223,6 +225,7 @@ def normalize_parsed_cards(cards: list[ParsedStartupCard], *, scraped_at: str) -
                 "mrr_display": card.mrr_text,
                 "total_revenue": total_revenue,
                 "total_revenue_display": card.total_revenue_text,
+                "total_revenue_label": card.total_revenue_label,
                 "revenue_band": revenue_band_for_value(revenue_30d),
                 "included_in_visible_sample": included,
                 "source_url": card.source_url,

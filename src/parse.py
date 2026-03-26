@@ -6,7 +6,11 @@ from html.parser import HTMLParser
 from .config import SourceConfig
 
 
-EXPECTED_METRIC_LABELS = ("Revenue (30d)", "MRR", "Total")
+METRIC_LABEL_ALIASES = {
+    "revenue_30d": ("Revenue (30d)",),
+    "mrr": ("MRR",),
+    "total_revenue": ("Total", "Total revenue", "GMV"),
+}
 STARTUP_CARD_CLASS_TOKENS = ("flex", "flex-col", "rounded-lg")
 TRUSTMRR_BASE_URL = "https://trustmrr.com"
 
@@ -30,6 +34,7 @@ class ParsedStartupCard:
     revenue_30d_text: str
     mrr_text: str
     total_revenue_text: str
+    total_revenue_label: str = "Total"
     badge: str | None = None
 
 
@@ -130,24 +135,28 @@ class _StartupCardHTMLParser(HTMLParser):
 
 
 def _finalize_card(builder: _CardBuilder) -> ParsedStartupCard:
-    metrics: dict[str, str] = {}
+    metrics: dict[str, tuple[str, str]] = {}
     description_parts: list[str] = []
     index = 0
     while index < len(builder.paragraph_blocks):
         block = builder.paragraph_blocks[index]
-        if block in EXPECTED_METRIC_LABELS:
+        canonical_metric_key = _metric_key_for_label(block)
+        if canonical_metric_key is not None:
             if index + 1 >= len(builder.paragraph_blocks):
                 raise ValueError(
                     f"Missing metric value after {block!r} for {builder.detail_path} on {builder.source.url}"
                 )
-            metrics[block] = builder.paragraph_blocks[index + 1]
+            metrics[canonical_metric_key] = (block, builder.paragraph_blocks[index + 1])
             index += 2
             continue
         description_parts.append(block)
         index += 1
 
-    missing_metric_labels = [label for label in EXPECTED_METRIC_LABELS if label not in metrics]
-    if missing_metric_labels:
+    missing_metric_keys = [
+        metric_key for metric_key in METRIC_LABEL_ALIASES if metric_key not in metrics
+    ]
+    if missing_metric_keys:
+        missing_metric_labels = [METRIC_LABEL_ALIASES[key][0] for key in missing_metric_keys]
         raise ValueError(
             f"Missing metric labels {missing_metric_labels!r} for {builder.detail_path} on {builder.source.url}"
         )
@@ -167,11 +176,19 @@ def _finalize_card(builder: _CardBuilder) -> ParsedStartupCard:
         detail_url=f"{TRUSTMRR_BASE_URL}{builder.detail_path}",
         name=name,
         description=" ".join(description_parts).strip(),
-        revenue_30d_text=metrics["Revenue (30d)"],
-        mrr_text=metrics["MRR"],
-        total_revenue_text=metrics["Total"],
+        revenue_30d_text=metrics["revenue_30d"][1],
+        mrr_text=metrics["mrr"][1],
+        total_revenue_text=metrics["total_revenue"][1],
+        total_revenue_label=metrics["total_revenue"][0],
         badge=builder.badge_text,
     )
+
+
+def _metric_key_for_label(label: str) -> str | None:
+    for metric_key, aliases in METRIC_LABEL_ALIASES.items():
+        if label in aliases:
+            return metric_key
+    return None
 
 
 def parse_source_html(source: SourceConfig, html: str) -> list[ParsedStartupCard]:

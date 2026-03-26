@@ -93,9 +93,14 @@
       "sha256": "7342497968d1cb80780f25ecdcb8bbc08cf114dfb95fb082417bfe81c63ff5cd"
     },
     {
-      "bytes": 5170,
+      "bytes": 604,
+      "path": "data/publication_input.json",
+      "sha256": "eb5f785a4ac14f54c99819463112cce468cd92e6e892d75227b19b704c0e6f76"
+    },
+    {
+      "bytes": 5958,
       "path": "README.md",
-      "sha256": "0ab2bb2ed3b0e835a16a9c4d2407aa9570b8e156d7116d170b5712cc7154a389"
+      "sha256": "3870af078ad459d762a84e4cafa41c98a432f56b7ed3b0ef9a7400369f90fb52"
     }
   ],
   "input_dataset": {
@@ -119,6 +124,25 @@
     "total_visible_revenue_usd": 24295400
   },
   "project": "fancyMMR / TrustMRR visible-sample research pipeline",
+  "promotion_command": "python src/promote_live_bundle.py",
+  "publication_input": {
+    "dataset_kind": "seed_visible_sample",
+    "dataset_path": "data/visible_sample.csv",
+    "expected_source_count": null,
+    "path": "data/publication_input.json",
+    "promoted_at": null,
+    "promoted_dataset_sha256": null,
+    "promoted_from_visible_rows_path": null,
+    "promotion_gate_summary": null,
+    "selected_source_count": null,
+    "source_label": "Checked-in seed visible-sample dataset",
+    "source_pipeline_duplicates_report_path": null,
+    "source_pipeline_override_report_path": null,
+    "source_pipeline_run_manifest_path": null,
+    "source_pipeline_validation_report_path": null,
+    "staged_visible_rows_sha256": null,
+    "uses_default_seed_dataset": true
+  },
   "python_version_floor": "3.12",
   "source_page_count": 30,
   "validation": {

@@ -95,10 +95,11 @@ def fallback_label_from_slug(slug: str) -> str:
     return slug.replace("-", " ").replace("_", " ").title()
 
 
-def load_source_label_map() -> dict[str, str]:
-    if not SOURCE_COVERAGE_REPORT_JSON.exists():
+def load_source_label_map(source_coverage_report_json: Path | None = None) -> dict[str, str]:
+    coverage_report_path = SOURCE_COVERAGE_REPORT_JSON if source_coverage_report_json is None else source_coverage_report_json
+    if not coverage_report_path.exists():
         return {}
-    coverage_report = json.loads(SOURCE_COVERAGE_REPORT_JSON.read_text(encoding="utf-8"))
+    coverage_report = json.loads(coverage_report_path.read_text(encoding="utf-8"))
     label_map: dict[str, str] = {}
     for row in coverage_report.get("source_pages", []):
         categories = row.get("categories") or []
@@ -107,9 +108,14 @@ def load_source_label_map() -> dict[str, str]:
     return label_map
 
 
-def load_source_registry() -> list[SourceConfig]:
-    label_map = load_source_label_map()
-    with PUBLIC_SOURCE_PAGES_CSV.open(encoding="utf-8", newline="") as handle:
+def load_source_registry(
+    *,
+    public_source_pages_csv: Path | None = None,
+    source_coverage_report_json: Path | None = None,
+) -> list[SourceConfig]:
+    source_pages_path = PUBLIC_SOURCE_PAGES_CSV if public_source_pages_csv is None else public_source_pages_csv
+    label_map = load_source_label_map(source_coverage_report_json)
+    with source_pages_path.open(encoding="utf-8", newline="") as handle:
         urls = sorted({row["source_url"].strip() for row in csv.DictReader(handle) if row.get("source_url")})
 
     registry = [

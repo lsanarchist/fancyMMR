@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 from .config import BUILD_PATHS, REVENUE_BINS, REVENUE_LABELS
+from .publication import read_publication_input
 from .schemas import MetricsSnapshot, SummaryArtifacts
 from .validation import ensure_validation_passes, validate_visible_sample
 
@@ -38,7 +39,8 @@ def gini_coefficient(values) -> float:
 
 
 def load_visible_sample() -> pd.DataFrame:
-    df = pd.read_csv(BUILD_PATHS.data_dir / "visible_sample.csv")
+    publication_input = read_publication_input()
+    df = pd.read_csv(publication_input.dataset_path)
     ensure_validation_passes(validate_visible_sample(df))
     df["revenue_band"] = pd.cut(
         df["revenue_30d"],

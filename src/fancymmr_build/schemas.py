@@ -13,6 +13,26 @@ class BuildPaths:
     charts_dir: Path
 
 
+@dataclass(frozen=True)
+class PublicationInput:
+    manifest_path: Path
+    dataset_path: Path
+    dataset_path_str: str
+    dataset_kind: str
+    source_label: str
+    expected_source_count: int | None
+    selected_source_count: int | None
+    promoted_from_visible_rows_path: str | None
+    source_pipeline_validation_report_path: str | None
+    source_pipeline_override_report_path: str | None
+    source_pipeline_duplicates_report_path: str | None
+    source_pipeline_run_manifest_path: str | None
+    promoted_at: str | None
+    staged_visible_rows_sha256: str | None
+    promoted_dataset_sha256: str | None
+    promotion_gate_summary: dict[str, object] | None
+
+
 @dataclass
 class SummaryArtifacts:
     visible_sample: pd.DataFrame
@@ -39,4 +59,3 @@ class MetricsSnapshot:
     dominant_category: str
     dominant_category_revenue_share: float
     dominant_category_startup_share: float
-

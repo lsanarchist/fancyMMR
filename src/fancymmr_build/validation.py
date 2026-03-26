@@ -9,13 +9,16 @@ import pandas as pd
 from .config import (
     BUILD_COMMAND,
     BUILD_PATHS,
+    DEFAULT_PUBLICATION_DATASET,
     GENERATED_OUTPUTS,
     MANIFEST_OUTPUT,
     MIN_REVENUE_30D,
+    PROMOTION_COMMAND,
     PROJECT_NAME,
     PYTHON_VERSION_FLOOR,
     REQUIRED_COLS,
 )
+from .publication import read_publication_input
 from .schemas import MetricsSnapshot, SummaryArtifacts
 
 
@@ -238,13 +241,33 @@ def write_pipeline_manifest(
     validation_report: dict[str, object],
     source_coverage_report: dict[str, object],
 ) -> dict[str, object]:
-    input_path = BUILD_PATHS.data_dir / "visible_sample.csv"
+    publication_input = read_publication_input()
+    input_path = publication_input.dataset_path
     input_columns = list(pd.read_csv(input_path, nrows=0).columns)
     manifest = {
         "project": PROJECT_NAME,
         "build_command": BUILD_COMMAND,
+        "promotion_command": PROMOTION_COMMAND,
         "entrypoint": "src/build_artifacts.py",
         "python_version_floor": PYTHON_VERSION_FLOOR,
+        "publication_input": {
+            "path": publication_input.manifest_path.relative_to(BUILD_PATHS.root).as_posix(),
+            "dataset_kind": publication_input.dataset_kind,
+            "dataset_path": publication_input.dataset_path_str,
+            "source_label": publication_input.source_label,
+            "expected_source_count": publication_input.expected_source_count,
+            "selected_source_count": publication_input.selected_source_count,
+            "promoted_from_visible_rows_path": publication_input.promoted_from_visible_rows_path,
+            "source_pipeline_validation_report_path": publication_input.source_pipeline_validation_report_path,
+            "source_pipeline_override_report_path": publication_input.source_pipeline_override_report_path,
+            "source_pipeline_duplicates_report_path": publication_input.source_pipeline_duplicates_report_path,
+            "source_pipeline_run_manifest_path": publication_input.source_pipeline_run_manifest_path,
+            "promoted_at": publication_input.promoted_at,
+            "staged_visible_rows_sha256": publication_input.staged_visible_rows_sha256,
+            "promoted_dataset_sha256": publication_input.promoted_dataset_sha256,
+            "promotion_gate_summary": publication_input.promotion_gate_summary,
+            "uses_default_seed_dataset": publication_input.dataset_path_str == DEFAULT_PUBLICATION_DATASET,
+        },
         "input_dataset": {
             "path": input_path.relative_to(BUILD_PATHS.root).as_posix(),
             "sha256": _sha256(input_path),

@@ -19,6 +19,7 @@ SITE_DATA_DIR = SITE_DIR / "data"
 
 JSON_EXPORTS = [
     "metrics.json",
+    "publication_input.json",
     "validation_report.json",
     "source_coverage_report.json",
     "pipeline_manifest.json",
@@ -491,6 +492,7 @@ def build_methodology_page(
 
 def build_data_page(
     metrics: dict[str, object],
+    publication_input: dict[str, object],
     validation_report: dict[str, object],
     source_coverage_report: dict[str, object],
     pipeline_manifest: dict[str, object],
@@ -521,6 +523,11 @@ def build_data_page(
 """
         for filename, name, description in [
             ("metrics.json", "Top-line metrics", "Sample size, revenue concentration, and dominant-category snapshots."),
+            (
+                "publication_input.json",
+                "Publication input manifest",
+                "The active published dataset path plus any live-source promotion provenance.",
+            ),
             ("validation_report.json", "Validation report", "Required-column, threshold, duplicate, and warning-level label checks."),
             ("source_coverage_report.json", "Source coverage report", "Per-source-page startup counts, revenue shares, and category coverage."),
             ("pipeline_manifest.json", "Pipeline manifest", "Build command, input dataset hash, and copied-output inventory."),
@@ -567,6 +574,8 @@ def build_data_page(
     )
 
     manifest_note = (
+        f"Publication input: {publication_input['dataset_path']} ({publication_input['dataset_kind']})."
+        f" "
         f"Input dataset hash: {pipeline_manifest['input_dataset']['sha256']}."
         f" Validation status: {status_label(str(validation_report['status']))}."
     )
@@ -1067,6 +1076,7 @@ tbody tr:last-child td {
 
 def write_site_pages() -> None:
     metrics = read_json(DATA_DIR / "metrics.json")
+    publication_input = read_json(DATA_DIR / "publication_input.json")
     validation_report = read_json(DATA_DIR / "validation_report.json")
     source_coverage_report = read_json(DATA_DIR / "source_coverage_report.json")
     pipeline_manifest = read_json(DATA_DIR / "pipeline_manifest.json")
@@ -1080,6 +1090,7 @@ def write_site_pages() -> None:
         "methodology.html": build_methodology_page(methodology_markdown, data_notice_markdown, validation_report),
         "data.html": build_data_page(
             metrics,
+            publication_input,
             validation_report,
             source_coverage_report,
             pipeline_manifest,

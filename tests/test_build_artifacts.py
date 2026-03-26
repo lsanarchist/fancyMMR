@@ -20,6 +20,7 @@ from fancymmr_build.schemas import MetricsSnapshot, SummaryArtifacts
 from fancymmr_build.validation import ensure_validation_passes, validate_visible_sample
 
 EXPECTED_METRICS = json.loads((ROOT / "data" / "metrics.json").read_text(encoding="utf-8"))
+EXPECTED_PUBLICATION_INPUT = json.loads((ROOT / "data" / "publication_input.json").read_text(encoding="utf-8"))
 EXPECTED_SOURCE_PAGE_COUNT = pd.read_csv(ROOT / "data" / "visible_sample.csv")["source_url"].nunique()
 EXPECTED_INPUT_COLUMNS = list(pd.read_csv(ROOT / "data" / "visible_sample.csv", nrows=0).columns)
 EXPECTED_CHARTS = {
@@ -65,6 +66,7 @@ def svg_hashes(workspace: Path) -> dict[str, str]:
 
 def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     workspace = prepare_workspace(tmp_path)
+    (workspace / "data" / "publication_input.json").unlink()
 
     run_build(workspace)
 
@@ -78,6 +80,9 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert ".github/workflows/pages.yml" in readme
     assert "LICENSE-CODE-MIT.txt" in readme
     assert "DATA-NOTICE.md" in readme
+    assert "data/publication_input.json" in readme
+    assert "python src/promote_live_bundle.py" in readme
+    assert "every source in `data/public_source_pages.csv`" in readme
     assert "does **not** collapse those scopes into one top-level detected `LICENSE` file" in readme
 
     actual_charts = {path.name for path in (workspace / "charts").iterdir()}
@@ -86,17 +91,22 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     built_metrics = json.loads((workspace / "data" / "metrics.json").read_text(encoding="utf-8"))
     assert built_metrics == EXPECTED_METRICS
 
+    publication_input = json.loads((workspace / "data" / "publication_input.json").read_text(encoding="utf-8"))
     validation_report = json.loads((workspace / "data" / "validation_report.json").read_text(encoding="utf-8"))
     source_coverage_report = json.loads(
         (workspace / "data" / "source_coverage_report.json").read_text(encoding="utf-8")
     )
     pipeline_manifest = json.loads((workspace / "data" / "pipeline_manifest.json").read_text(encoding="utf-8"))
 
+    assert publication_input == EXPECTED_PUBLICATION_INPUT
     assert validation_report["status"] in {"passed", "passed_with_warnings"}
     assert validation_report["sample_row_count"] == EXPECTED_METRICS["sample_size"]
     assert source_coverage_report["source_page_count"] == EXPECTED_SOURCE_PAGE_COUNT
     assert source_coverage_report["total_visible_startups"] == EXPECTED_METRICS["sample_size"]
-    assert pipeline_manifest["input_dataset"]["path"] == "data/visible_sample.csv"
+    assert pipeline_manifest["publication_input"]["path"] == "data/publication_input.json"
+    assert pipeline_manifest["publication_input"]["dataset_kind"] == EXPECTED_PUBLICATION_INPUT["dataset_kind"]
+    assert pipeline_manifest["publication_input"]["dataset_path"] == EXPECTED_PUBLICATION_INPUT["dataset_path"]
+    assert pipeline_manifest["input_dataset"]["path"] == EXPECTED_PUBLICATION_INPUT["dataset_path"]
     assert pipeline_manifest["input_dataset"]["columns"] == EXPECTED_INPUT_COLUMNS
     assert pipeline_manifest["validation"]["status"] == validation_report["status"]
     assert any(
@@ -104,6 +114,9 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     )
     assert any(
         artifact["path"] == "data/source_coverage_report.json" for artifact in pipeline_manifest["generated_outputs"]
+    )
+    assert any(
+        artifact["path"] == "data/publication_input.json" for artifact in pipeline_manifest["generated_outputs"]
     )
     assert any(artifact["path"] == "README.md" for artifact in pipeline_manifest["generated_outputs"])
 

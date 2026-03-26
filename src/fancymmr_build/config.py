@@ -14,11 +14,15 @@ BUILD_PATHS = BuildPaths(
 
 PROJECT_NAME = "fancyMMR / TrustMRR visible-sample research pipeline"
 BUILD_COMMAND = "python src/build_artifacts.py"
+PROMOTION_COMMAND = "python src/promote_live_bundle.py"
 PYTHON_VERSION_FLOOR = "3.12"
 REQUIRED_COLS = ["name", "category", "revenue_30d", "biz_model", "gtm_model", "source_url"]
 MIN_REVENUE_30D = 5000
 REVENUE_BINS = [MIN_REVENUE_30D, 10000, 50000, 100000, 500000, 1000000, float("inf")]
 REVENUE_LABELS = ["$5k–$10k", "$10k–$50k", "$50k–$100k", "$100k–$500k", "$500k–$1M", "$1M+"]
+PUBLICATION_INPUT_MANIFEST = "data/publication_input.json"
+DEFAULT_PUBLICATION_DATASET = "data/visible_sample.csv"
+PROMOTED_PUBLICATION_DATASET = "data/promoted_visible_sample.csv"
 
 CHART_STEMS = [
     "category_share_map",
@@ -45,6 +49,7 @@ GENERATED_OUTPUTS = SUMMARY_OUTPUTS + REPORT_OUTPUTS + [
     for stem in CHART_STEMS
     for output in (f"charts/{stem}.png", f"charts/{stem}.svg")
 ] + [
+    PUBLICATION_INPUT_MANIFEST,
     "README.md",
 ]
 

@@ -36,6 +36,8 @@ This directory contains the processed visible sample used in the charts and summ
 - `public_source_pages.csv` — unique public source pages referenced by the visible sample.
 
 - `metrics.json` — top-line metrics used in the README.
+- `publication_input.json` — tracked publication-source manifest. It records which dataset currently drives `python src/build_artifacts.py` and `python src/build_site.py`, plus any live-source promotion provenance.
+- `promoted_visible_sample.csv` — optional live-source-backed publication dataset written by `python src/promote_live_bundle.py` only after a staged run passes validation, maps all visible rows, reports zero suspicious duplicate groups, and covers every source in `public_source_pages.csv`.
 
 ## Important scope note
 

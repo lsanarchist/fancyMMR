@@ -2,10 +2,22 @@ from __future__ import annotations
 
 from .aggregate import pct, usd_short
 from .config import BUILD_PATHS
+from .publication import read_publication_input
 from .schemas import MetricsSnapshot
 
 
 def build_readme(metrics: MetricsSnapshot) -> str:
+    publication_input = read_publication_input()
+    publication_dataset_path = publication_input.dataset_path.relative_to(BUILD_PATHS.root).as_posix()
+    if publication_input.dataset_kind == "seed_visible_sample":
+        promotion_status = (
+            "The repo still publishes the checked-in seed bundle by default until the promotion command "
+            "is run deliberately after a full staged source-registry pass."
+        )
+    else:
+        promotion_status = (
+            f"The repo is currently publishing a promoted live bundle via `{publication_dataset_path}`."
+        )
     return f"""# TrustMRR visible-sample research
 
 Independent, GitHub-ready packaging of a **visible public sample** of startups with `Revenue (30d) >= $5,000`.
@@ -62,18 +74,21 @@ Independent, GitHub-ready packaging of a **visible public sample** of startups w
 │   ├── test_fetch.py
 │   ├── test_phase2_pipeline.py
 │   ├── test_publication_docs.py
+│   ├── test_promote_live_bundle.py
 │   └── test_workflows.py
 ├── pyproject.toml
 ├── src/
 │   ├── build_site.py
 │   ├── config.py
 │   ├── fetch.py
+│   ├── promote_live_bundle.py
 │   ├── site_builder.py
 │   ├── build_artifacts.py
 │   └── fancymmr_build/
 │       ├── aggregate.py
 │       ├── charts.py
 │       ├── config.py
+│       ├── publication.py
 │       ├── readme_builder.py
 │       ├── schemas.py
 │       └── validation.py
@@ -90,9 +105,10 @@ This repository is based on a **source-derived visible sample**, not a full plat
 
 ## Pipeline status
 
-- `python src/build_artifacts.py` and `python src/build_site.py` currently publish the checked-in seed bundle from `data/visible_sample.csv`
+- `data/publication_input.json` is the publication-source contract; it currently points at `{publication_dataset_path}` as the active published dataset
 - `python src/build_all.py --limit 1` is the staged live-source smoke path; it writes repo-local outputs under `data/source_pipeline/` without mutating the published bundle yet
-- Promoting the staged live outputs into the published analytics/site bundle is still future work, so the repo currently ships both a stable publication bundle and a separately verified source-facing pipeline
+- `python src/promote_live_bundle.py` projects `data/source_pipeline/processed/visible_sample_rows.csv` into `data/promoted_visible_sample.csv` and updates `data/publication_input.json` only after the staged validation is `passed`, unmapped visible rows are `0`, suspicious duplicate groups are `0`, and the staged run covers every source in `data/public_source_pages.csv`
+- {promotion_status}
 
 ## Rebuild
 
@@ -115,6 +131,17 @@ python -m pytest
 ```bash
 python src/build_all.py --limit 1
 ```
+
+## Promote staged live bundle
+
+```bash
+python src/promote_live_bundle.py --dry-run
+python src/promote_live_bundle.py
+python src/build_artifacts.py
+python src/build_site.py
+```
+
+`python src/build_all.py --limit 1` is only a smoke run. Promotion should wait for a full staged pass across the current registry in `data/public_source_pages.csv`.
 
 ## CI and Pages
 

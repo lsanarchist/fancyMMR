@@ -64,6 +64,17 @@ def iot_source() -> SourceConfig:
     )
 
 
+def ecommerce_source() -> SourceConfig:
+    return SourceConfig(
+        source_id="category--ecommerce",
+        url="https://trustmrr.com/category/ecommerce",
+        parser_strategy="trustmrr_category_listing",
+        category_slug="ecommerce",
+        category_label="E-commerce",
+        source_group="category",
+    )
+
+
 def test_parse_source_html_extracts_category_cards_from_fixture() -> None:
     cards = parse_source_html(category_source(), read_fixture("category_ai_fixture.html"))
 
@@ -85,6 +96,17 @@ def test_parse_source_html_extracts_special_category_cards_from_fixture() -> Non
     assert cards[0].mrr_text == "$4.8k"
 
 
+def test_parse_source_html_accepts_gmv_as_third_metric_label() -> None:
+    cards = parse_source_html(ecommerce_source(), read_fixture("category_ecommerce_gmv_fixture.html"))
+
+    assert len(cards) == 2
+    assert cards[0].name == "Gumroad"
+    assert cards[0].total_revenue_label == "GMV"
+    assert cards[0].total_revenue_text == "$878.6M"
+    assert cards[1].name == "easytools"
+    assert cards[1].total_revenue_label == "GMV"
+
+
 def test_normalize_parsed_cards_converts_metrics_and_thresholds() -> None:
     cards = parse_source_html(category_source(), read_fixture("category_ai_fixture.html"))
     rows = normalize_parsed_cards(cards, scraped_at="2026-03-26T19:00:00Z")
@@ -99,6 +121,7 @@ def test_normalize_parsed_cards_converts_metrics_and_thresholds() -> None:
     assert rows[0]["gtm_model"] == "PLG / inbound software"
     assert rows[0]["heuristic_override_key"] == build_override_key(category_source().url, "rezi")
     assert rows[0]["heuristic_override_source"] == "tracked_override"
+    assert rows[0]["total_revenue_label"] == "Total"
     assert rows[0]["included_in_visible_sample"] is True
     assert rows[1]["revenue_30d"] == 0
     assert rows[1]["revenue_band"] is None
