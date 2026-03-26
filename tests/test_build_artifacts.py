@@ -97,6 +97,7 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert "LICENSE-CODE-MIT.txt" in readme
     assert "DATA-NOTICE.md" in readme
     assert "data/publication_input.json" in readme
+    assert "data/source_pipeline_diagnostics.json" in readme
     assert "python src/promote_live_bundle.py" in readme
     assert "every source in `data/public_source_pages.csv`" in readme
     assert "does **not** collapse those scopes into one top-level detected `LICENSE` file" in readme
@@ -109,6 +110,9 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert built_metrics == seed_metrics
 
     publication_input = json.loads((workspace / "data" / "publication_input.json").read_text(encoding="utf-8"))
+    source_pipeline_diagnostics = json.loads(
+        (workspace / "data" / "source_pipeline_diagnostics.json").read_text(encoding="utf-8")
+    )
     validation_report = json.loads((workspace / "data" / "validation_report.json").read_text(encoding="utf-8"))
     source_coverage_report = json.loads(
         (workspace / "data" / "source_coverage_report.json").read_text(encoding="utf-8")
@@ -116,6 +120,8 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     pipeline_manifest = json.loads((workspace / "data" / "pipeline_manifest.json").read_text(encoding="utf-8"))
 
     assert publication_input == default_publication_input_payload()
+    assert source_pipeline_diagnostics["available"] is False
+    assert source_pipeline_diagnostics["publication_dataset_kind"] == "seed_visible_sample"
     assert validation_report["status"] in {"passed", "passed_with_warnings"}
     assert validation_report["sample_row_count"] == seed_metrics["sample_size"]
     assert source_coverage_report["source_page_count"] == EXPECTED_SOURCE_PAGE_COUNT
@@ -134,9 +140,15 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
         artifact["path"] == "data/source_coverage_report.json" for artifact in pipeline_manifest["generated_outputs"]
     )
     assert any(
+        artifact["path"] == "data/source_pipeline_diagnostics.json"
+        for artifact in pipeline_manifest["generated_outputs"]
+    )
+    assert any(
         artifact["path"] == "data/publication_input.json" for artifact in pipeline_manifest["generated_outputs"]
     )
     assert any(artifact["path"] == "README.md" for artifact in pipeline_manifest["generated_outputs"])
+    assert pipeline_manifest["validation"]["source_pipeline_diagnostics_report_path"] == "data/source_pipeline_diagnostics.json"
+    assert pipeline_manifest["source_pipeline_diagnostics"]["available"] is False
 
 
 def test_refactored_module_surfaces_match_expected_metrics() -> None:
@@ -158,6 +170,25 @@ def test_refactored_module_surfaces_match_expected_metrics() -> None:
         "revenue_share",
         "performance_index",
     }
+
+
+def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifest(tmp_path: Path) -> None:
+    workspace = prepare_workspace(tmp_path)
+
+    run_build(workspace)
+
+    diagnostics = json.loads((workspace / "data" / "source_pipeline_diagnostics.json").read_text(encoding="utf-8"))
+    pipeline_manifest = json.loads((workspace / "data" / "pipeline_manifest.json").read_text(encoding="utf-8"))
+
+    assert diagnostics["available"] is True
+    assert diagnostics["publication_dataset_kind"] == "source_pipeline_promotion"
+    assert diagnostics["validation_status"] == "passed"
+    assert diagnostics["selected_source_count"] == 30
+    assert diagnostics["fully_mapped_visible_row_count"] == 249
+    assert diagnostics["source_pages"]
+    assert diagnostics["source_pages"][0]["parsed_card_count"] >= diagnostics["source_pages"][-1]["parsed_card_count"]
+    assert pipeline_manifest["source_pipeline_diagnostics"]["available"] is True
+    assert pipeline_manifest["source_pipeline_diagnostics"]["path"] == "data/source_pipeline_diagnostics.json"
 
 
 def test_validation_report_fails_for_missing_columns_and_threshold_violations() -> None:

@@ -22,6 +22,7 @@ JSON_EXPORTS = [
     "publication_input.json",
     "validation_report.json",
     "source_coverage_report.json",
+    "source_pipeline_diagnostics.json",
     "pipeline_manifest.json",
 ]
 CHART_STEMS = [
@@ -339,6 +340,11 @@ def methodology_warning_snapshot(validation_report: dict[str, object]) -> str:
     return f"{duplicate_name_count} {duplicate_label} / {heuristic_gap_count} {heuristic_label}"
 
 
+def source_pipeline_warning_summary(source_pipeline_diagnostics: dict[str, object]) -> str:
+    warning_ids = [str(value) for value in source_pipeline_diagnostics.get("failing_warning_check_ids", [])]
+    return ", ".join(warning_ids) if warning_ids else "none"
+
+
 def build_index_page(
     metrics: dict[str, object],
     validation_report: dict[str, object],
@@ -511,6 +517,7 @@ def build_data_page(
     publication_input: dict[str, object],
     validation_report: dict[str, object],
     source_coverage_report: dict[str, object],
+    source_pipeline_diagnostics: dict[str, object],
     pipeline_manifest: dict[str, object],
     category_rows: list[dict[str, str]],
     revenue_band_rows: list[dict[str, str]],
@@ -546,6 +553,11 @@ def build_data_page(
             ),
             ("validation_report.json", "Validation report", "Required-column, threshold, duplicate, and warning-level label checks."),
             ("source_coverage_report.json", "Source coverage report", "Per-source-page startup counts, revenue shares, and category coverage."),
+            (
+                "source_pipeline_diagnostics.json",
+                "Source-pipeline diagnostics",
+                "Promotion provenance, override coverage, duplicate review, and per-source parser output counts.",
+            ),
             ("pipeline_manifest.json", "Pipeline manifest", "Build command, input dataset hash, and copied-output inventory."),
         ]
     )
@@ -589,6 +601,68 @@ def build_data_page(
         ],
     )
 
+    if source_pipeline_diagnostics["available"]:
+        diagnostics_cards = f"""
+<div class="card-grid">
+  <article class="callout-card">
+    <h3>Promotion cutover</h3>
+    <p>{html.escape(str(source_pipeline_diagnostics['promoted_at'] or 'n/a'))}</p>
+  </article>
+  <article class="callout-card">
+    <h3>Registry coverage</h3>
+    <p>{html.escape(str(source_pipeline_diagnostics['selected_source_count']))} selected of {html.escape(str(source_pipeline_diagnostics['expected_source_count']))} expected sources.</p>
+  </article>
+  <article class="callout-card">
+    <h3>Override coverage</h3>
+    <p>{html.escape(str(source_pipeline_diagnostics['fully_mapped_visible_row_count']))} fully mapped visible rows with {html.escape(str(source_pipeline_diagnostics['alias_resolved_visible_row_count']))} alias-resolved cases.</p>
+  </article>
+  <article class="callout-card">
+    <h3>Warning-only staged checks</h3>
+    <p>{html.escape(source_pipeline_warning_summary(source_pipeline_diagnostics))}</p>
+  </article>
+</div>
+"""
+        diagnostics_table = render_table(
+            ["Source page", "Parser", "Parsed cards", "Visible rows"],
+            [
+                [
+                    f'<a href="{html.escape(row["source_url"], quote=True)}">{html.escape(row["source_url"])}</a>',
+                    html.escape(str(row.get("parser_strategy") or "unknown")),
+                    html.escape(f"{int(row['parsed_card_count']):,}"),
+                    html.escape(f"{int(row['visible_sample_row_count']):,}"),
+                ]
+                for row in source_pipeline_diagnostics["source_pages"][:10]
+            ],
+        )
+        diagnostics_section = section(
+            "Source-pipeline diagnostics",
+            "The promoted bundle keeps the staged parser/override/duplicate provenance visible instead of burying it inside the repo-only staging directory.",
+            diagnostics_cards
+            + diagnostics_table
+            + (
+                f'<p class="section-note">Staged validation: <strong>{html.escape(status_label(str(source_pipeline_diagnostics["validation_status"])))}</strong>. '
+                f'Run-manifest validation: <strong>{html.escape(status_label(str(source_pipeline_diagnostics["run_manifest_validation_status"])))}</strong>. '
+                f'Suspicious duplicate groups: <strong>{html.escape(str(source_pipeline_diagnostics["suspicious_duplicate_group_count"]))}</strong>.</p>'
+            ),
+        )
+    else:
+        diagnostics_section = section(
+            "Source-pipeline diagnostics",
+            "The publication build records whether live-source promotion diagnostics are attached to the active dataset.",
+            f"""
+<div class="two-up">
+  <article class="callout-card">
+    <h3>Diagnostics availability</h3>
+    <p>{html.escape(str(source_pipeline_diagnostics['message']))}</p>
+  </article>
+  <article class="callout-card">
+    <h3>Current publication source</h3>
+    <p>{html.escape(str(publication_input['source_label']))}</p>
+  </article>
+</div>
+""",
+        )
+
     manifest_note = (
         f"Publication input: {publication_input['dataset_path']} ({publication_input['dataset_kind']})."
         f" "
@@ -617,6 +691,7 @@ def build_data_page(
             "The source coverage report keeps the public-page footprint explicit, with links back to the source pages.",
             source_table,
         ),
+        diagnostics_section,
         section(
             "Manifest notes",
             "The site build depends on the processed research outputs already generated in the repository root.",
@@ -1095,6 +1170,7 @@ def write_site_pages() -> None:
     publication_input = read_json(DATA_DIR / "publication_input.json")
     validation_report = read_json(DATA_DIR / "validation_report.json")
     source_coverage_report = read_json(DATA_DIR / "source_coverage_report.json")
+    source_pipeline_diagnostics = read_json(DATA_DIR / "source_pipeline_diagnostics.json")
     pipeline_manifest = read_json(DATA_DIR / "pipeline_manifest.json")
     category_rows = read_csv_rows(DATA_DIR / "category_summary.csv")
     revenue_band_rows = read_csv_rows(DATA_DIR / "revenue_band_summary.csv")
@@ -1109,6 +1185,7 @@ def write_site_pages() -> None:
             publication_input,
             validation_report,
             source_coverage_report,
+            source_pipeline_diagnostics,
             pipeline_manifest,
             category_rows,
             revenue_band_rows,

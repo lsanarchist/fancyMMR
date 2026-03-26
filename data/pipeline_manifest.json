@@ -43,6 +43,11 @@
       "sha256": "1063d12d8aa30809c2c9a8f0d95caa0a3cf04474b784e3729143c03963063515"
     },
     {
+      "bytes": 15970,
+      "path": "data/source_pipeline_diagnostics.json",
+      "sha256": "49f52cfcf99d06b023d9db5d1abbe544abc3986649a634dbd6c87523b1777314"
+    },
+    {
       "bytes": 275582,
       "path": "charts/category_share_map.png",
       "sha256": "13185123b4b8ef7574679616de20fabe1bd28ab1ac05d551fa39a5149b845a34"
@@ -98,9 +103,9 @@
       "sha256": "5449d32556a0cf18036f0e574cea151eeb8e276563211dff8202b88fcecc556d"
     },
     {
-      "bytes": 5910,
+      "bytes": 5980,
       "path": "README.md",
-      "sha256": "9bbbb20ba1793c5b366bd53b00a309237e7a2a4d7b3ae89f5b2d34f38939fda2"
+      "sha256": "f2f2315e26259cd7ebd630dcc1a0f022bc650ffcf0421e355a18252011218e7c"
     }
   ],
   "input_dataset": {
@@ -154,9 +159,17 @@
   },
   "python_version_floor": "3.12",
   "source_page_count": 30,
+  "source_pipeline_diagnostics": {
+    "available": true,
+    "expected_source_count": 30,
+    "path": "data/source_pipeline_diagnostics.json",
+    "selected_source_count": 30,
+    "validation_status": "passed"
+  },
   "validation": {
     "report_path": "data/validation_report.json",
     "source_coverage_report_path": "data/source_coverage_report.json",
+    "source_pipeline_diagnostics_report_path": "data/source_pipeline_diagnostics.json",
     "status": "passed_with_warnings"
   }
 }

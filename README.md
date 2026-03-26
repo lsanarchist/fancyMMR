@@ -6,7 +6,7 @@ Independent, GitHub-ready packaging of a **visible public sample** of startups w
 
 - Startup-level visible sample
 - Category, business-model, GTM, and revenue-band summaries
-- Validation, source-coverage, and pipeline-manifest JSON reports
+- Validation, source-coverage, source-pipeline diagnostics, and pipeline-manifest JSON reports
 - Publication-grade charts in both PNG and SVG
 - Reproducible build script
 - Methodology, data notes, and release checklist
@@ -81,7 +81,7 @@ Independent, GitHub-ready packaging of a **visible public sample** of startups w
 
 ## Method note
 
-This repository is based on a **source-derived visible sample**, not a full platform export. The `biz_model` and `gtm_model` fields are heuristic labels. See [docs/methodology.md](docs/methodology.md) for details, and inspect `data/validation_report.json` plus `data/source_coverage_report.json` for the current bundle checks.
+This repository is based on a **source-derived visible sample**, not a full platform export. The `biz_model` and `gtm_model` fields are heuristic labels. See [docs/methodology.md](docs/methodology.md) for details, and inspect `data/validation_report.json`, `data/source_coverage_report.json`, and `data/source_pipeline_diagnostics.json` for the current bundle checks.
 
 ## Pipeline status
 

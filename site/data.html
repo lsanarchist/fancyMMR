@@ -37,7 +37,7 @@
     
 <div class="hero-aside">
   <p class="eyebrow">Manifest summary</p>
-  <p class="hero-aside-value">20 generated outputs</p>
+  <p class="hero-aside-value">21 generated outputs</p>
   <p class="hero-aside-note">30 source pages and 249 visible startups feed the current site build.</p>
 </div>
 
@@ -72,6 +72,12 @@
   <h3>Source coverage report</h3>
   <p>Per-source-page startup counts, revenue shares, and category coverage.</p>
   <a href="data/source_coverage_report.json">Download</a>
+</article>
+
+<article class="download-card">
+  <h3>Source-pipeline diagnostics</h3>
+  <p>Promotion provenance, override coverage, duplicate review, and per-source parser output counts.</p>
+  <a href="data/source_pipeline_diagnostics.json">Download</a>
 </article>
 
 <article class="download-card">
@@ -125,6 +131,40 @@
   </table>
 </div>
 
+</section>
+
+<section class="section-card">
+  <div class="section-head">
+    <h2>Source-pipeline diagnostics</h2>
+    <p>The promoted bundle keeps the staged parser/override/duplicate provenance visible instead of burying it inside the repo-only staging directory.</p>
+  </div>
+  
+<div class="card-grid">
+  <article class="callout-card">
+    <h3>Promotion cutover</h3>
+    <p>2026-03-26T21:51:11.876780Z</p>
+  </article>
+  <article class="callout-card">
+    <h3>Registry coverage</h3>
+    <p>30 selected of 30 expected sources.</p>
+  </article>
+  <article class="callout-card">
+    <h3>Override coverage</h3>
+    <p>249 fully mapped visible rows with 24 alias-resolved cases.</p>
+  </article>
+  <article class="callout-card">
+    <h3>Warning-only staged checks</h3>
+    <p>none</p>
+  </article>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Source page</th><th>Parser</th><th>Parsed cards</th><th>Visible rows</th></tr></thead>
+    <tbody><tr><td><a href="https://trustmrr.com/category/ai">https://trustmrr.com/category/ai</a></td><td>trustmrr_category_listing</td><td>30</td><td>23</td></tr><tr><td><a href="https://trustmrr.com/category/saas">https://trustmrr.com/category/saas</a></td><td>trustmrr_category_listing</td><td>30</td><td>21</td></tr><tr><td><a href="https://trustmrr.com/category/marketing">https://trustmrr.com/category/marketing</a></td><td>trustmrr_category_listing</td><td>30</td><td>20</td></tr><tr><td><a href="https://trustmrr.com/category/content-creation">https://trustmrr.com/category/content-creation</a></td><td>trustmrr_category_listing</td><td>30</td><td>16</td></tr><tr><td><a href="https://trustmrr.com/category/education">https://trustmrr.com/category/education</a></td><td>trustmrr_category_listing</td><td>30</td><td>15</td></tr><tr><td><a href="https://trustmrr.com/category/mobile-apps">https://trustmrr.com/category/mobile-apps</a></td><td>trustmrr_category_listing</td><td>30</td><td>15</td></tr><tr><td><a href="https://trustmrr.com/category/ecommerce">https://trustmrr.com/category/ecommerce</a></td><td>trustmrr_category_listing</td><td>30</td><td>14</td></tr><tr><td><a href="https://trustmrr.com/category/analytics">https://trustmrr.com/category/analytics</a></td><td>trustmrr_category_listing</td><td>30</td><td>12</td></tr><tr><td><a href="https://trustmrr.com/category/developer-tools">https://trustmrr.com/category/developer-tools</a></td><td>trustmrr_category_listing</td><td>30</td><td>12</td></tr><tr><td><a href="https://trustmrr.com/special-category/openclaw">https://trustmrr.com/special-category/openclaw</a></td><td>trustmrr_special_category_listing</td><td>30</td><td>12</td></tr></tbody>
+  </table>
+</div>
+<p class="section-note">Staged validation: <strong>Passed</strong>. Run-manifest validation: <strong>Passed</strong>. Suspicious duplicate groups: <strong>0</strong>.</p>
 </section>
 
 <section class="section-card">

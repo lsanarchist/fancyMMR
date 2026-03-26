@@ -16,6 +16,7 @@ from .config import (
     PROMOTION_COMMAND,
     PROJECT_NAME,
     PYTHON_VERSION_FLOOR,
+    REPORT_OUTPUTS,
     REQUIRED_COLS,
 )
 from .publication import read_publication_input
@@ -214,7 +215,146 @@ def build_source_coverage_report(summary: SummaryArtifacts) -> dict[str, object]
     }
 
 
-def write_validation_outputs(summary: SummaryArtifacts) -> tuple[dict[str, object], dict[str, object]]:
+def _load_optional_json(relative_path: str | None) -> dict[str, object] | None:
+    if not relative_path:
+        return None
+    path = BUILD_PATHS.root / relative_path
+    if not path.exists():
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[str, object]:
+    publication_input = read_publication_input()
+    report_paths = {
+        "run_manifest_path": publication_input.source_pipeline_run_manifest_path,
+        "validation_report_path": publication_input.source_pipeline_validation_report_path,
+        "override_report_path": publication_input.source_pipeline_override_report_path,
+        "duplicates_report_path": publication_input.source_pipeline_duplicates_report_path,
+    }
+    report = {
+        "schema_version": 1,
+        "available": False,
+        "publication_dataset_kind": publication_input.dataset_kind,
+        "publication_dataset_path": publication_input.dataset_path_str,
+        "source_label": publication_input.source_label,
+        "promoted_at": publication_input.promoted_at,
+        "expected_source_count": publication_input.expected_source_count,
+        "selected_source_count": publication_input.selected_source_count,
+        "published_visible_sample_row_count": summary.sample_size,
+        "promotion_gate_summary": publication_input.promotion_gate_summary,
+        "report_paths": report_paths,
+        "missing_report_paths": [],
+        "message": "The active publication dataset is not backed by a promoted source-pipeline manifest.",
+        "validation_status": None,
+        "run_manifest_validation_status": None,
+        "normalized_row_count": None,
+        "visible_sample_row_count": None,
+        "fully_mapped_visible_row_count": None,
+        "alias_resolved_visible_row_count": None,
+        "unmapped_visible_row_count": None,
+        "duplicate_detail_url_count": None,
+        "duplicate_name_source_url_count": None,
+        "suspicious_duplicate_group_count": None,
+        "suspicious_duplicate_row_count": None,
+        "missing_biz_model_count": None,
+        "missing_gtm_model_count": None,
+        "failing_warning_check_ids": [],
+        "failing_error_check_ids": [],
+        "source_pages": [],
+    }
+
+    if publication_input.dataset_kind != "source_pipeline_promotion":
+        return report
+
+    missing_report_paths = [
+        relative_path
+        for relative_path in report_paths.values()
+        if relative_path and not (BUILD_PATHS.root / relative_path).exists()
+    ]
+    if missing_report_paths:
+        report["missing_report_paths"] = missing_report_paths
+        report["message"] = (
+            "The publication manifest points at a promoted source-pipeline dataset, "
+            "but one or more staged diagnostics files are unavailable locally."
+        )
+        return report
+
+    run_manifest = _load_optional_json(publication_input.source_pipeline_run_manifest_path)
+    validation_report = _load_optional_json(publication_input.source_pipeline_validation_report_path)
+    override_report = _load_optional_json(publication_input.source_pipeline_override_report_path)
+    duplicates_report = _load_optional_json(publication_input.source_pipeline_duplicates_report_path)
+    if not all((run_manifest, validation_report, override_report, duplicates_report)):
+        report["message"] = (
+            "The publication manifest references staged source-pipeline diagnostics, "
+            "but one or more reports could not be loaded."
+        )
+        return report
+
+    selected_sources_by_id = {
+        str(source["source_id"]): source for source in run_manifest.get("selected_sources", [])
+    }
+    source_pages = []
+    for source_output in run_manifest.get("per_source_outputs", []):
+        source_id = str(source_output["source_id"])
+        source_metadata = selected_sources_by_id.get(source_id, {})
+        source_pages.append(
+            {
+                "source_id": source_id,
+                "source_url": str(source_output["source_url"]),
+                "parser_strategy": source_metadata.get("parser_strategy"),
+                "source_group": source_metadata.get("source_group"),
+                "category_label": source_metadata.get("category_label"),
+                "parsed_card_count": int(source_output["parsed_card_count"]),
+                "visible_sample_row_count": int(source_output["visible_sample_row_count"]),
+                "raw_html_path": source_output.get("raw_html_path"),
+                "interim_path": source_output.get("interim_path"),
+            }
+        )
+    source_pages.sort(
+        key=lambda source: (
+            -int(source["visible_sample_row_count"]),
+            -int(source["parsed_card_count"]),
+            str(source["source_id"]),
+        )
+    )
+
+    report.update(
+        {
+            "available": True,
+            "message": "Diagnostics loaded from the staged source-pipeline reports referenced by the active publication manifest.",
+            "validation_status": validation_report["status"],
+            "run_manifest_validation_status": run_manifest.get("validation_status"),
+            "normalized_row_count": int(run_manifest["normalized_row_count"]),
+            "visible_sample_row_count": int(run_manifest["visible_sample_row_count"]),
+            "fully_mapped_visible_row_count": int(override_report["fully_mapped_visible_row_count"]),
+            "alias_resolved_visible_row_count": int(override_report["alias_resolved_visible_row_count"]),
+            "unmapped_visible_row_count": int(override_report["unmapped_visible_row_count"]),
+            "duplicate_detail_url_count": int(validation_report["duplicate_detail_url_count"]),
+            "duplicate_name_source_url_count": int(validation_report["duplicate_name_source_url_count"]),
+            "suspicious_duplicate_group_count": int(duplicates_report["group_count"]),
+            "suspicious_duplicate_row_count": int(duplicates_report["row_count"]),
+            "missing_biz_model_count": int(validation_report["missing_biz_model_count"]),
+            "missing_gtm_model_count": int(validation_report["missing_gtm_model_count"]),
+            "failing_warning_check_ids": [
+                str(check["id"])
+                for check in validation_report["checks"]
+                if check["severity"] == "warning" and not check["passed"]
+            ],
+            "failing_error_check_ids": [
+                str(check["id"])
+                for check in validation_report["checks"]
+                if check["severity"] == "error" and not check["passed"]
+            ],
+            "source_pages": source_pages,
+        }
+    )
+    return report
+
+
+def write_validation_outputs(
+    summary: SummaryArtifacts,
+) -> tuple[dict[str, object], dict[str, object], dict[str, object]]:
     validation_input = summary.visible_sample.loc[:, [column for column in summary.visible_sample.columns if column in REQUIRED_COLS]]
     validation_report = validate_visible_sample(validation_input)
     _write_json(BUILD_PATHS.data_dir / "validation_report.json", validation_report)
@@ -222,8 +362,10 @@ def write_validation_outputs(summary: SummaryArtifacts) -> tuple[dict[str, objec
 
     source_coverage_report = build_source_coverage_report(summary)
     _write_json(BUILD_PATHS.data_dir / "source_coverage_report.json", source_coverage_report)
+    source_pipeline_diagnostics_report = build_source_pipeline_diagnostics_report(summary)
+    _write_json(BUILD_PATHS.data_dir / "source_pipeline_diagnostics.json", source_pipeline_diagnostics_report)
 
-    return validation_report, source_coverage_report
+    return validation_report, source_coverage_report, source_pipeline_diagnostics_report
 
 
 def _artifact_record(path: Path) -> dict[str, object]:
@@ -240,6 +382,7 @@ def write_pipeline_manifest(
     metrics: MetricsSnapshot,
     validation_report: dict[str, object],
     source_coverage_report: dict[str, object],
+    source_pipeline_diagnostics_report: dict[str, object],
 ) -> dict[str, object]:
     publication_input = read_publication_input()
     input_path = publication_input.dataset_path
@@ -278,12 +421,20 @@ def write_pipeline_manifest(
             "status": validation_report["status"],
             "report_path": "data/validation_report.json",
             "source_coverage_report_path": "data/source_coverage_report.json",
+            "source_pipeline_diagnostics_report_path": REPORT_OUTPUTS[-1],
         },
         "metrics_snapshot": {
             "sample_size": metrics.sample_size,
             "total_visible_revenue_usd": metrics.total_visible_revenue_usd,
             "dominant_category": metrics.dominant_category,
             "gini_coefficient": metrics.gini_coefficient,
+        },
+        "source_pipeline_diagnostics": {
+            "available": source_pipeline_diagnostics_report["available"],
+            "path": REPORT_OUTPUTS[-1],
+            "validation_status": source_pipeline_diagnostics_report["validation_status"],
+            "selected_source_count": source_pipeline_diagnostics_report["selected_source_count"],
+            "expected_source_count": source_pipeline_diagnostics_report["expected_source_count"],
         },
         "source_page_count": source_coverage_report["source_page_count"],
         "generated_outputs": [

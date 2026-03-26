@@ -42,6 +42,7 @@ SUMMARY_OUTPUTS = [
 REPORT_OUTPUTS = [
     "data/validation_report.json",
     "data/source_coverage_report.json",
+    "data/source_pipeline_diagnostics.json",
 ]
 MANIFEST_OUTPUT = "data/pipeline_manifest.json"
 GENERATED_OUTPUTS = SUMMARY_OUTPUTS + REPORT_OUTPUTS + [

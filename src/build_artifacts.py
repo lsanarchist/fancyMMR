@@ -11,10 +11,16 @@ def main() -> None:
     visible_sample = load_visible_sample()
     summary = summarize_visible_sample(visible_sample)
     metrics = write_summary_outputs(summary)
-    validation_report, source_coverage_report = write_validation_outputs(summary)
+    validation_report, source_coverage_report, source_pipeline_diagnostics_report = write_validation_outputs(summary)
     render_all_charts(summary)
     write_readme(metrics)
-    write_pipeline_manifest(summary, metrics, validation_report, source_coverage_report)
+    write_pipeline_manifest(
+        summary,
+        metrics,
+        validation_report,
+        source_coverage_report,
+        source_pipeline_diagnostics_report,
+    )
 
 
 if __name__ == "__main__":

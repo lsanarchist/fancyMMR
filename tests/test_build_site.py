@@ -58,6 +58,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert (site_root / "data" / "publication_input.json").exists()
     assert (site_root / "data" / "validation_report.json").exists()
     assert (site_root / "data" / "source_coverage_report.json").exists()
+    assert (site_root / "data" / "source_pipeline_diagnostics.json").exists()
     assert (site_root / "data" / "pipeline_manifest.json").exists()
 
     index_html = (site_root / "index.html").read_text(encoding="utf-8")
@@ -85,7 +86,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "publication_input.json" in data_html
     assert "validation_report.json" in data_html
     assert "source_coverage_report.json" in data_html
+    assert "source_pipeline_diagnostics.json" in data_html
     assert "pipeline_manifest.json" in data_html
+    assert "Source-pipeline diagnostics" in data_html
 
 
 def test_build_site_is_deterministic_across_rebuilds(tmp_path: Path) -> None:
