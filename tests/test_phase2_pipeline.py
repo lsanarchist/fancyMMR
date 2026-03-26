@@ -657,6 +657,7 @@ def test_run_pipeline_writes_staged_outputs_from_fixture_fetch(tmp_path: Path) -
     assert (pipeline_paths.processed_dir / "normalized_rows.csv").exists()
     assert (pipeline_paths.processed_dir / "visible_sample_rows.csv").exists()
     assert (pipeline_paths.processed_dir / "detail_page_rows.csv").exists()
+    assert (pipeline_paths.processed_dir / "detail_field_coverage.json").exists()
     assert (pipeline_paths.processed_dir / "heuristic_override_report.json").exists()
     assert (pipeline_paths.processed_dir / "suspicious_duplicates.json").exists()
     assert (pipeline_paths.processed_dir / "validation_report.json").exists()
@@ -666,6 +667,9 @@ def test_run_pipeline_writes_staged_outputs_from_fixture_fetch(tmp_path: Path) -
         (pipeline_paths.interim_dir / f"{source.source_id}.detail_pages.json").read_text(encoding="utf-8")
     )
     detail_rows = read_csv_rows(pipeline_paths.processed_dir / "detail_page_rows.csv")
+    detail_field_coverage = json.loads(
+        (pipeline_paths.processed_dir / "detail_field_coverage.json").read_text(encoding="utf-8")
+    )
     snapshot_manifest = json.loads(
         (pipeline_paths.snapshots_dir / "run_manifest.json").read_text(encoding="utf-8")
     )
@@ -679,6 +683,15 @@ def test_run_pipeline_writes_staged_outputs_from_fixture_fetch(tmp_path: Path) -
     assert detail_rows[0]["business_detail_badges_json"] == '["B2C","~4,005,400 users"]'
     assert detail_rows[1]["detail_parse_status"] == "html_not_supplied"
     assert detail_rows[1]["problem_solved"] == ""
+    assert detail_field_coverage["detail_page_row_count"] == 2
+    assert detail_field_coverage["aggregate"]["parse_status_counts"]["parsed"] == 1
+    assert detail_field_coverage["aggregate"]["parse_status_counts"]["html_not_supplied"] == 1
+    assert detail_field_coverage["aggregate"]["field_population_counts"]["problem_solved"] == 1
+    assert detail_field_coverage["aggregate"]["field_population_counts"]["business_detail_badges_json"] == 1
+    assert detail_field_coverage["aggregate"]["field_population_counts"]["product_updates_heading_present"] == 1
+    assert detail_field_coverage["sources"][0]["detail_page_row_count"] == 2
+    assert detail_field_coverage["sources"][0]["parse_status_counts"]["parsed"] == 1
+    assert detail_field_coverage["sources"][0]["field_population_counts"]["founder_quote"] == 1
     assert detail_scaffolds["detail_pages"][0]["detail_parse_status"] == "parsed"
     assert detail_scaffolds["detail_pages"][0]["detail_slug"] == "rezi"
     assert detail_scaffolds["detail_pages"][0]["extracted_detail"]["target_audience"] == "Job Seekers"
@@ -773,6 +786,9 @@ def test_run_pipeline_fetches_and_stages_detail_pages_when_requested(tmp_path: P
         (pipeline_paths.interim_dir / f"{source.source_id}.detail_pages.json").read_text(encoding="utf-8")
     )
     detail_rows = read_csv_rows(pipeline_paths.processed_dir / "detail_page_rows.csv")
+    detail_field_coverage = json.loads(
+        (pipeline_paths.processed_dir / "detail_field_coverage.json").read_text(encoding="utf-8")
+    )
     snapshot_manifest = json.loads(
         (pipeline_paths.snapshots_dir / "run_manifest.json").read_text(encoding="utf-8")
     )
@@ -786,6 +802,10 @@ def test_run_pipeline_fetches_and_stages_detail_pages_when_requested(tmp_path: P
     assert detail_rows[0]["detail_html_source"] == "fetched_html"
     assert detail_rows[0]["detail_fetch_source_id"] == "category--ai--detail--rezi"
     assert detail_rows[1]["detail_parse_status"] == "skipped_by_limit"
+    assert detail_field_coverage["aggregate"]["parse_status_counts"]["parsed"] == 1
+    assert detail_field_coverage["aggregate"]["parse_status_counts"]["skipped_by_limit"] == 1
+    assert detail_field_coverage["aggregate"]["field_population_counts"]["problem_solved"] == 1
+    assert detail_field_coverage["sources"][0]["parse_status_counts"]["skipped_by_limit"] == 1
     assert detail_scaffolds["detail_pages"][0]["detail_parse_status"] == "parsed"
     assert detail_scaffolds["detail_pages"][0]["detail_html_source"] == "fetched_html"
     assert detail_scaffolds["detail_pages"][0]["detail_fetch_source_id"] == "category--ai--detail--rezi"
@@ -859,6 +879,9 @@ def test_run_pipeline_records_sparse_detail_parse_failures_without_aborting(tmp_
         (pipeline_paths.interim_dir / f"{source.source_id}.detail_pages.json").read_text(encoding="utf-8")
     )
     detail_rows = read_csv_rows(pipeline_paths.processed_dir / "detail_page_rows.csv")
+    detail_field_coverage = json.loads(
+        (pipeline_paths.processed_dir / "detail_field_coverage.json").read_text(encoding="utf-8")
+    )
     snapshot_manifest = json.loads(
         (pipeline_paths.snapshots_dir / "run_manifest.json").read_text(encoding="utf-8")
     )
@@ -876,6 +899,11 @@ def test_run_pipeline_records_sparse_detail_parse_failures_without_aborting(tmp_
     assert "Problem solved" in detail_rows[0]["detail_parse_error"]
     assert detail_rows[0]["problem_solved"] == ""
     assert detail_rows[1]["detail_parse_status"] == "html_not_supplied"
+    assert detail_field_coverage["aggregate"]["parse_status_counts"]["parse_failed"] == 1
+    assert detail_field_coverage["aggregate"]["parse_status_counts"]["html_not_supplied"] == 1
+    assert detail_field_coverage["aggregate"]["field_population_counts"]["problem_solved"] == 0
+    assert detail_field_coverage["aggregate"]["field_population_counts"]["product_updates_heading_present"] == 0
+    assert detail_field_coverage["sources"][0]["parse_status_counts"]["parse_failed"] == 1
     assert detail_scaffolds["detail_pages"][0]["detail_parse_status"] == "parse_failed"
     assert "Problem solved" in detail_scaffolds["detail_pages"][0]["detail_parse_error"]
     assert detail_scaffolds["detail_pages"][0]["detail_html_source"] == "provided_html"

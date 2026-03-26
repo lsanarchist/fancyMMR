@@ -92,6 +92,25 @@ DETAIL_PAGE_ROW_FIELDS = [
     "product_updates_heading_present",
 ]
 
+DETAIL_PARSE_STATUS_VALUES = (
+    "not_requested",
+    "html_not_supplied",
+    "skipped_by_limit",
+    "parse_failed",
+    "parsed",
+)
+
+DETAIL_FIELD_COVERAGE_FIELDS = (
+    "problem_solved",
+    "pricing_summary",
+    "target_audience",
+    "business_detail_badges_json",
+    "founder_name",
+    "founder_role",
+    "founder_quote",
+    "product_updates_heading_present",
+)
+
 
 def _ensure_pipeline_dirs(paths: PipelinePaths) -> None:
     paths.pipeline_dir.mkdir(parents=True, exist_ok=True)
@@ -293,6 +312,66 @@ def _detail_page_row(source: SourceConfig, detail_record: dict[str, object]) -> 
     }
 
 
+def _is_populated_detail_field(value: object) -> bool:
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return value.strip() not in {"", "[]"}
+    return bool(value)
+
+
+def _detail_parse_status_counts(detail_page_rows: list[dict[str, object]]) -> dict[str, int]:
+    return {
+        status: sum(1 for row in detail_page_rows if row.get("detail_parse_status") == status)
+        for status in DETAIL_PARSE_STATUS_VALUES
+    }
+
+
+def _detail_field_population_counts(detail_page_rows: list[dict[str, object]]) -> dict[str, int]:
+    return {
+        field: sum(1 for row in detail_page_rows if _is_populated_detail_field(row.get(field)))
+        for field in DETAIL_FIELD_COVERAGE_FIELDS
+    }
+
+
+def _build_detail_field_coverage_summary(detail_page_rows: list[dict[str, object]]) -> dict[str, object]:
+    per_source_rows: dict[str, list[dict[str, object]]] = {}
+    source_metadata: dict[str, dict[str, object]] = {}
+
+    for row in detail_page_rows:
+        source_id = str(row["source_id"])
+        per_source_rows.setdefault(source_id, []).append(row)
+        source_metadata.setdefault(
+            source_id,
+            {
+                "source_id": row["source_id"],
+                "source_url": row["source_url"],
+                "source_group": row["source_group"],
+                "category_label": row["category_label"],
+            },
+        )
+
+    return {
+        "detail_page_row_count": len(detail_page_rows),
+        "aggregate": {
+            "detail_page_row_count": len(detail_page_rows),
+            "parse_status_counts": _detail_parse_status_counts(detail_page_rows),
+            "field_population_counts": _detail_field_population_counts(detail_page_rows),
+        },
+        "sources": [
+            {
+                **source_metadata[source_id],
+                "detail_page_row_count": len(source_rows),
+                "parse_status_counts": _detail_parse_status_counts(source_rows),
+                "field_population_counts": _detail_field_population_counts(source_rows),
+            }
+            for source_id, source_rows in per_source_rows.items()
+        ],
+    }
+
+
 def _scraped_at_from_path(path: Path) -> str:
     return datetime.fromtimestamp(path.stat().st_mtime, tz=timezone.utc).isoformat().replace("+00:00", "Z")
 
@@ -342,6 +421,10 @@ def _build_snapshot_manifest(
                 root=pipeline_paths.root,
             ),
             _relative_to_root(pipeline_paths.processed_dir / "detail_page_rows.csv", root=pipeline_paths.root),
+            _relative_to_root(
+                pipeline_paths.processed_dir / "detail_field_coverage.json",
+                root=pipeline_paths.root,
+            ),
             _relative_to_root(pipeline_paths.processed_dir / "validation_report.json", root=pipeline_paths.root),
         ],
     }
@@ -443,6 +526,7 @@ def run_pipeline(
     normalized_rows_path = pipeline_paths.processed_dir / "normalized_rows.csv"
     visible_rows_path = pipeline_paths.processed_dir / "visible_sample_rows.csv"
     detail_rows_path = pipeline_paths.processed_dir / "detail_page_rows.csv"
+    detail_field_coverage_path = pipeline_paths.processed_dir / "detail_field_coverage.json"
     heuristic_override_report_path = pipeline_paths.processed_dir / "heuristic_override_report.json"
     suspicious_duplicates_path = pipeline_paths.processed_dir / "suspicious_duplicates.json"
     validation_path = pipeline_paths.processed_dir / "validation_report.json"
@@ -451,6 +535,7 @@ def run_pipeline(
     _write_csv(normalized_rows_path, deduped_rows, NORMALIZED_ROW_FIELDS)
     _write_csv(visible_rows_path, visible_rows, VISIBLE_SAMPLE_ROW_FIELDS)
     _write_csv(detail_rows_path, detail_page_rows, DETAIL_PAGE_ROW_FIELDS)
+    _write_json(detail_field_coverage_path, _build_detail_field_coverage_summary(detail_page_rows))
     heuristic_override_report = build_heuristic_override_report(deduped_rows)
     suspicious_duplicates_report = build_suspicious_duplicates_report(deduped_rows)
     _write_json(heuristic_override_report_path, heuristic_override_report)
@@ -485,6 +570,7 @@ def run_pipeline(
         "normalized_rows_path": _relative_to_root(normalized_rows_path, root=pipeline_paths.root),
         "visible_rows_path": _relative_to_root(visible_rows_path, root=pipeline_paths.root),
         "detail_rows_path": _relative_to_root(detail_rows_path, root=pipeline_paths.root),
+        "detail_field_coverage_path": _relative_to_root(detail_field_coverage_path, root=pipeline_paths.root),
         "heuristic_override_report_path": _relative_to_root(
             heuristic_override_report_path,
             root=pipeline_paths.root,
