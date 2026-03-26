@@ -124,6 +124,8 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert source_pipeline_diagnostics["publication_dataset_kind"] == "seed_visible_sample"
     assert source_pipeline_diagnostics["detail_page_target_count"] is None
     assert source_pipeline_diagnostics["failed_detail_page_count"] is None
+    assert source_pipeline_diagnostics["detail_parse_failure_source_count"] is None
+    assert source_pipeline_diagnostics["detail_parse_failure_sources"] == []
     assert validation_report["status"] in {"passed", "passed_with_warnings"}
     assert validation_report["sample_row_count"] == seed_metrics["sample_size"]
     assert source_coverage_report["source_page_count"] == EXPECTED_SOURCE_PAGE_COUNT
@@ -189,6 +191,8 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert diagnostics["detail_page_target_count"] == 852
     assert diagnostics["parsed_detail_page_count"] == 0
     assert diagnostics["failed_detail_page_count"] == 0
+    assert diagnostics["detail_parse_failure_source_count"] == 0
+    assert diagnostics["detail_parse_failure_sources"] == []
     assert diagnostics["fully_mapped_visible_row_count"] == 249
     assert diagnostics["source_pages"]
     assert diagnostics["source_pages"][0]["parsed_card_count"] >= diagnostics["source_pages"][-1]["parsed_card_count"]
@@ -196,6 +200,7 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert pipeline_manifest["source_pipeline_diagnostics"]["available"] is True
     assert pipeline_manifest["source_pipeline_diagnostics"]["path"] == "data/source_pipeline_diagnostics.json"
     assert pipeline_manifest["source_pipeline_diagnostics"]["failed_detail_page_count"] == 0
+    assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_failure_source_count"] == 0
 
 
 def test_validation_report_fails_for_missing_columns_and_threshold_violations() -> None:

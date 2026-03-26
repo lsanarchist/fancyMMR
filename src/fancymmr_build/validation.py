@@ -254,6 +254,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "fetched_detail_page_count": None,
         "parsed_detail_page_count": None,
         "failed_detail_page_count": None,
+        "detail_parse_failure_source_count": None,
         "fully_mapped_visible_row_count": None,
         "alias_resolved_visible_row_count": None,
         "unmapped_visible_row_count": None,
@@ -265,6 +266,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "missing_gtm_model_count": None,
         "failing_warning_check_ids": [],
         "failing_error_check_ids": [],
+        "detail_parse_failure_sources": [],
         "source_pages": [],
     }
 
@@ -326,6 +328,28 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
             str(source["source_id"]),
         )
     )
+    detail_parse_failure_sources = [
+        {
+            "source_id": str(source["source_id"]),
+            "source_url": str(source["source_url"]),
+            "parser_strategy": source.get("parser_strategy"),
+            "source_group": source.get("source_group"),
+            "category_label": source.get("category_label"),
+            "detail_page_target_count": int(source["detail_page_target_count"]),
+            "fetched_detail_page_count": int(source["fetched_detail_page_count"]),
+            "parsed_detail_page_count": int(source["parsed_detail_page_count"]),
+            "failed_detail_page_count": int(source["failed_detail_page_count"]),
+        }
+        for source in sorted(
+            source_pages,
+            key=lambda source: (
+                -int(source["failed_detail_page_count"]),
+                -int(source["detail_page_target_count"]),
+                str(source["source_id"]),
+            ),
+        )
+        if int(source["failed_detail_page_count"]) > 0
+    ]
 
     report.update(
         {
@@ -339,6 +363,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
             "fetched_detail_page_count": int(run_manifest.get("fetched_detail_page_count") or 0),
             "parsed_detail_page_count": int(run_manifest.get("parsed_detail_page_count") or 0),
             "failed_detail_page_count": int(run_manifest.get("failed_detail_page_count") or 0),
+            "detail_parse_failure_source_count": len(detail_parse_failure_sources),
             "fully_mapped_visible_row_count": int(override_report["fully_mapped_visible_row_count"]),
             "alias_resolved_visible_row_count": int(override_report["alias_resolved_visible_row_count"]),
             "unmapped_visible_row_count": int(override_report["unmapped_visible_row_count"]),
@@ -358,6 +383,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
                 for check in validation_report["checks"]
                 if check["severity"] == "error" and not check["passed"]
             ],
+            "detail_parse_failure_sources": detail_parse_failure_sources,
             "source_pages": source_pages,
         }
     )
@@ -449,6 +475,7 @@ def write_pipeline_manifest(
             "expected_source_count": source_pipeline_diagnostics_report["expected_source_count"],
             "parsed_detail_page_count": source_pipeline_diagnostics_report["parsed_detail_page_count"],
             "failed_detail_page_count": source_pipeline_diagnostics_report["failed_detail_page_count"],
+            "detail_parse_failure_source_count": source_pipeline_diagnostics_report["detail_parse_failure_source_count"],
         },
         "source_page_count": source_coverage_report["source_page_count"],
         "generated_outputs": [

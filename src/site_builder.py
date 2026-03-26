@@ -639,16 +639,37 @@ def build_data_page(
                 for row in source_pipeline_diagnostics["source_pages"][:10]
             ],
         )
+        failure_sources = source_pipeline_diagnostics.get("detail_parse_failure_sources", [])
+        if failure_sources:
+            diagnostics_failure_section = render_table(
+                ["Source page", "Failed details", "Parsed details", "Fetched details", "Target details"],
+                [
+                    [
+                        f'<a href="{html.escape(row["source_url"], quote=True)}">{html.escape(row["source_url"])}</a>',
+                        html.escape(f"{int(row['failed_detail_page_count']):,}"),
+                        html.escape(f"{int(row['parsed_detail_page_count']):,}"),
+                        html.escape(f"{int(row['fetched_detail_page_count']):,}"),
+                        html.escape(f"{int(row['detail_page_target_count']):,}"),
+                    ]
+                    for row in failure_sources[:10]
+                ],
+            )
+        else:
+            diagnostics_failure_section = (
+                '<p class="section-note">No source pages in the active manifest currently report staged detail parse failures.</p>'
+            )
         diagnostics_section = section(
             "Source-pipeline diagnostics",
             "The promoted bundle keeps the staged parser/override/duplicate provenance visible instead of burying it inside the repo-only staging directory.",
             diagnostics_cards
             + diagnostics_table
+            + diagnostics_failure_section
             + (
                 f'<p class="section-note">Staged validation: <strong>{html.escape(status_label(str(source_pipeline_diagnostics["validation_status"])))}</strong>. '
                 f'Run-manifest validation: <strong>{html.escape(status_label(str(source_pipeline_diagnostics["run_manifest_validation_status"])))}</strong>. '
                 f'Suspicious duplicate groups: <strong>{html.escape(str(source_pipeline_diagnostics["suspicious_duplicate_group_count"]))}</strong>. '
-                f'Detail parse failures: <strong>{html.escape(str(source_pipeline_diagnostics["failed_detail_page_count"]))}</strong>.</p>'
+                f'Detail parse failures: <strong>{html.escape(str(source_pipeline_diagnostics["failed_detail_page_count"]))}</strong> across '
+                f'<strong>{html.escape(str(source_pipeline_diagnostics["detail_parse_failure_source_count"]))}</strong> source pages.</p>'
             ),
         )
     else:

@@ -2,6 +2,8 @@
   "alias_resolved_visible_row_count": 24,
   "available": true,
   "detail_page_target_count": 852,
+  "detail_parse_failure_source_count": 0,
+  "detail_parse_failure_sources": [],
   "duplicate_detail_url_count": 0,
   "duplicate_name_source_url_count": 0,
   "expected_source_count": 30,
