@@ -1,0 +1,18 @@
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+
+# Local autonomous control-plane files should never be committed.
+.agent/
+.agents/
+AGENT.md
+QUEUE_PROMPT.md
+
+# Local operator prompts / handoffs / generator notes should not be committed.
+*prompt*
+*generator*
+*handoff*
+
+# Local bootstrap bundle should not be committed.
+trustmrr_visible_sample_github_release.zip

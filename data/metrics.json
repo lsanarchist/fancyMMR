@@ -1,0 +1,14 @@
+{
+  "sample_size": 229,
+  "total_visible_revenue_usd": 24295400,
+  "median_revenue_usd": 19000.0,
+  "p75_revenue_usd": 41000.0,
+  "p90_revenue_usd": 89800.00000000007,
+  "top_1_revenue_share": 0.2922363904278176,
+  "top_5_revenue_share": 0.6171127044625732,
+  "top_10_revenue_share": 0.7038781003811421,
+  "top_20_revenue_share": 0.7843460078862665,
+  "dominant_category": "E-commerce",
+  "dominant_category_revenue_share": 0.4576339553989644,
+  "dominant_category_startup_share": 0.05240174672489083
+}
