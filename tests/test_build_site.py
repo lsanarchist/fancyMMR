@@ -60,6 +60,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert (site_root / "data" / "source_coverage_report.json").exists()
     assert (site_root / "data" / "source_pipeline_diagnostics.json").exists()
     assert (site_root / "data" / "pipeline_manifest.json").exists()
+    assert (site_root / "data" / "source_pipeline" / "processed" / "detail_page_rows.csv").exists()
+    assert (site_root / "data" / "source_pipeline" / "processed" / "detail_field_coverage.json").exists()
 
     index_html = (site_root / "index.html").read_text(encoding="utf-8")
     methodology_html = (site_root / "methodology.html").read_text(encoding="utf-8")
@@ -88,10 +90,13 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "source_coverage_report.json" in data_html
     assert "source_pipeline_diagnostics.json" in data_html
     assert "pipeline_manifest.json" in data_html
+    assert "source_pipeline/processed/detail_page_rows.csv" in data_html
+    assert "source_pipeline/processed/detail_field_coverage.json" in data_html
     assert "Source-pipeline diagnostics" in data_html
     assert "Detail-page staging" in data_html
     assert "Detail parse failures" in data_html
     assert "Detail-field coverage" in data_html
+    assert "staged provenance" in data_html
     assert "No source pages in the active manifest currently report staged detail parse failures." in data_html
     assert "No staged detail rows in the active manifest currently populate the shared detail fields." in data_html
 

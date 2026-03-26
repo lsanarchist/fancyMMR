@@ -47,7 +47,7 @@
 <section class="section-card">
   <div class="section-head">
     <h2>Downloads</h2>
-    <p>JSON outputs are copied into the site so the published Pages bundle stays inspectable on its own.</p>
+    <p>Core JSON outputs and selected staged provenance artifacts are copied into the site so the published Pages bundle stays inspectable on its own.</p>
   </div>
   <div class="card-grid">
 <article class="download-card">
@@ -84,6 +84,18 @@
   <h3>Pipeline manifest</h3>
   <p>Build command, input dataset hash, and copied-output inventory.</p>
   <a href="data/pipeline_manifest.json">Download</a>
+</article>
+
+<article class="download-card">
+  <h3>Staged detail rows</h3>
+  <p>Flattened staged detail-page outcomes and parsed shared fields. This is staged provenance, not a promoted dataset column contract.</p>
+  <a href="data/source_pipeline/processed/detail_page_rows.csv">Download</a>
+</article>
+
+<article class="download-card">
+  <h3>Staged detail coverage</h3>
+  <p>Aggregate and per-source shared detail-field coverage derived from the staged detail rows. This remains staged provenance.</p>
+  <a href="data/source_pipeline/processed/detail_field_coverage.json">Download</a>
 </article>
 </div>
 </section>

@@ -1,0 +1,745 @@
+{
+  "aggregate": {
+    "detail_page_row_count": 852,
+    "field_population_counts": {
+      "business_detail_badges_json": 0,
+      "founder_name": 0,
+      "founder_quote": 0,
+      "founder_role": 0,
+      "pricing_summary": 0,
+      "problem_solved": 0,
+      "product_updates_heading_present": 0,
+      "target_audience": 0
+    },
+    "parse_status_counts": {
+      "html_not_supplied": 0,
+      "not_requested": 852,
+      "parse_failed": 0,
+      "parsed": 0,
+      "skipped_by_limit": 0
+    }
+  },
+  "detail_page_row_count": 852,
+  "sources": [
+    {
+      "category_label": "AI",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--ai",
+      "source_url": "https://trustmrr.com/category/ai"
+    },
+    {
+      "category_label": "Analytics",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--analytics",
+      "source_url": "https://trustmrr.com/category/analytics"
+    },
+    {
+      "category_label": "Community",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--community",
+      "source_url": "https://trustmrr.com/category/community"
+    },
+    {
+      "category_label": "Content Creation",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--content-creation",
+      "source_url": "https://trustmrr.com/category/content-creation"
+    },
+    {
+      "category_label": "Customer Support",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--customer-support",
+      "source_url": "https://trustmrr.com/category/customer-support"
+    },
+    {
+      "category_label": "Design Tools",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--design-tools",
+      "source_url": "https://trustmrr.com/category/design-tools"
+    },
+    {
+      "category_label": "Developer Tools",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--developer-tools",
+      "source_url": "https://trustmrr.com/category/developer-tools"
+    },
+    {
+      "category_label": "E-commerce",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--ecommerce",
+      "source_url": "https://trustmrr.com/category/ecommerce"
+    },
+    {
+      "category_label": "Education",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--education",
+      "source_url": "https://trustmrr.com/category/education"
+    },
+    {
+      "category_label": "Entertainment",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--entertainment",
+      "source_url": "https://trustmrr.com/category/entertainment"
+    },
+    {
+      "category_label": "Fintech",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--fintech",
+      "source_url": "https://trustmrr.com/category/fintech"
+    },
+    {
+      "category_label": "Games",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--games",
+      "source_url": "https://trustmrr.com/category/games"
+    },
+    {
+      "category_label": "Health & Fitness",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--health-fitness",
+      "source_url": "https://trustmrr.com/category/health-fitness"
+    },
+    {
+      "category_label": "IoT & Hardware",
+      "detail_page_row_count": 7,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 7,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--iot-hardware",
+      "source_url": "https://trustmrr.com/category/iot-hardware"
+    },
+    {
+      "category_label": "Legal",
+      "detail_page_row_count": 13,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 13,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--legal",
+      "source_url": "https://trustmrr.com/category/legal"
+    },
+    {
+      "category_label": "Marketing",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--marketing",
+      "source_url": "https://trustmrr.com/category/marketing"
+    },
+    {
+      "category_label": "Marketplace",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--marketplace",
+      "source_url": "https://trustmrr.com/category/marketplace"
+    },
+    {
+      "category_label": "Mobile Apps",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--mobile-apps",
+      "source_url": "https://trustmrr.com/category/mobile-apps"
+    },
+    {
+      "category_label": "News & Magazines",
+      "detail_page_row_count": 22,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 22,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--news-magazines",
+      "source_url": "https://trustmrr.com/category/news-magazines"
+    },
+    {
+      "category_label": "No-Code",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--no-code",
+      "source_url": "https://trustmrr.com/category/no-code"
+    },
+    {
+      "category_label": "Productivity",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--productivity",
+      "source_url": "https://trustmrr.com/category/productivity"
+    },
+    {
+      "category_label": "Real Estate",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--real-estate",
+      "source_url": "https://trustmrr.com/category/real-estate"
+    },
+    {
+      "category_label": "Recruiting & HR",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--recruiting",
+      "source_url": "https://trustmrr.com/category/recruiting"
+    },
+    {
+      "category_label": "SaaS",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--saas",
+      "source_url": "https://trustmrr.com/category/saas"
+    },
+    {
+      "category_label": "Sales",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--sales",
+      "source_url": "https://trustmrr.com/category/sales"
+    },
+    {
+      "category_label": "Security",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--security",
+      "source_url": "https://trustmrr.com/category/security"
+    },
+    {
+      "category_label": "Social Media",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--social-media",
+      "source_url": "https://trustmrr.com/category/social-media"
+    },
+    {
+      "category_label": "Travel",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--travel",
+      "source_url": "https://trustmrr.com/category/travel"
+    },
+    {
+      "category_label": "Utilities",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "category",
+      "source_id": "category--utilities",
+      "source_url": "https://trustmrr.com/category/utilities"
+    },
+    {
+      "category_label": "OpenClaw (special)",
+      "detail_page_row_count": 30,
+      "field_population_counts": {
+        "business_detail_badges_json": 0,
+        "founder_name": 0,
+        "founder_quote": 0,
+        "founder_role": 0,
+        "pricing_summary": 0,
+        "problem_solved": 0,
+        "product_updates_heading_present": 0,
+        "target_audience": 0
+      },
+      "parse_status_counts": {
+        "html_not_supplied": 0,
+        "not_requested": 30,
+        "parse_failed": 0,
+        "parsed": 0,
+        "skipped_by_limit": 0
+      },
+      "source_group": "special-category",
+      "source_id": "special-category--openclaw",
+      "source_url": "https://trustmrr.com/special-category/openclaw"
+    }
+  ]
+}

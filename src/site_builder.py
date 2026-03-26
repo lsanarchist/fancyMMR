@@ -25,6 +25,10 @@ JSON_EXPORTS = [
     "source_pipeline_diagnostics.json",
     "pipeline_manifest.json",
 ]
+OPTIONAL_DATA_EXPORTS = [
+    "source_pipeline/processed/detail_page_rows.csv",
+    "source_pipeline/processed/detail_field_coverage.json",
+]
 CHART_STEMS = [
     ("category_share_map", "Category share map", "Representation versus visible revenue share, with the outlier-safe zoom panel."),
     ("top_categories_revenue", "Top categories by visible revenue", "The current sample is still dominated by E-commerce and Content Creation."),
@@ -72,6 +76,12 @@ def copy_assets() -> None:
             shutil.copy2(CHARTS_DIR / f"{stem}{suffix}", SITE_CHARTS_DIR / f"{stem}{suffix}")
     for name in JSON_EXPORTS:
         shutil.copy2(DATA_DIR / name, SITE_DATA_DIR / name)
+    for relative_path in OPTIONAL_DATA_EXPORTS:
+        source_path = DATA_DIR / relative_path
+        if source_path.exists():
+            destination_path = SITE_DATA_DIR / relative_path
+            destination_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_path, destination_path)
     (SITE_DIR / ".nojekyll").write_text("", encoding="utf-8")
 
 
@@ -548,6 +558,37 @@ def build_data_page(
 """,
     )
 
+    download_items = [
+        ("metrics.json", "Top-line metrics", "Sample size, revenue concentration, and dominant-category snapshots."),
+        (
+            "publication_input.json",
+            "Publication input manifest",
+            "The active published dataset path plus any live-source promotion provenance.",
+        ),
+        ("validation_report.json", "Validation report", "Required-column, threshold, duplicate, and warning-level label checks."),
+        ("source_coverage_report.json", "Source coverage report", "Per-source-page startup counts, revenue shares, and category coverage."),
+        (
+            "source_pipeline_diagnostics.json",
+            "Source-pipeline diagnostics",
+            "Promotion provenance, override coverage, duplicate review, per-source parser output counts, and shared detail-field coverage.",
+        ),
+        ("pipeline_manifest.json", "Pipeline manifest", "Build command, input dataset hash, and copied-output inventory."),
+    ]
+    for relative_path, name, description in [
+        (
+            "source_pipeline/processed/detail_page_rows.csv",
+            "Staged detail rows",
+            "Flattened staged detail-page outcomes and parsed shared fields. This is staged provenance, not a promoted dataset column contract.",
+        ),
+        (
+            "source_pipeline/processed/detail_field_coverage.json",
+            "Staged detail coverage",
+            "Aggregate and per-source shared detail-field coverage derived from the staged detail rows. This remains staged provenance.",
+        ),
+    ]:
+        if (DATA_DIR / relative_path).exists():
+            download_items.append((relative_path, name, description))
+
     downloads = "".join(
         f"""
 <article class="download-card">
@@ -556,22 +597,7 @@ def build_data_page(
   <a href="data/{filename}">Download</a>
 </article>
 """
-        for filename, name, description in [
-            ("metrics.json", "Top-line metrics", "Sample size, revenue concentration, and dominant-category snapshots."),
-            (
-                "publication_input.json",
-                "Publication input manifest",
-                "The active published dataset path plus any live-source promotion provenance.",
-            ),
-            ("validation_report.json", "Validation report", "Required-column, threshold, duplicate, and warning-level label checks."),
-            ("source_coverage_report.json", "Source coverage report", "Per-source-page startup counts, revenue shares, and category coverage."),
-            (
-                "source_pipeline_diagnostics.json",
-                "Source-pipeline diagnostics",
-                "Promotion provenance, override coverage, duplicate review, per-source parser output counts, and shared detail-field coverage.",
-            ),
-            ("pipeline_manifest.json", "Pipeline manifest", "Build command, input dataset hash, and copied-output inventory."),
-        ]
+        for filename, name, description in download_items
     )
 
     category_table = render_table(
@@ -758,7 +784,7 @@ def build_data_page(
     sections = [
         section(
             "Downloads",
-            "JSON outputs are copied into the site so the published Pages bundle stays inspectable on its own.",
+            "Core JSON outputs and selected staged provenance artifacts are copied into the site so the published Pages bundle stays inspectable on its own.",
             f'<div class="card-grid">{downloads}</div>',
         ),
         section(
