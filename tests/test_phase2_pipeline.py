@@ -197,6 +197,27 @@ def test_parse_startup_detail_html_fails_loudly_when_required_label_is_missing()
         parse_startup_detail_html(card, invalid_html)
 
 
+def test_parse_startup_detail_html_fails_loudly_on_current_sparse_fixture_shape() -> None:
+    card = ParsedStartupCard(
+        source_id="category--social-media",
+        source_url="https://trustmrr.com/category/social-media",
+        parser_strategy="trustmrr_category_listing",
+        source_group="category",
+        category_label="Social Media",
+        position=1,
+        detail_path="/startup/post-bridge",
+        detail_url="https://trustmrr.com/startup/post-bridge",
+        name="POST BRIDGE",
+        description="Scheduling and social content workflow tooling.",
+        revenue_30d_text="$4.4k",
+        mrr_text="$4.2k",
+        total_revenue_text="$28k",
+    )
+
+    with pytest.raises(ValueError, match="Problem solved"):
+        parse_startup_detail_html(card, read_fixture("startup_post_bridge_sparse_detail_fixture.html"))
+
+
 def test_build_all_parser_accepts_optional_detail_fetch_flags() -> None:
     args = build_parser().parse_args(["--fetch-details", "--detail-limit-per-source", "2"])
 

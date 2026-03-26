@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <body>
+    <main class="min-h-screen bg-muted">
+      <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <div data-slot="card" class="bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 mt-8">
+          <div data-slot="card-header" class="@container/card-header grid auto-rows-min items-start gap-2 px-6">
+            <div data-slot="card-title" class="font-semibold text-lg">Startup insights</div>
+          </div>
+          <div data-slot="card-content" class="px-6 pt-0">
+            <div class="grid gap-6 md:grid-cols-2">
+              <div class="space-y-5">
+                <div class="flex gap-3">
+                  <div class="flex-1 min-w-0">
+                    <p class="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Pricing</p>
+                    <p class="text-sm text-foreground leading-relaxed">Creator: $29/mo, Pro: $49/mo</p>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-5"></div>
+            </div>
+            <div class="mt-6 pt-4 border-t flex flex-wrap gap-2">
+              <a href="/category/social-media"><span data-slot="badge">Social Media</span></a>
+            </div>
+          </div>
+        </div>
+        <div class="mt-8 py-6 text-center">
+          <div class="max-w-2xl mx-auto">
+            <p class="text-sm text-foreground whitespace-pre-wrap">growing fast, agent friendly, high utility</p>
+          </div>
+          <div class="mt-4 flex items-center justify-center gap-3">
+            <div class="text-left">
+              <p class="text-sm font-medium">jack friks</p>
+              <p class="text-xs text-muted-foreground">Founder of <!-- -->POST BRIDGE</p>
+            </div>
+          </div>
+        </div>
+        <div class="mt-8">
+          <h2 class="text-lg font-semibold mb-4">Product updates</h2>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
