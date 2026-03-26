@@ -159,6 +159,38 @@ def test_normalize_parsed_cards_applies_alias_backed_override() -> None:
     assert row["gtm_model"] == "PLG / inbound software"
 
 
+def test_normalize_parsed_cards_applies_detail_slug_alias_for_generic_name() -> None:
+    cards = [
+        ParsedStartupCard(
+            source_id="category--legal",
+            source_url="https://trustmrr.com/category/legal",
+            parser_strategy="trustmrr_category_listing",
+            source_group="category",
+            category_label="Legal",
+            position=1,
+            detail_path="/startup/hidden-venture-12345",
+            detail_url="https://trustmrr.com/startup/hidden-venture-12345",
+            name="Hidden Business",
+            description="Launch support for founders expanding to the US.",
+            revenue_30d_text="$55k",
+            mrr_text="$55k",
+            total_revenue_text="$660k",
+            badge="FOR SALE",
+        )
+    ]
+
+    row = normalize_parsed_cards(cards, scraped_at="2026-03-26T19:00:00Z")[0]
+
+    assert row["canonical_slug"] == "hidden-business-launch-your-us-business"
+    assert row["canonical_slug_source"] == "alias"
+    assert row["biz_model"] == "Services / agency / lead-gen"
+    assert row["gtm_model"] == "Sales-led / outbound / SEO"
+    assert row["heuristic_override_key"] == build_override_key(
+        "https://trustmrr.com/category/legal",
+        "hidden-business-launch-your-us-business",
+    )
+
+
 def test_normalize_parsed_cards_applies_manual_override_for_roofclaw() -> None:
     cards = parse_source_html(iot_source(), read_fixture("category_iot_hardware_fixture.html"))
 
