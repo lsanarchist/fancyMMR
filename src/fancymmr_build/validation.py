@@ -236,6 +236,39 @@ def _int_dict(value: dict[str, object] | None) -> dict[str, int]:
     return {str(key): int(count) for key, count in (value or {}).items()}
 
 
+def _build_downloadable_staged_artifacts(run_manifest: dict[str, object]) -> list[dict[str, object]]:
+    artifacts: list[dict[str, object]] = []
+    for filename, label, description, artifact_format in [
+        (
+            "detail_page_rows.csv",
+            "Staged detail rows",
+            "Flattened staged detail-page outcomes and parsed shared fields. This is staged provenance, not a promoted dataset column contract.",
+            "csv",
+        ),
+        (
+            "detail_field_coverage.json",
+            "Staged detail coverage",
+            "Aggregate and per-source shared detail-field coverage derived from the staged detail rows. This remains staged provenance.",
+            "json",
+        ),
+    ]:
+        relative_path = _find_generated_output_path(run_manifest, filename)
+        if not relative_path:
+            continue
+        if not (BUILD_PATHS.root / relative_path).exists():
+            continue
+        artifacts.append(
+            {
+                "path": relative_path,
+                "site_path": relative_path,
+                "label": label,
+                "description": description,
+                "format": artifact_format,
+            }
+        )
+    return artifacts
+
+
 def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[str, object]:
     publication_input = read_publication_input()
     report_paths = {
@@ -243,6 +276,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "validation_report_path": publication_input.source_pipeline_validation_report_path,
         "override_report_path": publication_input.source_pipeline_override_report_path,
         "duplicates_report_path": publication_input.source_pipeline_duplicates_report_path,
+        "detail_rows_path": None,
         "detail_field_coverage_path": None,
     }
     report = {
@@ -282,6 +316,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "failing_warning_check_ids": [],
         "failing_error_check_ids": [],
         "detail_parse_failure_sources": [],
+        "downloadable_staged_artifacts": [],
         "source_pages": [],
     }
 
@@ -313,6 +348,8 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         return report
 
     detail_field_coverage_path = _find_generated_output_path(run_manifest, "detail_field_coverage.json")
+    detail_rows_path = _find_generated_output_path(run_manifest, "detail_page_rows.csv")
+    report_paths["detail_rows_path"] = detail_rows_path
     report_paths["detail_field_coverage_path"] = detail_field_coverage_path
     detail_field_coverage = _load_optional_json(detail_field_coverage_path)
     if detail_field_coverage is None:
@@ -392,6 +429,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         )
         if int(source["failed_detail_page_count"]) > 0
     ]
+    downloadable_staged_artifacts = _build_downloadable_staged_artifacts(run_manifest)
 
     report.update(
         {
@@ -436,6 +474,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
                 if check["severity"] == "error" and not check["passed"]
             ],
             "detail_parse_failure_sources": detail_parse_failure_sources,
+            "downloadable_staged_artifacts": downloadable_staged_artifacts,
             "source_pages": source_pages,
         }
     )
@@ -530,6 +569,7 @@ def write_pipeline_manifest(
             "detail_parse_failure_source_count": source_pipeline_diagnostics_report["detail_parse_failure_source_count"],
             "detail_parse_status_counts": source_pipeline_diagnostics_report["detail_parse_status_counts"],
             "detail_field_population_counts": source_pipeline_diagnostics_report["detail_field_population_counts"],
+            "downloadable_staged_artifacts": source_pipeline_diagnostics_report["downloadable_staged_artifacts"],
         },
         "source_page_count": source_coverage_report["source_page_count"],
         "generated_outputs": [

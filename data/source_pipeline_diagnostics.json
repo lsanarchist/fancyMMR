@@ -21,6 +21,22 @@
     "parsed": 0,
     "skipped_by_limit": 0
   },
+  "downloadable_staged_artifacts": [
+    {
+      "description": "Flattened staged detail-page outcomes and parsed shared fields. This is staged provenance, not a promoted dataset column contract.",
+      "format": "csv",
+      "label": "Staged detail rows",
+      "path": "data/source_pipeline/processed/detail_page_rows.csv",
+      "site_path": "data/source_pipeline/processed/detail_page_rows.csv"
+    },
+    {
+      "description": "Aggregate and per-source shared detail-field coverage derived from the staged detail rows. This remains staged provenance.",
+      "format": "json",
+      "label": "Staged detail coverage",
+      "path": "data/source_pipeline/processed/detail_field_coverage.json",
+      "site_path": "data/source_pipeline/processed/detail_field_coverage.json"
+    }
+  ],
   "duplicate_detail_url_count": 0,
   "duplicate_name_source_url_count": 0,
   "expected_source_count": 30,
@@ -51,6 +67,7 @@
   "published_visible_sample_row_count": 249,
   "report_paths": {
     "detail_field_coverage_path": "data/source_pipeline/processed/detail_field_coverage.json",
+    "detail_rows_path": "data/source_pipeline/processed/detail_page_rows.csv",
     "duplicates_report_path": "data/source_pipeline/processed/suspicious_duplicates.json",
     "override_report_path": "data/source_pipeline/processed/heuristic_override_report.json",
     "run_manifest_path": "data/source_pipeline/snapshots/run_manifest.json",

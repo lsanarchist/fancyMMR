@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import shutil
 import subprocess
 import sys
@@ -66,6 +67,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     index_html = (site_root / "index.html").read_text(encoding="utf-8")
     methodology_html = (site_root / "methodology.html").read_text(encoding="utf-8")
     data_html = (site_root / "data.html").read_text(encoding="utf-8")
+    pipeline_manifest = json.loads((site_root / "data" / "pipeline_manifest.json").read_text(encoding="utf-8"))
 
     assert "visible public sample" in index_html.lower()
     assert 'href="methodology.html"' in index_html
@@ -99,6 +101,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "staged provenance" in data_html
     assert "No source pages in the active manifest currently report staged detail parse failures." in data_html
     assert "No staged detail rows in the active manifest currently populate the shared detail fields." in data_html
+    for artifact in pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"]:
+        assert artifact["site_path"] in data_html
 
 
 def test_build_site_is_deterministic_across_rebuilds(tmp_path: Path) -> None:

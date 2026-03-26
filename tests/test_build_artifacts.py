@@ -128,6 +128,7 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert source_pipeline_diagnostics["detail_parse_status_counts"] is None
     assert source_pipeline_diagnostics["detail_field_population_counts"] is None
     assert source_pipeline_diagnostics["detail_parse_failure_sources"] == []
+    assert source_pipeline_diagnostics["downloadable_staged_artifacts"] == []
     assert validation_report["status"] in {"passed", "passed_with_warnings"}
     assert validation_report["sample_row_count"] == seed_metrics["sample_size"]
     assert source_coverage_report["source_page_count"] == EXPECTED_SOURCE_PAGE_COUNT
@@ -199,6 +200,10 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert diagnostics["detail_field_population_counts"]["problem_solved"] == 0
     assert diagnostics["detail_field_population_counts"]["founder_name"] == 0
     assert diagnostics["detail_parse_failure_sources"] == []
+    assert len(diagnostics["downloadable_staged_artifacts"]) == 2
+    assert diagnostics["downloadable_staged_artifacts"][0]["path"] == "data/source_pipeline/processed/detail_page_rows.csv"
+    assert diagnostics["downloadable_staged_artifacts"][0]["site_path"] == "data/source_pipeline/processed/detail_page_rows.csv"
+    assert diagnostics["downloadable_staged_artifacts"][1]["path"] == "data/source_pipeline/processed/detail_field_coverage.json"
     assert diagnostics["fully_mapped_visible_row_count"] == 249
     assert diagnostics["source_pages"]
     assert diagnostics["source_pages"][0]["parsed_card_count"] >= diagnostics["source_pages"][-1]["parsed_card_count"]
@@ -211,6 +216,10 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_failure_source_count"] == 0
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_status_counts"]["not_requested"] == 852
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_field_population_counts"]["problem_solved"] == 0
+    assert len(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"]) == 2
+    assert pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"][0]["site_path"] == (
+        "data/source_pipeline/processed/detail_page_rows.csv"
+    )
 
 
 def test_validation_report_fails_for_missing_columns_and_threshold_violations() -> None:

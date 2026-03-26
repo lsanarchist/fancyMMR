@@ -43,9 +43,9 @@
       "sha256": "1063d12d8aa30809c2c9a8f0d95caa0a3cf04474b784e3729143c03963063515"
     },
     {
-      "bytes": 36056,
+      "bytes": 36925,
       "path": "data/source_pipeline_diagnostics.json",
-      "sha256": "4f275d97a743acd707072e490e4660af15ece93788495f7a593eb4b378ba3da0"
+      "sha256": "e529d7b3020edf586cc99e2644e2e6fd2d85919df82091eb300313e9708d10a6"
     },
     {
       "bytes": 275582,
@@ -179,6 +179,22 @@
       "parsed": 0,
       "skipped_by_limit": 0
     },
+    "downloadable_staged_artifacts": [
+      {
+        "description": "Flattened staged detail-page outcomes and parsed shared fields. This is staged provenance, not a promoted dataset column contract.",
+        "format": "csv",
+        "label": "Staged detail rows",
+        "path": "data/source_pipeline/processed/detail_page_rows.csv",
+        "site_path": "data/source_pipeline/processed/detail_page_rows.csv"
+      },
+      {
+        "description": "Aggregate and per-source shared detail-field coverage derived from the staged detail rows. This remains staged provenance.",
+        "format": "json",
+        "label": "Staged detail coverage",
+        "path": "data/source_pipeline/processed/detail_field_coverage.json",
+        "site_path": "data/source_pipeline/processed/detail_field_coverage.json"
+      }
+    ],
     "expected_source_count": 30,
     "failed_detail_page_count": 0,
     "parsed_detail_page_count": 0,

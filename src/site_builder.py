@@ -25,10 +25,6 @@ JSON_EXPORTS = [
     "source_pipeline_diagnostics.json",
     "pipeline_manifest.json",
 ]
-OPTIONAL_DATA_EXPORTS = [
-    "source_pipeline/processed/detail_page_rows.csv",
-    "source_pipeline/processed/detail_field_coverage.json",
-]
 CHART_STEMS = [
     ("category_share_map", "Category share map", "Representation versus visible revenue share, with the outlier-safe zoom panel."),
     ("top_categories_revenue", "Top categories by visible revenue", "The current sample is still dominated by E-commerce and Content Creation."),
@@ -70,18 +66,52 @@ def clean_site_dir() -> None:
     SITE_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def copy_assets() -> None:
+def staged_detail_download_items(
+    source_pipeline_diagnostics: dict[str, object],
+    pipeline_manifest: dict[str, object],
+) -> list[dict[str, str]]:
+    manifest_artifacts = pipeline_manifest.get("source_pipeline_diagnostics", {}).get(
+        "downloadable_staged_artifacts", []
+    )
+    diagnostics_artifacts = source_pipeline_diagnostics.get("downloadable_staged_artifacts", [])
+    selected_artifacts = manifest_artifacts or diagnostics_artifacts
+    items: list[dict[str, str]] = []
+    for artifact in selected_artifacts:
+        if not isinstance(artifact, dict):
+            continue
+        path = str(artifact.get("path") or "")
+        site_path = str(artifact.get("site_path") or "")
+        label = str(artifact.get("label") or "")
+        description = str(artifact.get("description") or "")
+        if not path or not site_path or not label or not description:
+            continue
+        if not (ROOT / path).exists():
+            continue
+        items.append(
+            {
+                "path": path,
+                "site_path": site_path,
+                "label": label,
+                "description": description,
+            }
+        )
+    return items
+
+
+def copy_assets(
+    *,
+    staged_download_items: list[dict[str, str]],
+) -> None:
     for stem, _, _ in CHART_STEMS:
         for suffix in (".png", ".svg"):
             shutil.copy2(CHARTS_DIR / f"{stem}{suffix}", SITE_CHARTS_DIR / f"{stem}{suffix}")
     for name in JSON_EXPORTS:
         shutil.copy2(DATA_DIR / name, SITE_DATA_DIR / name)
-    for relative_path in OPTIONAL_DATA_EXPORTS:
-        source_path = DATA_DIR / relative_path
-        if source_path.exists():
-            destination_path = SITE_DATA_DIR / relative_path
-            destination_path.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source_path, destination_path)
+    for artifact in staged_download_items:
+        source_path = ROOT / artifact["path"]
+        destination_path = SITE_DIR / artifact["site_path"]
+        destination_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source_path, destination_path)
     (SITE_DIR / ".nojekyll").write_text("", encoding="utf-8")
 
 
@@ -559,42 +589,36 @@ def build_data_page(
     )
 
     download_items = [
-        ("metrics.json", "Top-line metrics", "Sample size, revenue concentration, and dominant-category snapshots."),
+        ("data/metrics.json", "Top-line metrics", "Sample size, revenue concentration, and dominant-category snapshots."),
         (
-            "publication_input.json",
+            "data/publication_input.json",
             "Publication input manifest",
             "The active published dataset path plus any live-source promotion provenance.",
         ),
-        ("validation_report.json", "Validation report", "Required-column, threshold, duplicate, and warning-level label checks."),
-        ("source_coverage_report.json", "Source coverage report", "Per-source-page startup counts, revenue shares, and category coverage."),
+        ("data/validation_report.json", "Validation report", "Required-column, threshold, duplicate, and warning-level label checks."),
+        ("data/source_coverage_report.json", "Source coverage report", "Per-source-page startup counts, revenue shares, and category coverage."),
         (
-            "source_pipeline_diagnostics.json",
+            "data/source_pipeline_diagnostics.json",
             "Source-pipeline diagnostics",
             "Promotion provenance, override coverage, duplicate review, per-source parser output counts, and shared detail-field coverage.",
         ),
-        ("pipeline_manifest.json", "Pipeline manifest", "Build command, input dataset hash, and copied-output inventory."),
+        ("data/pipeline_manifest.json", "Pipeline manifest", "Build command, input dataset hash, and copied-output inventory."),
     ]
-    for relative_path, name, description in [
+    download_items.extend(
         (
-            "source_pipeline/processed/detail_page_rows.csv",
-            "Staged detail rows",
-            "Flattened staged detail-page outcomes and parsed shared fields. This is staged provenance, not a promoted dataset column contract.",
-        ),
-        (
-            "source_pipeline/processed/detail_field_coverage.json",
-            "Staged detail coverage",
-            "Aggregate and per-source shared detail-field coverage derived from the staged detail rows. This remains staged provenance.",
-        ),
-    ]:
-        if (DATA_DIR / relative_path).exists():
-            download_items.append((relative_path, name, description))
+            artifact["site_path"],
+            artifact["label"],
+            artifact["description"],
+        )
+        for artifact in staged_detail_download_items(source_pipeline_diagnostics, pipeline_manifest)
+    )
 
     downloads = "".join(
         f"""
 <article class="download-card">
   <h3>{html.escape(name)}</h3>
   <p>{html.escape(description)}</p>
-  <a href="data/{filename}">Download</a>
+  <a href="{html.escape(filename, quote=True)}">Download</a>
 </article>
 """
         for filename, name, description in download_items
@@ -1308,6 +1332,9 @@ def write_site_pages() -> None:
 
 
 def build_site() -> None:
+    source_pipeline_diagnostics = read_json(DATA_DIR / "source_pipeline_diagnostics.json")
+    pipeline_manifest = read_json(DATA_DIR / "pipeline_manifest.json")
+    staged_download_items = staged_detail_download_items(source_pipeline_diagnostics, pipeline_manifest)
     clean_site_dir()
-    copy_assets()
+    copy_assets(staged_download_items=staged_download_items)
     write_site_pages()
