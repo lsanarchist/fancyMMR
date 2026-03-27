@@ -590,6 +590,37 @@ def format_top_shares_by_site_path(items: list[dict[str, object]]) -> dict[str, 
     return format_top_shares
 
 
+def format_smallest_shares_by_site_path(items: list[dict[str, object]]) -> dict[str, str]:
+    grouped_items: dict[str, list[tuple[str, int | None]]] = {}
+    for artifact in items:
+        if not isinstance(artifact, dict):
+            continue
+        site_path = artifact.get("site_path")
+        if not isinstance(site_path, str):
+            continue
+        artifact_format = str(artifact.get("format") or "").strip().lower() or "other"
+        artifact_bytes = artifact.get("bytes")
+        grouped_items.setdefault(artifact_format, []).append(
+            (site_path, artifact_bytes if isinstance(artifact_bytes, int) else None)
+        )
+    format_smallest_shares: dict[str, str] = {}
+    for artifact_format, grouped_format_items in grouped_items.items():
+        byte_values = [
+            artifact_bytes
+            for _, artifact_bytes in grouped_format_items
+            if isinstance(artifact_bytes, int)
+        ]
+        min_bytes = min(byte_values) if byte_values else None
+        total_bytes = sum(byte_values)
+        format_smallest_shares.update(
+            {
+                site_path: f"{artifact_format.upper()} {format_smallest_file_share(min_bytes, total_bytes)}"
+                for site_path, _ in grouped_format_items
+            }
+        )
+    return format_smallest_shares
+
+
 def format_average_byte_sizes(items: list[dict[str, object]]) -> dict[str, str]:
     totals: dict[str, int] = {}
     counts: dict[str, int] = {}
@@ -938,6 +969,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     publication_link_format_top_shares = format_top_shares_by_site_path(
         manifest_generated_download_items(workspace, pipeline_manifest)
     )
+    publication_link_format_smallest_shares = format_smallest_shares_by_site_path(
+        manifest_generated_download_items(workspace, pipeline_manifest)
+    )
     publication_format_byte_ranges = format_byte_ranges(
         manifest_generated_download_items(workspace, pipeline_manifest)
     )
@@ -1010,6 +1044,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     staged_link_format_top_shares = format_top_shares_by_site_path(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"])
     )
+    staged_link_format_smallest_shares = format_smallest_shares_by_site_path(
+        list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"])
+    )
     staged_format_byte_ranges = format_byte_ranges(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"])
     )
@@ -1080,6 +1117,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
     )
     fetch_failure_link_format_top_shares = format_top_shares_by_site_path(
+        list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
+    )
+    fetch_failure_link_format_smallest_shares = format_smallest_shares_by_site_path(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
     )
     fetch_failure_format_byte_ranges = format_byte_ranges(
@@ -1461,6 +1501,14 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
         f'class="output-registry-badge output-registry-badge-format-top-share">'
         f'{publication_link_format_top_shares["data/business_model_summary.csv"]}<'
     ) in publication_output_section
+    assert (
+        f'class="output-registry-badge output-registry-badge-format-smallest-share">'
+        f'{publication_link_format_smallest_shares["data/metrics.json"]}<'
+    ) in publication_output_section
+    assert (
+        f'class="output-registry-badge output-registry-badge-format-smallest-share">'
+        f'{publication_link_format_smallest_shares["data/business_model_summary.csv"]}<'
+    ) in publication_output_section
     assert "Provenance pack" in staged_output_section
     assert "Staging posture" in staged_output_section
     assert staged_total_bytes in staged_output_section
@@ -1572,6 +1620,14 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert (
         f'class="output-registry-badge output-registry-badge-format-top-share">'
         f'{staged_link_format_top_shares["data/source_pipeline/snapshots/run_manifest.json"]}<'
+    ) in staged_output_section
+    assert (
+        f'class="output-registry-badge output-registry-badge-format-smallest-share">'
+        f'{staged_link_format_smallest_shares["data/source_pipeline/processed/detail_page_rows.csv"]}<'
+    ) in staged_output_section
+    assert (
+        f'class="output-registry-badge output-registry-badge-format-smallest-share">'
+        f'{staged_link_format_smallest_shares["data/source_pipeline/snapshots/run_manifest.json"]}<'
     ) in staged_output_section
     assert 'rail-command-divider-label">CSV<' in publication_output_section
     assert 'rail-command-divider-label">JSON<' in publication_output_section
@@ -2087,6 +2143,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".output-registry-badge-format-median-size {" in site_css
     assert ".output-registry-badge-format-max-median {" in site_css
     assert ".output-registry-badge-format-top-share {" in site_css
+    assert ".output-registry-badge-format-smallest-share {" in site_css
     assert ".command-input {" in site_css
     assert ".command-input-wrap:focus-within {" in site_css
     assert ".infographic-grid {" in site_css
@@ -2255,6 +2312,9 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
     )
     fetch_failure_link_format_top_shares = format_top_shares_by_site_path(
+        list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
+    )
+    fetch_failure_link_format_smallest_shares = format_smallest_shares_by_site_path(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
     )
     fetch_failure_format_byte_ranges = format_byte_ranges(
@@ -2540,6 +2600,18 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert (
         f'class="output-registry-badge output-registry-badge-format-top-share">'
         f'{fetch_failure_link_format_top_shares["data/fetch_failures/category--sales.json"]}<'
+    ) in fetch_failure_output_section
+    assert (
+        f'class="output-registry-badge output-registry-badge-format-smallest-share">'
+        f'{fetch_failure_link_format_smallest_shares["data/fetch_failures/category--ai.html"]}<'
+    ) in fetch_failure_output_section
+    assert (
+        f'class="output-registry-badge output-registry-badge-format-smallest-share">'
+        f'{fetch_failure_link_format_smallest_shares["data/fetch_failures/category--ai.json"]}<'
+    ) in fetch_failure_output_section
+    assert (
+        f'class="output-registry-badge output-registry-badge-format-smallest-share">'
+        f'{fetch_failure_link_format_smallest_shares["data/fetch_failures/category--sales.json"]}<'
     ) in fetch_failure_output_section
     assert 'rail-command-divider-label">HTML<' in fetch_failure_output_section
     assert 'rail-command-divider-label">JSON<' in fetch_failure_output_section

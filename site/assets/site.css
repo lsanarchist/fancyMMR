@@ -671,6 +671,12 @@ body {
   background: rgba(131, 212, 134, 0.12);
 }
 
+.output-registry-badge-format-smallest-share {
+  color: var(--ink);
+  border-color: rgba(244, 234, 215, 0.22);
+  background: rgba(244, 234, 215, 0.12);
+}
+
 .nav-link:hover,
 .nav-link.is-active,
 .rail-command-link:hover,
