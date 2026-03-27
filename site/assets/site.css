@@ -233,6 +233,12 @@ body {
   color: var(--ink-dim);
 }
 
+.rail-command-divider-range {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
 .rail-command-divider-average {
   font-size: 0.64rem;
   letter-spacing: 0.08em;
