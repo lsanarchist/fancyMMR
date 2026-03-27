@@ -319,6 +319,13 @@ def format_max_to_median_ratio(max_bytes: int | None, median_bytes: int | None) 
     return f"max/med {ratio:.0f}x"
 
 
+def format_top_file_share(max_bytes: int | None, total_bytes: int) -> str:
+    if max_bytes is None or total_bytes <= 0:
+        return "top n/a"
+    share = (100 * max_bytes) / total_bytes
+    return f"top {share:.0f}%"
+
+
 def artifact_format_label(artifact: dict[str, object]) -> str:
     artifact_format = str(artifact.get("format") or "").strip().lower()
     if artifact_format:
@@ -703,6 +710,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     item_format_average_size = str(item.get("format_average_size") or "")
     item_format_median_size = str(item.get("format_median_size") or "")
     item_format_max_median = str(item.get("format_max_median") or "")
+    item_format_top_share = str(item.get("format_top_share") or "")
     byte_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
         if isinstance(item_bytes, int)
@@ -758,6 +766,11 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         if item_format_max_median
         else ""
     )
+    format_top_share_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-format-top-share">{html.escape(item_format_top_share)}</span>'
+        if item_format_top_share
+        else ""
+    )
     return (
         f'<a class="rail-command-link output-registry-link" href="{html.escape(target, quote=True)}" '
         f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
@@ -780,6 +793,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         f"{format_average_size_badge_html}"
         f"{format_median_size_badge_html}"
         f"{format_max_median_badge_html}"
+        f"{format_top_share_badge_html}"
         "</span>"
         "</a>"
     )
@@ -957,6 +971,10 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
         items[-1]["format_max_median"] = (
             f"{artifact_format_label} "
             f"{format_max_to_median_ratio(format_max_bytes.get(artifact_format_key), median_byte_value(format_byte_values.get(artifact_format_key, [])))}"
+        )
+        items[-1]["format_top_share"] = (
+            f"{artifact_format_label} "
+            f"{format_top_file_share(format_max_bytes.get(artifact_format_key), format_total_bytes.get(artifact_format_key, 0))}"
         )
         artifact_bytes = artifact.get("bytes")
         if isinstance(artifact_bytes, int):
@@ -5815,6 +5833,12 @@ body {
   color: var(--red);
   border-color: rgba(255, 123, 105, 0.22);
   background: rgba(255, 123, 105, 0.12);
+}
+
+.output-registry-badge-format-top-share {
+  color: var(--green);
+  border-color: rgba(131, 212, 134, 0.22);
+  background: rgba(131, 212, 134, 0.12);
 }
 
 .nav-link:hover,
