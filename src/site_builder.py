@@ -644,6 +644,18 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
     return items
 
 
+def hot_output_artifact_sort_key(artifact: dict[str, object]) -> tuple[str, str, str, str]:
+    site_path = str(artifact.get("site_path") or "")
+    query = site_path.removeprefix("data/")
+    display_label = str(artifact.get("label") or "")
+    return (
+        artifact_format_label(artifact),
+        query.lower(),
+        display_label.lower(),
+        site_path.lower(),
+    )
+
+
 def build_output_registry_sections(
     source_pipeline_diagnostics: dict[str, object],
     pipeline_manifest: dict[str, object],
@@ -670,15 +682,16 @@ def build_output_registry_sections(
     ]
     sections: list[dict[str, object]] = []
     for title, aria_label, empty_message, artifacts in section_specs:
+        sorted_artifacts = sorted(artifacts, key=hot_output_artifact_sort_key)
         sections.append(
             {
                 "title": title,
                 "aria_label": aria_label,
                 "empty_message": empty_message,
-                "count_label": count_label(len(artifacts), "file"),
-                "format_badges_html": download_format_summary_badges_html(artifacts),
-                "byte_total_badge_html": download_total_bytes_badge_html(artifacts),
-                "items": global_output_command_items(artifacts),
+                "count_label": count_label(len(sorted_artifacts), "file"),
+                "format_badges_html": download_format_summary_badges_html(sorted_artifacts),
+                "byte_total_badge_html": download_total_bytes_badge_html(sorted_artifacts),
+                "items": global_output_command_items(sorted_artifacts),
             }
         )
     return sections

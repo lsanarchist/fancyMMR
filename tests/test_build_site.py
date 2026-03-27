@@ -52,6 +52,11 @@ def site_hashes(workspace: Path) -> dict[str, str]:
     }
 
 
+def assert_text_order(text: str, snippets: list[str]) -> None:
+    positions = [text.index(snippet) for snippet in snippets]
+    assert positions == sorted(positions), {"snippets": snippets, "positions": positions}
+
+
 def format_byte_count(byte_count: int) -> str:
     if byte_count == 1:
         return "1 byte"
@@ -176,6 +181,29 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "GET public_source_pages.csv" in index_html
     assert "GET source_pipeline/snapshots/run_manifest.json" in index_html
     assert "GET source_pipeline/processed/detail_page_rows.csv" in index_html
+    assert_text_order(
+        index_html,
+        [
+            "GET business_model_summary.csv",
+            "GET category_summary.csv",
+            "GET gtm_model_summary.csv",
+            "GET public_source_pages.csv",
+            "GET revenue_band_summary.csv",
+            "GET metrics.json",
+            "GET pipeline_manifest.json",
+        ],
+    )
+    assert_text_order(
+        index_html,
+        [
+            "GET source_pipeline/processed/detail_page_rows.csv",
+            "GET source_pipeline/processed/detail_field_coverage.json",
+            "GET source_pipeline/processed/heuristic_override_report.json",
+            "GET source_pipeline/processed/suspicious_duplicates.json",
+            "GET source_pipeline/processed/validation_report.json",
+            "GET source_pipeline/snapshots/run_manifest.json",
+        ],
+    )
     assert 'data-command-kind="route"' in index_html
     assert 'data-command-kind="asset"' in index_html
     assert 'data-command-query="/data #downloads"' in index_html
@@ -444,6 +472,14 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "2 JSON" in data_html
     assert "1 HTML" in data_html
     assert fetch_failure_total_bytes in data_html
+    assert_text_order(
+        data_html,
+        [
+            "GET fetch_failures/category--ai.html",
+            "GET fetch_failures/category--ai.json",
+            "GET fetch_failures/category--sales.json",
+        ],
+    )
     for artifact in pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"]:
         assert artifact["site_path"] in data_html
         assert artifact["sha256"] in data_html
