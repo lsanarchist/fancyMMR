@@ -774,6 +774,12 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "source_coverage_report.json" in data_html
     assert "source_pipeline_diagnostics.json" in data_html
     assert "pipeline_manifest.json" in data_html
+    assert "Signal board" in data_html
+    assert "Bundle surface" in data_html
+    assert "Revenue band pressure" in data_html
+    assert "Category lanes" in data_html
+    assert "Source-page leaders" in data_html
+    assert "These data-pane infographics are derived from the same static bundle outputs mirrored below" in data_html
     assert "Staged Bundle" in data_html
     assert "Fetch Failure Snapshots" in data_html
     assert "staged source-pipeline bundle" in data_html

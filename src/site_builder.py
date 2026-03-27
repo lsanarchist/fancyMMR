@@ -1135,6 +1135,119 @@ def overview_infographic_cards(metrics: dict[str, object], category_rows: list[d
     return "".join(cards)
 
 
+def source_page_label(source_url: str) -> str:
+    normalized = source_url.removeprefix("https://").removeprefix("http://")
+    _, separator, remainder = normalized.partition("/")
+    return remainder if separator else normalized
+
+
+def data_page_infographic_cards(
+    *,
+    metrics: dict[str, object],
+    source_coverage_report: dict[str, object],
+    category_rows: list[dict[str, str]],
+    revenue_band_rows: list[dict[str, str]],
+    publication_bundle_items: list[dict[str, object]],
+    staged_bundle_items: list[dict[str, object]],
+    fetch_failure_items: list[dict[str, object]],
+) -> str:
+    total_artifact_count = len(publication_bundle_items) + len(staged_bundle_items) + len(fetch_failure_items)
+    dominant_band_row = (
+        max(revenue_band_rows, key=lambda row: float(row["revenue_share"]))
+        if revenue_band_rows
+        else None
+    )
+    top_band_rows = sorted(
+        revenue_band_rows,
+        key=lambda row: (float(row["revenue_share"]), float(row["startup_count"])),
+        reverse=True,
+    )[:3]
+    top_category_rows = category_rows[:3]
+    top_source_rows = source_coverage_report["source_pages"][:3]
+    top_source_startup_count = (
+        max(int(row["startup_count"]) for row in top_source_rows)
+        if top_source_rows
+        else 0
+    )
+
+    cards = [
+        infographic_card(
+            title="Bundle surface",
+            kicker="Static output mix",
+            value=count_label(total_artifact_count, "file"),
+            note="Publication outputs, staged provenance, and failure evidence stay inspectable as separate static layers.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Publication",
+                        count_label(len(publication_bundle_items), "file"),
+                        normalized_ratio(len(publication_bundle_items), total_artifact_count),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Staged",
+                        count_label(len(staged_bundle_items), "file"),
+                        normalized_ratio(len(staged_bundle_items), total_artifact_count),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Failures",
+                        count_label(len(fetch_failure_items), "file"),
+                        normalized_ratio(len(fetch_failure_items), total_artifact_count),
+                        tone="red",
+                    ),
+                ]
+            ),
+        ),
+        infographic_card(
+            title="Revenue band pressure",
+            kicker="Tail weight",
+            value=str(dominant_band_row["revenue_band"]) if dominant_band_row is not None else "n/a",
+            note="The upper tail still carries most of the visible revenue even though most startups sit below it.",
+            meters_html="".join(
+                infographic_meter(
+                    str(row["revenue_band"]),
+                    pct(float(row["revenue_share"])),
+                    float(row["revenue_share"]),
+                    tone=tone,
+                )
+                for row, tone in zip(top_band_rows, ["accent", "cyan", "green"])
+            ),
+        ),
+        infographic_card(
+            title="Category lanes",
+            kicker="Visible revenue lead pack",
+            value=str(metrics["dominant_category"]),
+            note="The data pane keeps the lead categories visible alongside the downloadable summaries and tables.",
+            meters_html="".join(
+                infographic_meter(
+                    str(row["category"]),
+                    pct(float(row["revenue_share"])),
+                    float(row["revenue_share"]),
+                    tone=tone,
+                )
+                for row, tone in zip(top_category_rows, ["accent", "cyan", "green"])
+            ),
+        ),
+        infographic_card(
+            title="Source-page leaders",
+            kicker="Coverage footprint",
+            value=f"{int(source_coverage_report['source_page_count'])} pages",
+            note="Top source pages by visible startup count are surfaced before the detailed coverage table.",
+            meters_html="".join(
+                infographic_meter(
+                    source_page_label(str(row["source_url"])),
+                    f"{int(row['startup_count']):,} startups",
+                    normalized_ratio(int(row["startup_count"]), top_source_startup_count),
+                    tone=tone,
+                )
+                for row, tone in zip(top_source_rows, ["accent", "cyan", "green"])
+            ),
+        ),
+    ]
+    return "".join(cards)
+
+
 def section(
     title: str,
     intro: str,
@@ -1548,14 +1661,15 @@ def build_data_page(
 ) -> str:
     command_links = [
         ("DT.00 Top", "#top"),
-        ("DT.01 Downloads", "#downloads"),
-        ("DT.02 Staged bundle", "#staged-bundle"),
-        ("DT.03 Fetch failures", "#fetch-failure-snapshots"),
-        ("DT.04 Categories", "#top-categories"),
-        ("DT.05 Revenue bands", "#revenue-bands"),
-        ("DT.06 Source coverage", "#source-coverage"),
-        ("DT.07 Diagnostics", "#source-pipeline-diagnostics"),
-        ("DT.08 Manifest", "#manifest-notes"),
+        ("DT.01 Signals", "#signal-board"),
+        ("DT.02 Downloads", "#downloads"),
+        ("DT.03 Staged bundle", "#staged-bundle"),
+        ("DT.04 Fetch failures", "#fetch-failure-snapshots"),
+        ("DT.05 Categories", "#top-categories"),
+        ("DT.06 Revenue bands", "#revenue-bands"),
+        ("DT.07 Source coverage", "#source-coverage"),
+        ("DT.08 Diagnostics", "#source-pipeline-diagnostics"),
+        ("DT.09 Manifest", "#manifest-notes"),
     ]
     hero = hero_section(
         eyebrow="Data and provenance",
@@ -1655,6 +1769,15 @@ def build_data_page(
     fetch_failure_downloads = "".join(
         download_card_html(artifact)
         for artifact in fetch_failure_items
+    )
+    signal_board_cards = data_page_infographic_cards(
+        metrics=metrics,
+        source_coverage_report=source_coverage_report,
+        category_rows=category_rows,
+        revenue_band_rows=revenue_band_rows,
+        publication_bundle_items=publication_bundle_items,
+        staged_bundle_items=staged_bundle_items,
+        fetch_failure_items=fetch_failure_items,
     )
 
     category_table = render_table(
@@ -2264,7 +2387,7 @@ def build_data_page(
                 f'<strong>{html.escape(str(source_pipeline_diagnostics["detail_parse_failure_source_count"]))}</strong> source pages.</p>'
             ),
             section_id="source-pipeline-diagnostics",
-            panel_code="DT.07",
+            panel_code="DT.08",
             panel_tag="provenance monitor",
         )
     else:
@@ -2284,7 +2407,7 @@ def build_data_page(
 </div>
 """,
             section_id="source-pipeline-diagnostics",
-            panel_code="DT.07",
+            panel_code="DT.08",
             panel_tag="provenance monitor",
         )
 
@@ -2297,11 +2420,23 @@ def build_data_page(
 
     sections = [
         section(
+            "Signal board",
+            "A quick-read infographic rack for bundle mix, revenue-band skew, category leadership, and source coverage before the table stack starts.",
+            (
+                f'<div class="infographic-grid">{signal_board_cards}</div>'
+                '<p class="section-note">These data-pane infographics are derived from the same static bundle outputs mirrored below, so the signal board stays deterministic and GitHub-Pages-safe.</p>'
+            ),
+            section_id="signal-board",
+            panel_code="DT.01",
+            panel_tag="infographic rack",
+            layout="compact",
+        ),
+        section(
             "Downloads",
             "Manifest-driven publication outputs are copied into the site so the published Pages bundle stays inspectable on its own.",
             download_section_summary_html(publication_bundle_items) + f'<div class="card-grid">{downloads}</div>',
             section_id="downloads",
-            panel_code="DT.01",
+            panel_code="DT.02",
             panel_tag="core outputs",
             layout="compact",
         ),
@@ -2317,7 +2452,7 @@ def build_data_page(
                 )
             ),
             section_id="staged-bundle",
-            panel_code="DT.02",
+            panel_code="DT.03",
             panel_tag="staged provenance",
             layout="compact",
         ),
@@ -2333,7 +2468,7 @@ def build_data_page(
                 )
             ),
             section_id="fetch-failure-snapshots",
-            panel_code="DT.03",
+            panel_code="DT.04",
             panel_tag="failure cache",
             layout="compact",
         ),
@@ -2342,7 +2477,7 @@ def build_data_page(
             "Category revenue concentration remains the clearest summary of the current sample shape.",
             category_table,
             section_id="top-categories",
-            panel_code="DT.04",
+            panel_code="DT.05",
             panel_tag="category board",
             layout="compact",
         ),
@@ -2351,7 +2486,7 @@ def build_data_page(
             "Most visible startups sit below $50k in 30-day revenue even though the total revenue is dominated by the top tail.",
             band_table,
             section_id="revenue-bands",
-            panel_code="DT.05",
+            panel_code="DT.06",
             panel_tag="distribution board",
             layout="compact",
         ),
@@ -2360,7 +2495,7 @@ def build_data_page(
             "The source coverage report keeps the public-page footprint explicit, with links back to the source pages.",
             source_table,
             section_id="source-coverage",
-            panel_code="DT.06",
+            panel_code="DT.07",
             panel_tag="source monitor",
             layout="compact",
         ),
@@ -2381,7 +2516,7 @@ def build_data_page(
 </div>
 """,
             section_id="manifest-notes",
-            panel_code="DT.08",
+            panel_code="DT.09",
             panel_tag="build notes",
             layout="compact",
         ),
