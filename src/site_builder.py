@@ -2018,6 +2018,146 @@ def staged_bundle_story_rails(
     )
 
 
+def fetch_failure_story_rails(
+    fetch_failure_items: list[dict[str, object]],
+    source_pipeline_diagnostics: dict[str, object],
+) -> str:
+    stats = artifact_collection_stats(fetch_failure_items)
+    total_bytes = int(stats["total_bytes"])
+    format_counts: Counter[str] = stats["format_counts"]  # type: ignore[assignment]
+    item_count = int(stats["item_count"])
+    json_count = format_counts.get("json", 0)
+    html_count = format_counts.get("html", 0)
+    fetch_failure_source_count = int(source_pipeline_diagnostics.get("fetch_failure_source_count") or 0)
+    cache_denominator = max(item_count, fetch_failure_source_count, 1)
+
+    fetch_failure_html_snapshot_availability_counts = (
+        source_pipeline_diagnostics.get("fetch_failure_html_snapshot_availability_counts", {}) or {}
+    )
+    available_snapshot_count = int(fetch_failure_html_snapshot_availability_counts.get("available") or 0)
+    retryability_counts = source_pipeline_diagnostics.get("fetch_failure_retryability_counts", {}) or {}
+    retryable_count = int(retryability_counts.get("retryable") or 0)
+    do_not_retry_count = int(retryability_counts.get("do_not_retry") or 0)
+    robots_policy_counts = source_pipeline_diagnostics.get("fetch_failure_robots_policy_counts", {}) or {}
+    disallowed_count = int(robots_policy_counts.get("disallowed") or 0)
+
+    if fetch_failure_source_count == 0 and item_count == 0:
+        cache_headline = "No fetch-failure artifacts are attached to the active manifest."
+        snapshot_headline = "No staged fetch failures are currently recorded, so the HTML/JSON cache stays empty."
+        recovery_headline = "No retryable, blocked, or do-not-retry failures are currently recorded."
+    else:
+        cache_headline = (
+            f"{count_label(item_count, 'artifact file')} cover "
+            f"{count_label(fetch_failure_source_count, 'failed source page')} at {format_byte_count(total_bytes)}."
+        )
+        if available_snapshot_count > 0:
+            snapshot_headline = (
+                f"HTML captures exist for {available_snapshot_count:,} of "
+                f"{fetch_failure_source_count:,} failed source pages."
+            )
+        else:
+            snapshot_headline = (
+                "Failure metadata is published without HTML captures when raw response bodies are unavailable."
+            )
+        if disallowed_count > 0:
+            recovery_headline = (
+                "Retryable work and robots-blocked failures are both visible before the raw artifact list."
+            )
+        else:
+            recovery_headline = "Retryability stays explicit before the raw fetch-failure artifacts."
+
+    rails = [
+        chart_annotation_rail(
+            kicker="Failure cache",
+            headline=cache_headline,
+            note="Raw fetch-failure evidence stays visibly separate from the promoted dataset contract while remaining inspectable from the same static page.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Artifact files",
+                        count_label(item_count, "file"),
+                        normalized_ratio(item_count, cache_denominator),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Failed sources",
+                        count_label(fetch_failure_source_count, "source page"),
+                        normalized_ratio(fetch_failure_source_count, cache_denominator),
+                        tone="red",
+                    ),
+                    infographic_meter(
+                        "Total bytes",
+                        format_byte_count(total_bytes),
+                        1.0 if total_bytes > 0 else 0.0,
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+        chart_annotation_rail(
+            kicker="Snapshot coverage",
+            headline=snapshot_headline,
+            note="JSON metadata stays canonical, and optional HTML captures expose raw failure bodies only when they exist.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "JSON files",
+                        count_label(json_count, "file"),
+                        normalized_ratio(json_count, item_count or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "HTML files",
+                        count_label(html_count, "file"),
+                        normalized_ratio(html_count, item_count or 1),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "HTML available",
+                        count_label(available_snapshot_count, "source page"),
+                        normalized_ratio(available_snapshot_count, fetch_failure_source_count or 1),
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+        chart_annotation_rail(
+            kicker="Recovery posture",
+            headline=recovery_headline,
+            note="The failure lane keeps backoff-versus-policy posture visible instead of hiding it behind the detailed diagnostics tables.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Retryable",
+                        count_label(retryable_count, "source page"),
+                        normalized_ratio(retryable_count, fetch_failure_source_count or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Do not retry",
+                        count_label(do_not_retry_count, "source page"),
+                        normalized_ratio(do_not_retry_count, fetch_failure_source_count or 1),
+                        tone="red",
+                    ),
+                    infographic_meter(
+                        "Robots blocked",
+                        count_label(disallowed_count, "source page"),
+                        normalized_ratio(disallowed_count, fetch_failure_source_count or 1),
+                        tone="cyan",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+    ]
+    return (
+        f'<div class="annotation-rail-grid">{"".join(rails)}</div>'
+        '<p class="section-note">These fetch-failure story rails reuse the same staged failure artifact metadata and publication-facing failure counts already published in the bundle, so the operator readout stays deterministic and GitHub-Pages-safe.</p>'
+    )
+
+
 def section(
     title: str,
     intro: str,
@@ -2580,6 +2720,7 @@ def build_data_page(
     )
     publication_download_story_rails_html = publication_download_story_rails(publication_bundle_items)
     staged_bundle_story_rails_html = staged_bundle_story_rails(staged_bundle_items, source_pipeline_diagnostics)
+    fetch_failure_story_rails_html = fetch_failure_story_rails(fetch_failure_items, source_pipeline_diagnostics)
 
     category_table = render_table(
         ["Category", "Visible revenue", "Median revenue", "Revenue share"],
@@ -3267,10 +3408,13 @@ def build_data_page(
             "Fetch Failure Snapshots",
             "When staged source fetch failures exist, their raw snapshot artifacts are exposed here as manifest-driven downloads separate from the promoted dataset contract.",
             (
-                download_section_summary_html(fetch_failure_items) + f'<div class="card-grid">{fetch_failure_downloads}</div>'
+                fetch_failure_story_rails_html
+                + download_section_summary_html(fetch_failure_items)
+                + f'<div class="card-grid">{fetch_failure_downloads}</div>'
                 if fetch_failure_items
                 else (
-                    download_section_summary_html(fetch_failure_items)
+                    fetch_failure_story_rails_html
+                    + download_section_summary_html(fetch_failure_items)
                     + '<p class="section-note">No staged fetch-failure snapshot downloads are currently attached to the active manifest.</p>'
                 )
             ),

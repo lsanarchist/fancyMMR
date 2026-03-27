@@ -800,6 +800,13 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Staging posture" in data_html
     assert "These download story rails reuse the same manifest-driven artifact metadata already attached to the publication bundle" in data_html
     assert "These staged-bundle story rails reuse the same staged artifact metadata and detail-staging counts already published in the bundle" in data_html
+    assert "Failure cache" in data_html
+    assert "Snapshot coverage" in data_html
+    assert "Recovery posture" in data_html
+    assert "No fetch-failure artifacts are attached to the active manifest." in data_html
+    assert "No staged fetch failures are currently recorded, so the HTML/JSON cache stays empty." in data_html
+    assert "No retryable, blocked, or do-not-retry failures are currently recorded." in data_html
+    assert "These fetch-failure story rails reuse the same staged failure artifact metadata and publication-facing failure counts already published in the bundle" in data_html
     assert "These data-pane infographics are derived from the same static bundle outputs mirrored below" in data_html
     assert "Staged Bundle" in data_html
     assert "Fetch Failure Snapshots" in data_html
@@ -1140,6 +1147,13 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "GET fetch_failures/category--ai.html" in data_html
     assert "GET fetch_failures/category--sales.json" in data_html
     assert "Fetch-failure evidence" in data_html
+    assert "Failure cache" in data_html
+    assert "Snapshot coverage" in data_html
+    assert "Recovery posture" in data_html
+    assert "3 artifact files cover 2 failed source pages at" in data_html
+    assert "HTML captures exist for 1 of 2 failed source pages." in data_html
+    assert "Retryable work and robots-blocked failures are both visible before the raw artifact list." in data_html
+    assert "These fetch-failure story rails reuse the same staged failure artifact metadata and publication-facing failure counts already published in the bundle" in data_html
     assert "3 files" in data_html
     assert "2 JSON" in data_html
     assert "1 HTML" in data_html
