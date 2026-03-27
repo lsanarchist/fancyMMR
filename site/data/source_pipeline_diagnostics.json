@@ -21,6 +21,7 @@
     "parsed": 0,
     "skipped_by_limit": 0
   },
+  "downloadable_fetch_failure_artifacts": [],
   "downloadable_staged_artifacts": [
     {
       "bytes": 26100,

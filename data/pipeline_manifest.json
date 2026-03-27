@@ -43,9 +43,9 @@
       "sha256": "1063d12d8aa30809c2c9a8f0d95caa0a3cf04474b784e3729143c03963063515"
     },
     {
-      "bytes": 39016,
+      "bytes": 39062,
       "path": "data/source_pipeline_diagnostics.json",
-      "sha256": "885417ade824537345c3e31cabcb67873b39e2f1b7d61dcd3d2ec1d3b52ec341"
+      "sha256": "d1eaea169271ba958f88906969f0cf52dd5940f7110fb74304ca819393459e5d"
     },
     {
       "bytes": 275582,
@@ -179,6 +179,7 @@
       "parsed": 0,
       "skipped_by_limit": 0
     },
+    "downloadable_fetch_failure_artifacts": [],
     "downloadable_staged_artifacts": [
       {
         "bytes": 26100,

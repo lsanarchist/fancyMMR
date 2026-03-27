@@ -72,14 +72,14 @@ def clean_site_dir() -> None:
     SITE_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def staged_source_pipeline_download_items(
+def source_pipeline_artifact_items(
     source_pipeline_diagnostics: dict[str, object],
     pipeline_manifest: dict[str, object],
+    *,
+    artifact_key: str,
 ) -> list[dict[str, object]]:
-    manifest_artifacts = pipeline_manifest.get("source_pipeline_diagnostics", {}).get(
-        "downloadable_staged_artifacts", []
-    )
-    diagnostics_artifacts = source_pipeline_diagnostics.get("downloadable_staged_artifacts", [])
+    manifest_artifacts = pipeline_manifest.get("source_pipeline_diagnostics", {}).get(artifact_key, [])
+    diagnostics_artifacts = source_pipeline_diagnostics.get(artifact_key, [])
     selected_artifacts = manifest_artifacts or diagnostics_artifacts
     items: list[dict[str, object]] = []
     for artifact in selected_artifacts:
@@ -110,6 +110,28 @@ def staged_source_pipeline_download_items(
             item["sha256"] = artifact_sha256
         items.append(item)
     return items
+
+
+def staged_source_pipeline_download_items(
+    source_pipeline_diagnostics: dict[str, object],
+    pipeline_manifest: dict[str, object],
+) -> list[dict[str, object]]:
+    return source_pipeline_artifact_items(
+        source_pipeline_diagnostics,
+        pipeline_manifest,
+        artifact_key="downloadable_staged_artifacts",
+    )
+
+
+def fetch_failure_download_items(
+    source_pipeline_diagnostics: dict[str, object],
+    pipeline_manifest: dict[str, object],
+) -> list[dict[str, object]]:
+    return source_pipeline_artifact_items(
+        source_pipeline_diagnostics,
+        pipeline_manifest,
+        artifact_key="downloadable_fetch_failure_artifacts",
+    )
 
 
 def copy_assets(
@@ -641,6 +663,7 @@ def build_data_page(
         ("data/pipeline_manifest.json", "Pipeline manifest", "Build command, input dataset hash, and copied-output inventory."),
     ]
     staged_bundle_items = staged_source_pipeline_download_items(source_pipeline_diagnostics, pipeline_manifest)
+    fetch_failure_items = fetch_failure_download_items(source_pipeline_diagnostics, pipeline_manifest)
 
     downloads = "".join(
         f"""
@@ -662,6 +685,17 @@ def build_data_page(
 </article>
 """
         for artifact in staged_bundle_items
+    )
+    fetch_failure_downloads = "".join(
+        f"""
+<article class="download-card">
+  <h3>{html.escape(artifact['label'])}</h3>
+  <p>{html.escape(artifact['description'])}</p>
+  {staged_download_provenance_html(artifact)}
+  <a href="{html.escape(artifact['site_path'], quote=True)}">Download</a>
+</article>
+"""
+        for artifact in fetch_failure_items
     )
 
     category_table = render_table(
@@ -883,6 +917,15 @@ def build_data_page(
                 f'<div class="card-grid">{staged_bundle_downloads}</div>'
                 if staged_bundle_items
                 else '<p class="section-note">No staged source-pipeline bundle downloads are attached to the active publication manifest.</p>'
+            ),
+        ),
+        section(
+            "Fetch Failure Snapshots",
+            "When staged source fetch failures exist, their raw snapshot artifacts are exposed here as manifest-driven downloads separate from the promoted dataset contract.",
+            (
+                f'<div class="card-grid">{fetch_failure_downloads}</div>'
+                if fetch_failure_items
+                else '<p class="section-note">No staged fetch-failure snapshot downloads are currently attached to the active manifest.</p>'
             ),
         ),
         section(
@@ -1419,6 +1462,7 @@ def build_site() -> None:
     source_pipeline_diagnostics = read_json(DATA_DIR / "source_pipeline_diagnostics.json")
     pipeline_manifest = read_json(DATA_DIR / "pipeline_manifest.json")
     staged_download_items = staged_source_pipeline_download_items(source_pipeline_diagnostics, pipeline_manifest)
+    fetch_failure_items = fetch_failure_download_items(source_pipeline_diagnostics, pipeline_manifest)
     clean_site_dir()
-    copy_assets(staged_download_items=staged_download_items)
+    copy_assets(staged_download_items=staged_download_items + fetch_failure_items)
     write_site_pages()

@@ -236,6 +236,27 @@ def _int_dict(value: dict[str, object] | None) -> dict[str, int]:
     return {str(key): int(count) for key, count in (value or {}).items()}
 
 
+def _artifact_download_record(
+    *,
+    relative_path: str,
+    label: str,
+    description: str,
+    artifact_format: str,
+) -> dict[str, object] | None:
+    artifact_path = BUILD_PATHS.root / relative_path
+    if not artifact_path.exists():
+        return None
+    return {
+        "path": relative_path,
+        "site_path": relative_path,
+        "label": label,
+        "description": description,
+        "format": artifact_format,
+        "bytes": int(artifact_path.stat().st_size),
+        "sha256": _sha256(artifact_path),
+    }
+
+
 def _build_downloadable_staged_artifacts(
     artifact_paths: dict[str, str | None],
 ) -> list[dict[str, object]]:
@@ -281,20 +302,14 @@ def _build_downloadable_staged_artifacts(
         relative_path = artifact_paths.get(artifact_key)
         if not relative_path:
             continue
-        artifact_path = BUILD_PATHS.root / relative_path
-        if not artifact_path.exists():
-            continue
-        artifacts.append(
-            {
-                "path": relative_path,
-                "site_path": relative_path,
-                "label": label,
-                "description": description,
-                "format": artifact_format,
-                "bytes": int(artifact_path.stat().st_size),
-                "sha256": _sha256(artifact_path),
-            }
+        artifact = _artifact_download_record(
+            relative_path=relative_path,
+            label=label,
+            description=description,
+            artifact_format=artifact_format,
         )
+        if artifact is not None:
+            artifacts.append(artifact)
     return artifacts
 
 
@@ -327,9 +342,49 @@ def _load_fetch_failure_sources(
                 "message": str(snapshot.get("message") or ""),
                 "status_code": snapshot.get("status_code"),
                 "has_html_snapshot": bool(snapshot.get("html_snapshot_path")),
+                "html_snapshot_path": snapshot.get("html_snapshot_path"),
             }
         )
     return failure_sources
+
+
+def _build_downloadable_fetch_failure_artifacts(
+    fetch_failure_sources: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    artifacts: list[dict[str, object]] = []
+    for failure_source in fetch_failure_sources:
+        source_id = str(failure_source["source_id"])
+        category_label = str(failure_source.get("category_label") or source_id)
+        source_url = str(failure_source.get("source_url") or source_id)
+        status_code = failure_source.get("status_code")
+        status_text = f"HTTP {status_code}" if status_code is not None else "no HTTP status"
+
+        metadata_artifact = _artifact_download_record(
+            relative_path=f"data/fetch_failures/{source_id}.json",
+            label=f"Fetch failure metadata - {category_label}",
+            description=(
+                f"Structured staged fetch-failure metadata for {source_url} "
+                f"({status_text}). This remains staged provenance."
+            ),
+            artifact_format="json",
+        )
+        if metadata_artifact is not None:
+            artifacts.append(metadata_artifact)
+
+        html_snapshot_path = str(failure_source.get("html_snapshot_path") or "")
+        if html_snapshot_path:
+            html_artifact = _artifact_download_record(
+                relative_path=html_snapshot_path,
+                label=f"Fetch failure HTML snapshot - {category_label}",
+                description=(
+                    f"Captured staged response body for the fetch failure on {source_url} "
+                    f"({status_text}). This remains staged provenance."
+                ),
+                artifact_format="html",
+            )
+            if html_artifact is not None:
+                artifacts.append(html_artifact)
+    return artifacts
 
 
 def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[str, object]:
@@ -379,6 +434,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "missing_gtm_model_count": None,
         "failing_warning_check_ids": [],
         "failing_error_check_ids": [],
+        "downloadable_fetch_failure_artifacts": [],
         "fetch_failure_sources": [],
         "detail_parse_failure_sources": [],
         "downloadable_staged_artifacts": [],
@@ -434,6 +490,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         str(source["source_id"]): source for source in detail_field_coverage.get("sources", [])
     }
     fetch_failure_sources = _load_fetch_failure_sources(selected_sources_by_id)
+    downloadable_fetch_failure_artifacts = _build_downloadable_fetch_failure_artifacts(fetch_failure_sources)
     source_pages = []
     for source_output in run_manifest.get("per_source_outputs", []):
         source_id = str(source_output["source_id"])
@@ -540,6 +597,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
                 for check in validation_report["checks"]
                 if check["severity"] == "error" and not check["passed"]
             ],
+            "downloadable_fetch_failure_artifacts": downloadable_fetch_failure_artifacts,
             "fetch_failure_sources": fetch_failure_sources,
             "detail_parse_failure_sources": detail_parse_failure_sources,
             "downloadable_staged_artifacts": downloadable_staged_artifacts,
@@ -638,6 +696,9 @@ def write_pipeline_manifest(
             "detail_parse_failure_source_count": source_pipeline_diagnostics_report["detail_parse_failure_source_count"],
             "detail_parse_status_counts": source_pipeline_diagnostics_report["detail_parse_status_counts"],
             "detail_field_population_counts": source_pipeline_diagnostics_report["detail_field_population_counts"],
+            "downloadable_fetch_failure_artifacts": source_pipeline_diagnostics_report[
+                "downloadable_fetch_failure_artifacts"
+            ],
             "downloadable_staged_artifacts": source_pipeline_diagnostics_report["downloadable_staged_artifacts"],
         },
         "source_page_count": source_coverage_report["source_page_count"],

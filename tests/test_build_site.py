@@ -33,6 +33,16 @@ def run_site_build(workspace: Path) -> None:
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def run_artifact_build(workspace: Path) -> None:
+    result = subprocess.run(
+        [sys.executable, "src/build_artifacts.py"],
+        cwd=workspace,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
 def site_hashes(workspace: Path) -> dict[str, str]:
     site_root = workspace / "site"
     return {
@@ -97,6 +107,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "source_pipeline_diagnostics.json" in data_html
     assert "pipeline_manifest.json" in data_html
     assert "Staged Bundle" in data_html
+    assert "Fetch Failure Snapshots" in data_html
     assert "staged source-pipeline bundle" in data_html
     assert "source_pipeline/snapshots/run_manifest.json" in data_html
     assert "source_pipeline/processed/validation_report.json" in data_html
@@ -110,6 +121,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Detail parse failures" in data_html
     assert "Detail-field coverage" in data_html
     assert "staged provenance" in data_html
+    assert "No staged fetch-failure snapshot downloads are currently attached to the active manifest." in data_html
     assert "No staged source fetch failures are currently recorded for the active manifest." in data_html
     assert "No source pages in the active manifest currently report staged detail parse failures." in data_html
     assert "No staged detail rows in the active manifest currently populate the shared detail fields." in data_html
@@ -119,6 +131,48 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Staged duplicate review" in data_html
     assert "SHA256" in data_html
     for artifact in pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"]:
+        assert artifact["site_path"] in data_html
+        assert artifact["sha256"] in data_html
+        assert f"{artifact['bytes']:,} bytes" in data_html
+
+
+def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Path) -> None:
+    workspace = prepare_workspace(tmp_path)
+    failure_dir = workspace / "data" / "fetch_failures"
+    failure_dir.mkdir(parents=True, exist_ok=True)
+    (failure_dir / "category--ai.html").write_text("<html><body>broken</body></html>", encoding="utf-8")
+    (failure_dir / "category--ai.json").write_text(
+        json.dumps(
+            {
+                "source_id": "category--ai",
+                "url": "https://trustmrr.com/category/ai",
+                "parser_strategy": "trustmrr_category_listing",
+                "source_group": "category",
+                "error_type": "HTTPError",
+                "message": "HTTP Error 500: server exploded",
+                "status_code": 500,
+                "html_snapshot_path": "data/fetch_failures/category--ai.html",
+            },
+            indent=2,
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+
+    run_artifact_build(workspace)
+    run_site_build(workspace)
+
+    site_root = workspace / "site"
+    data_html = (site_root / "data.html").read_text(encoding="utf-8")
+    pipeline_manifest = json.loads((site_root / "data" / "pipeline_manifest.json").read_text(encoding="utf-8"))
+
+    assert (site_root / "data" / "fetch_failures" / "category--ai.json").exists()
+    assert (site_root / "data" / "fetch_failures" / "category--ai.html").exists()
+    assert "Fetch failure metadata - AI" in data_html
+    assert "Fetch failure HTML snapshot - AI" in data_html
+    assert "data/fetch_failures/category--ai.json" in data_html
+    assert "data/fetch_failures/category--ai.html" in data_html
+    for artifact in pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"]:
         assert artifact["site_path"] in data_html
         assert artifact["sha256"] in data_html
         assert f"{artifact['bytes']:,} bytes" in data_html

@@ -129,6 +129,7 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert source_pipeline_diagnostics["detail_parse_status_counts"] is None
     assert source_pipeline_diagnostics["detail_field_population_counts"] is None
     assert source_pipeline_diagnostics["fetch_failure_sources"] == []
+    assert source_pipeline_diagnostics["downloadable_fetch_failure_artifacts"] == []
     assert source_pipeline_diagnostics["detail_parse_failure_sources"] == []
     assert source_pipeline_diagnostics["downloadable_staged_artifacts"] == []
     assert validation_report["status"] in {"passed", "passed_with_warnings"}
@@ -159,6 +160,7 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert pipeline_manifest["validation"]["source_pipeline_diagnostics_report_path"] == "data/source_pipeline_diagnostics.json"
     assert pipeline_manifest["source_pipeline_diagnostics"]["available"] is False
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_count"] is None
+    assert pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"] == []
 
 
 def test_refactored_module_surfaces_match_expected_metrics() -> None:
@@ -204,6 +206,7 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert diagnostics["detail_field_population_counts"]["problem_solved"] == 0
     assert diagnostics["detail_field_population_counts"]["founder_name"] == 0
     assert diagnostics["detail_parse_failure_sources"] == []
+    assert diagnostics["downloadable_fetch_failure_artifacts"] == []
     assert [artifact["path"] for artifact in diagnostics["downloadable_staged_artifacts"]] == [
         "data/source_pipeline/snapshots/run_manifest.json",
         "data/source_pipeline/processed/validation_report.json",
@@ -230,6 +233,7 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert pipeline_manifest["source_pipeline_diagnostics"]["path"] == "data/source_pipeline_diagnostics.json"
     assert pipeline_manifest["source_pipeline_diagnostics"]["failed_detail_page_count"] == 0
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_count"] == 0
+    assert pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"] == []
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_failure_source_count"] == 0
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_status_counts"]["not_requested"] == 852
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_field_population_counts"]["problem_solved"] == 0
@@ -254,6 +258,7 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
     workspace = prepare_workspace(tmp_path)
     failure_dir = workspace / "data" / "fetch_failures"
     failure_dir.mkdir(parents=True, exist_ok=True)
+    (failure_dir / "category--ai.html").write_text("<html><body>broken</body></html>", encoding="utf-8")
     (failure_dir / "category--ai.json").write_text(
         json.dumps(
             {
@@ -283,6 +288,7 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
             "category_label": "AI",
             "error_type": "HTTPError",
             "has_html_snapshot": True,
+            "html_snapshot_path": "data/fetch_failures/category--ai.html",
             "message": "HTTP Error 500: server exploded",
             "parser_strategy": "trustmrr_category_listing",
             "source_group": "category",
@@ -292,6 +298,21 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
         }
     ]
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_count"] == 1
+    assert [
+        artifact["path"] for artifact in diagnostics["downloadable_fetch_failure_artifacts"]
+    ] == [
+        "data/fetch_failures/category--ai.json",
+        "data/fetch_failures/category--ai.html",
+    ]
+    for artifact in diagnostics["downloadable_fetch_failure_artifacts"]:
+        artifact_path = workspace / artifact["path"]
+        assert artifact["path"] == artifact["site_path"]
+        assert artifact["bytes"] == artifact_path.stat().st_size
+        assert artifact["sha256"] == hashlib.sha256(artifact_path.read_bytes()).hexdigest()
+    assert (
+        pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"]
+        == diagnostics["downloadable_fetch_failure_artifacts"]
+    )
 
 
 def test_validation_report_fails_for_missing_columns_and_threshold_violations() -> None:
