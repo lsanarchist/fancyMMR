@@ -125,6 +125,16 @@ def extract_hero_aside(text: str, eyebrow: str) -> str:
     raise AssertionError(eyebrow)
 
 
+def extract_ticker_strip(text: str) -> str:
+    pattern = re.compile(
+        r'<div class="ticker-strip" aria-label="Workspace status">(.*?)</div>',
+        re.DOTALL,
+    )
+    match = pattern.search(text)
+    assert match, "ticker-strip"
+    return match.group(1)
+
+
 def format_byte_count(byte_count: int) -> str:
     if byte_count == 1:
         return "1 byte"
@@ -719,6 +729,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     concentration_monitor_section = extract_rail_module(index_html, "Concentration monitor")
     warning_posture_section = extract_rail_module(index_html, "Warning posture")
     overview_hero_aside = extract_hero_aside(index_html, "Current build snapshot")
+    index_ticker_strip = extract_ticker_strip(index_html)
     assert "Route spread" in route_map_section
     assert "3 routes keep overview, methodology, and data one jump away." in route_map_section
     assert ">Overview<" in route_map_section
@@ -778,6 +789,20 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Validation" in overview_hero_aside
     assert "Current build snapshot" in overview_hero_aside
     assert "249 startups" in overview_hero_aside
+    assert "surface" in index_ticker_strip
+    assert "static pages" in index_ticker_strip
+    assert "validation" in index_ticker_strip
+    assert "Passed with warnings" in index_ticker_strip
+    assert "route" in index_ticker_strip
+    assert "overview" in index_ticker_strip
+    assert "local panels" in index_ticker_strip
+    assert "5 indexed" in index_ticker_strip
+    assert "global commands" in index_ticker_strip
+    assert "22 indexed" in index_ticker_strip
+    assert "hot outputs" in index_ticker_strip
+    assert "17 files" in index_ticker_strip
+    assert "mode" in index_ticker_strip
+    assert "visible public sample" in index_ticker_strip
     publication_output_section = extract_hot_output_section(index_html, "Publication outputs")
     staged_output_section = extract_hot_output_section(index_html, "Staged provenance")
     assert "Registry shape" in publication_output_section
@@ -918,6 +943,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     methodology_validation_posture_section = extract_rail_module(methodology_html, "Validation posture")
     methodology_publication_caveat_section = extract_rail_module(methodology_html, "Publication caveat")
     methodology_hero_aside = extract_hero_aside(methodology_html, "Warning-only signals")
+    methodology_ticker_strip = extract_ticker_strip(methodology_html)
     assert "Gate contract" in methodology_inclusion_rule_section
     assert "The methodology keeps the visible sample tied to the public-page &gt;= $5,000 / 30d inclusion rule." in methodology_inclusion_rule_section
     assert "Threshold" in methodology_inclusion_rule_section
@@ -941,6 +967,14 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Heuristic gaps" in methodology_hero_aside
     assert "Warning-only signals" in methodology_hero_aside
     assert "9 duplicate names / 0 heuristic gaps" in methodology_hero_aside
+    assert "route" in methodology_ticker_strip
+    assert "methodology" in methodology_ticker_strip
+    assert "local panels" in methodology_ticker_strip
+    assert "5 indexed" in methodology_ticker_strip
+    assert "global commands" in methodology_ticker_strip
+    assert "22 indexed" in methodology_ticker_strip
+    assert "hot outputs" in methodology_ticker_strip
+    assert "17 files" in methodology_ticker_strip
 
     assert "metrics.json" in data_html
     assert f'<meta http-equiv="Content-Security-Policy" content="{ESCAPED_CSP_SNIPPET}">' in data_html
@@ -1056,6 +1090,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     download_surface_section = extract_rail_module(data_html, "Download surface")
     diagnostics_feed_section = extract_rail_module(data_html, "Diagnostics feed")
     data_hero_aside = extract_hero_aside(data_html, "Manifest summary")
+    data_ticker_strip = extract_ticker_strip(data_html)
     assert "Route spread" in data_route_map_section
     assert "3 routes keep overview, methodology, and data one jump away." in data_route_map_section
     assert ">Data<" in data_route_map_section
@@ -1116,6 +1151,14 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Diagnostics" in data_hero_aside
     assert "Manifest summary" in data_hero_aside
     assert "21 generated outputs" in data_hero_aside
+    assert "route" in data_ticker_strip
+    assert "data" in data_ticker_strip
+    assert "local panels" in data_ticker_strip
+    assert "10 indexed" in data_ticker_strip
+    assert "global commands" in data_ticker_strip
+    assert "22 indexed" in data_ticker_strip
+    assert "hot outputs" in data_ticker_strip
+    assert "17 files" in data_ticker_strip
     assert "Registry shape" in data_html
     assert "Signal anchors" in data_html
     assert "keep the publication command surface self-contained at" in data_html

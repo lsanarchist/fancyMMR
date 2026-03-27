@@ -525,7 +525,14 @@ def status_class(status: str) -> str:
     }.get(status, "is-neutral")
 
 
-def shell_tokens(*, active: str, status: str) -> str:
+def shell_tokens(
+    *,
+    active: str,
+    status: str,
+    local_panel_count: int,
+    global_command_count: int,
+    hot_output_count: int,
+) -> str:
     route_label = {
         "index": "overview",
         "methodology": "methodology",
@@ -536,6 +543,9 @@ def shell_tokens(*, active: str, status: str) -> str:
             '<span class="shell-pill shell-pill-accent"><strong>surface</strong><span>static pages</span></span>',
             f'<span class="shell-pill {status_class(status)}"><strong>validation</strong><span>{html.escape(status_label(status))}</span></span>',
             f'<span class="shell-pill"><strong>route</strong><span>{html.escape(route_label)}</span></span>',
+            f'<span class="shell-pill"><strong>local panels</strong><span>{local_panel_count:,} indexed</span></span>',
+            f'<span class="shell-pill"><strong>global commands</strong><span>{global_command_count:,} indexed</span></span>',
+            f'<span class="shell-pill"><strong>hot outputs</strong><span>{count_label(hot_output_count, "file")}</span></span>',
             '<span class="shell-pill"><strong>mode</strong><span>visible public sample</span></span>',
         ]
     )
@@ -839,6 +849,7 @@ def page_shell(
         for item in section.get("items", [])
         if isinstance(item, dict)
     ]
+    global_command_count = len(route_registry_items) + len(output_registry_items)
     nav_items = [
         ("index", "Overview", "index.html"),
         ("methodology", "Methodology", "methodology.html"),
@@ -891,7 +902,13 @@ def page_shell(
         <span class="brand-title">TrustMRR visible-sample terminal</span>
       </a>
       <div class="ticker-strip" aria-label="Workspace status">
-        {shell_tokens(active=active, status=status)}
+        {shell_tokens(
+            active=active,
+            status=status,
+            local_panel_count=len(local_panel_items),
+            global_command_count=global_command_count,
+            hot_output_count=len(output_registry_items),
+        )}
       </div>
     </div>
   </header>
@@ -973,7 +990,7 @@ def page_shell(
         <div class="command-bar-links">
           {command_bar_links}
         </div>
-        <p class="command-status" role="status" aria-live="polite" aria-atomic="true" data-command-status>Ready. {len(local_panel_items):,} local panels and {len(route_registry_items) + len(output_registry_items):,} global commands indexed.</p>
+        <p class="command-status" role="status" aria-live="polite" aria-atomic="true" data-command-status>Ready. {len(local_panel_items):,} local panels and {global_command_count:,} global commands indexed.</p>
       </section>
       {body_html}
     </main>
