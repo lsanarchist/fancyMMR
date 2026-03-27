@@ -277,6 +277,13 @@ def count_label(count: int, singular: str) -> str:
     return f"{count:,} {singular}" if count == 1 else f"{count:,} {singular}s"
 
 
+def format_count_share(item_count: int, section_item_count: int) -> str:
+    if section_item_count <= 0:
+        return "0%"
+    share = (100 * item_count) / section_item_count
+    return f"{share:.0f}%"
+
+
 def artifact_format_label(artifact: dict[str, object]) -> str:
     artifact_format = str(artifact.get("format") or "").strip().lower()
     if artifact_format:
@@ -657,6 +664,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     item_format_share = str(item.get("format_share") or "")
     item_format_total = str(item.get("format_total") or "")
     item_format_count = str(item.get("format_count") or "")
+    item_format_file_share = str(item.get("format_file_share") or "")
     byte_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
         if isinstance(item_bytes, int)
@@ -692,6 +700,11 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         if item_format_count
         else ""
     )
+    format_file_share_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-format-file-share">{html.escape(item_format_file_share)}</span>'
+        if item_format_file_share
+        else ""
+    )
     return (
         f'<a class="rail-command-link output-registry-link" href="{html.escape(target, quote=True)}" '
         f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
@@ -710,6 +723,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         f"{format_share_badge_html}"
         f"{format_total_badge_html}"
         f"{format_count_badge_html}"
+        f"{format_file_share_badge_html}"
         "</span>"
         "</a>"
     )
@@ -791,6 +805,7 @@ def global_route_command_items() -> list[dict[str, str]]:
 
 def global_output_command_items(download_items: list[dict[str, object]]) -> list[dict[str, object]]:
     items: list[dict[str, object]] = []
+    section_item_count = 0
     section_total_bytes = sum(
         int(artifact.get("bytes"))
         for artifact in download_items
@@ -824,11 +839,14 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
         site_path = str(artifact.get("site_path") or "")
         artifact_format = str(artifact.get("format") or "").strip().lower() or "other"
         artifact_bytes = artifact.get("bytes")
-        if not site_path or not isinstance(artifact_bytes, int):
+        if not site_path:
             continue
-        format_ranked_site_paths.setdefault(artifact_format, []).append((site_path, artifact_bytes))
+        section_item_count += 1
         format_item_counts[artifact_format] = format_item_counts.get(artifact_format, 0) + 1
+        if not isinstance(artifact_bytes, int):
+            continue
         format_total_bytes[artifact_format] = format_total_bytes.get(artifact_format, 0) + artifact_bytes
+        format_ranked_site_paths.setdefault(artifact_format, []).append((site_path, artifact_bytes))
     for artifact_format, ranked_items in format_ranked_site_paths.items():
         format_count = len(ranked_items)
         format_width = max(2, len(str(format_count or 1)))
@@ -863,6 +881,12 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
         )
         if artifact_format:
             items[-1]["format"] = artifact_format
+        items[-1]["format_count"] = (
+            f"{artifact_format_label} {count_label(format_item_counts.get(artifact_format_key, 0), 'file')}"
+        )
+        items[-1]["format_file_share"] = (
+            f"{artifact_format_label} {format_count_share(format_item_counts.get(artifact_format_key, 0), section_item_count)}"
+        )
         artifact_bytes = artifact.get("bytes")
         if isinstance(artifact_bytes, int):
             items[-1]["bytes"] = artifact_bytes
@@ -874,9 +898,6 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
             )
             items[-1]["format_total"] = (
                 f"{artifact_format_label} {format_byte_count(format_total_bytes.get(artifact_format_key, 0))}"
-            )
-            items[-1]["format_count"] = (
-                f"{artifact_format_label} {count_label(format_item_counts.get(artifact_format_key, 0), 'file')}"
             )
     return items
 
@@ -5699,6 +5720,12 @@ body {
   color: var(--accent);
   border-color: rgba(246, 165, 58, 0.22);
   background: rgba(246, 165, 58, 0.08);
+}
+
+.output-registry-badge-format-file-share {
+  color: var(--ink);
+  border-color: rgba(244, 234, 215, 0.22);
+  background: rgba(244, 234, 215, 0.12);
 }
 
 .nav-link:hover,
