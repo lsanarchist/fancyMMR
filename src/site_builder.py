@@ -284,6 +284,13 @@ def format_count_share(item_count: int, section_item_count: int) -> str:
     return f"{share:.0f}%"
 
 
+def format_average_byte_count(total_bytes: int, item_count: int) -> str:
+    if item_count <= 0:
+        return "avg 0 bytes"
+    average_bytes = (total_bytes + (item_count // 2)) // item_count
+    return f"avg {format_byte_count(average_bytes)}"
+
+
 def artifact_format_label(artifact: dict[str, object]) -> str:
     artifact_format = str(artifact.get("format") or "").strip().lower()
     if artifact_format:
@@ -665,6 +672,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     item_format_total = str(item.get("format_total") or "")
     item_format_count = str(item.get("format_count") or "")
     item_format_file_share = str(item.get("format_file_share") or "")
+    item_format_average_size = str(item.get("format_average_size") or "")
     byte_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
         if isinstance(item_bytes, int)
@@ -705,6 +713,11 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         if item_format_file_share
         else ""
     )
+    format_average_size_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-format-average-size">{html.escape(item_format_average_size)}</span>'
+        if item_format_average_size
+        else ""
+    )
     return (
         f'<a class="rail-command-link output-registry-link" href="{html.escape(target, quote=True)}" '
         f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
@@ -724,6 +737,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         f"{format_total_badge_html}"
         f"{format_count_badge_html}"
         f"{format_file_share_badge_html}"
+        f"{format_average_size_badge_html}"
         "</span>"
         "</a>"
     )
@@ -886,6 +900,9 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
         )
         items[-1]["format_file_share"] = (
             f"{artifact_format_label} {format_count_share(format_item_counts.get(artifact_format_key, 0), section_item_count)}"
+        )
+        items[-1]["format_average_size"] = (
+            f"{artifact_format_label} {format_average_byte_count(format_total_bytes.get(artifact_format_key, 0), format_item_counts.get(artifact_format_key, 0))}"
         )
         artifact_bytes = artifact.get("bytes")
         if isinstance(artifact_bytes, int):
@@ -5726,6 +5743,12 @@ body {
   color: var(--ink);
   border-color: rgba(244, 234, 215, 0.22);
   background: rgba(244, 234, 215, 0.12);
+}
+
+.output-registry-badge-format-average-size {
+  color: var(--cyan);
+  border-color: rgba(98, 201, 214, 0.22);
+  background: rgba(98, 201, 214, 0.12);
 }
 
 .nav-link:hover,
