@@ -75,6 +75,16 @@ def extract_hot_output_section(text: str, title: str) -> str:
     return match.group(0)
 
 
+def extract_rail_module(text: str, kicker: str) -> str:
+    pattern = re.compile(
+        rf'<section class="rail-module">\s*<p class="rail-kicker">{re.escape(kicker)}</p>.*?</section>',
+        re.DOTALL,
+    )
+    match = pattern.search(text)
+    assert match, kicker
+    return match.group(0)
+
+
 def format_byte_count(byte_count: int) -> str:
     if byte_count == 1:
         return "1 byte"
@@ -659,6 +669,19 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "GET public_source_pages.csv" in index_html
     assert "GET source_pipeline/snapshots/run_manifest.json" in index_html
     assert "GET source_pipeline/processed/detail_page_rows.csv" in index_html
+    command_deck_section = extract_rail_module(index_html, "Command deck")
+    route_registry_section = extract_rail_module(index_html, "Route registry")
+    assert "Deck spread" in command_deck_section
+    assert "5 local jumps map the /index surface from #top to #category-leaders." in command_deck_section
+    assert "Top anchor" in command_deck_section
+    assert "Section anchors" in command_deck_section
+    assert "Current route" in command_deck_section
+    assert "/index" in command_deck_section
+    assert "Cross-page span" in route_registry_section
+    assert "5 global jumps keep top-level routes and data pivots one jump away." in route_registry_section
+    assert "Page roots" in route_registry_section
+    assert "Direct anchors" in route_registry_section
+    assert "Data-bound" in route_registry_section
     publication_output_section = extract_hot_output_section(index_html, "Publication outputs")
     staged_output_section = extract_hot_output_section(index_html, "Staged provenance")
     assert "Registry shape" in publication_output_section
@@ -900,6 +923,19 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Publication outputs" in data_html
     assert "Staged provenance" in data_html
     assert "Fetch-failure evidence" in data_html
+    data_command_deck_section = extract_rail_module(data_html, "Command deck")
+    data_route_registry_section = extract_rail_module(data_html, "Route registry")
+    assert "Deck spread" in data_command_deck_section
+    assert "10 local jumps map the /data surface from #top to #manifest-notes." in data_command_deck_section
+    assert "Top anchor" in data_command_deck_section
+    assert "Section anchors" in data_command_deck_section
+    assert "Current route" in data_command_deck_section
+    assert "/data" in data_command_deck_section
+    assert "Cross-page span" in data_route_registry_section
+    assert "5 global jumps keep top-level routes and data pivots one jump away." in data_route_registry_section
+    assert "Page roots" in data_route_registry_section
+    assert "Direct anchors" in data_route_registry_section
+    assert "Data-bound" in data_route_registry_section
     assert "Registry shape" in data_html
     assert "Signal anchors" in data_html
     assert "keep the publication command surface self-contained at" in data_html

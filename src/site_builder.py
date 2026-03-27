@@ -845,6 +845,8 @@ def page_shell(
     command_bar_links = command_links_markup(local_panel_items, link_class="command-chip")
     command_deck_links = command_links_markup(local_panel_items, link_class="rail-command-link")
     route_registry_links = command_links_markup(route_registry_items, link_class="rail-command-link")
+    command_deck_story_html = command_deck_story_rail(local_panel_items, active=active)
+    route_registry_story_html = route_registry_story_rail(route_registry_items)
     output_registry_links = output_registry_sections_markup(output_registry_sections)
     return f"""<!doctype html>
 <html lang="en">
@@ -882,12 +884,14 @@ def page_shell(
       </section>
       <section class="rail-module">
         <p class="rail-kicker">Command deck</p>
+        {command_deck_story_html}
         <nav class="rail-command-links" aria-label="Page panels">
           {command_deck_links}
         </nav>
       </section>
       <section class="rail-module">
         <p class="rail-kicker">Route registry</p>
+        {route_registry_story_html}
         <nav class="rail-command-links" aria-label="Cross-page routes">
           {route_registry_links}
         </nav>
@@ -2268,6 +2272,98 @@ def fetch_failure_output_registry_story_rails(
         ),
     ]
     return f'<div class="annotation-rail-grid">{"".join(rails)}</div>'
+
+
+def command_deck_story_rail(local_panel_items: list[dict[str, object]], *, active: str) -> str:
+    item_count = len(local_panel_items)
+    top_anchor_count = sum(1 for item in local_panel_items if str(item.get("target") or "") == "#top")
+    section_anchor_count = sum(
+        1
+        for item in local_panel_items
+        if str(item.get("target") or "").startswith("#") and str(item.get("target") or "") != "#top"
+    )
+    last_target = str(local_panel_items[-1].get("target") or "#top") if local_panel_items else "#top"
+    headline = (
+        "No route-local panel jumps are currently indexed."
+        if item_count == 0
+        else f"{count_label(item_count, 'local jump')} map the {route_key(active)} surface from #top to {last_target}."
+    )
+    return (
+        '<div class="annotation-rail-grid">'
+        + chart_annotation_rail(
+            kicker="Deck spread",
+            headline=headline,
+            note="The command deck stays route-local, so keyboard jumps can move through the current surface without leaving context.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Top anchor",
+                        count_label(top_anchor_count, "jump"),
+                        normalized_ratio(top_anchor_count, item_count or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Section anchors",
+                        count_label(section_anchor_count, "jump"),
+                        normalized_ratio(section_anchor_count, item_count or 1),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Current route",
+                        route_key(active),
+                        1.0 if item_count > 0 else 0.0,
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        )
+        + "</div>"
+    )
+
+
+def route_registry_story_rail(route_registry_items: list[dict[str, object]]) -> str:
+    item_count = len(route_registry_items)
+    page_root_count = sum(1 for item in route_registry_items if "#" not in str(item.get("target") or ""))
+    direct_anchor_count = sum(1 for item in route_registry_items if "#" in str(item.get("target") or ""))
+    data_bound_count = sum(1 for item in route_registry_items if str(item.get("target") or "").startswith("data.html"))
+    headline = (
+        "No cross-page routes are currently indexed."
+        if item_count == 0
+        else f"{count_label(item_count, 'global jump')} keep top-level routes and data pivots one jump away."
+    )
+    return (
+        '<div class="annotation-rail-grid">'
+        + chart_annotation_rail(
+            kicker="Cross-page span",
+            headline=headline,
+            note="The route registry keeps broad page switches plus the most useful data pivots pinned across every surface.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Page roots",
+                        count_label(page_root_count, "route"),
+                        normalized_ratio(page_root_count, item_count or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Direct anchors",
+                        count_label(direct_anchor_count, "route"),
+                        normalized_ratio(direct_anchor_count, item_count or 1),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Data-bound",
+                        count_label(data_bound_count, "route"),
+                        normalized_ratio(data_bound_count, item_count or 1),
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        )
+        + "</div>"
+    )
 
 
 def publication_output_registry_story_rails(
