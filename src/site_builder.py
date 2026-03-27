@@ -1028,6 +1028,18 @@ def hero_section(*, eyebrow: str, title: str, lede: str, status: str, aside_html
 """
 
 
+def hero_aside_panel(*, eyebrow: str, value: str, note: str, metrics_html: str, story_html: str = "") -> str:
+    return f"""
+<div class="hero-aside">
+  {story_html}
+  <p class="eyebrow">{html.escape(eyebrow)}</p>
+  <p class="hero-aside-value">{html.escape(value)}</p>
+  <p class="hero-aside-note">{html.escape(note)}</p>
+  {metrics_html}
+</div>
+"""
+
+
 def stat_card(label: str, value: str, note: str) -> str:
     return f"""
 <article class="stat-card">
@@ -2949,6 +2961,117 @@ def data_diagnostics_feed_story_rail(source_pipeline_diagnostics: dict[str, obje
     )
 
 
+def overview_hero_story_rail(metrics: dict[str, object], validation_report: dict[str, object]) -> str:
+    total_visible_revenue = float(metrics["total_visible_revenue_usd"])
+    sample_size = int(metrics["sample_size"])
+    validation_ratio, validation_tone = validation_story_profile(str(validation_report["status"]))
+    return standalone_story_rail(
+        kicker="Snapshot aperture",
+        headline=(
+            f"{sample_size:,} visible startups and {usd_short(total_visible_revenue)} anchor the current published snapshot."
+        ),
+        note="The hero panel now carries an immediate scale read before the overview summary cards and chart rack take over.",
+        meters_html="".join(
+            [
+                infographic_meter(
+                    "Sample size",
+                    count_label(sample_size, "startup"),
+                    1.0 if sample_size > 0 else 0.0,
+                    tone="accent",
+                ),
+                infographic_meter(
+                    "Visible revenue",
+                    usd_short(total_visible_revenue),
+                    1.0,
+                    tone="cyan",
+                ),
+                infographic_meter(
+                    "Validation",
+                    status_label(str(validation_report["status"])),
+                    validation_ratio,
+                    tone=validation_tone,
+                ),
+            ]
+        ),
+    )
+
+
+def methodology_hero_story_rail(validation_report: dict[str, object]) -> str:
+    duplicate_name_count = int(validation_report.get("duplicate_name_count", 0))
+    heuristic_gap_count = int(validation_report["null_counts"]["biz_model"]) + int(validation_report["null_counts"]["gtm_model"])
+    validation_ratio, validation_tone = validation_story_profile(str(validation_report["status"]))
+    return standalone_story_rail(
+        kicker="Warning map",
+        headline=(
+            f"{duplicate_name_count:,} duplicate names and {heuristic_gap_count:,} heuristic gaps define the current warning-only methodology envelope."
+        ),
+        note="The hero panel keeps the warning-only scope visible before readers move into the methodology signal board and prose caveats.",
+        meters_html="".join(
+            [
+                infographic_meter(
+                    "Validation",
+                    status_label(str(validation_report["status"])),
+                    validation_ratio,
+                    tone=validation_tone,
+                ),
+                infographic_meter(
+                    "Duplicate names",
+                    count_label(duplicate_name_count, "name"),
+                    normalized_ratio(duplicate_name_count, max(duplicate_name_count, heuristic_gap_count, 1)),
+                    tone="accent",
+                ),
+                infographic_meter(
+                    "Heuristic gaps",
+                    count_label(heuristic_gap_count, "gap"),
+                    normalized_ratio(heuristic_gap_count, max(duplicate_name_count, heuristic_gap_count, 1)),
+                    tone="cyan",
+                ),
+            ]
+        ),
+    )
+
+
+def data_hero_story_rail(
+    pipeline_manifest: dict[str, object],
+    source_coverage_report: dict[str, object],
+    source_pipeline_diagnostics: dict[str, object],
+) -> str:
+    output_count = len(pipeline_manifest["generated_outputs"])
+    row_count = int(pipeline_manifest["input_dataset"]["rows"])
+    source_page_count = int(source_coverage_report["source_page_count"])
+    diagnostics_label = "attached" if source_pipeline_diagnostics["available"] else "seed only"
+    diagnostics_ratio = 1.0 if source_pipeline_diagnostics["available"] else 0.0
+    return standalone_story_rail(
+        kicker="Manifest cut",
+        headline=(
+            f"{output_count:,} generated outputs package {row_count:,} visible rows from {source_page_count:,} source pages into the current build."
+        ),
+        note="The hero panel keeps the published bundle shape visible before readers move into downloads, diagnostics, and manifest notes.",
+        meters_html="".join(
+            [
+                infographic_meter(
+                    "Outputs",
+                    count_label(output_count, "file"),
+                    normalized_ratio(output_count, max(output_count, row_count, source_page_count, 1)),
+                    tone="accent",
+                ),
+                infographic_meter(
+                    "Visible rows",
+                    count_label(row_count, "row"),
+                    1.0 if row_count > 0 else 0.0,
+                    tone="cyan",
+                ),
+                infographic_meter(
+                    "Diagnostics",
+                    diagnostics_label,
+                    diagnostics_ratio,
+                    tone="green",
+                ),
+            ]
+        ),
+    )
+
+
 def publication_output_registry_story_rails(
     publication_items: list[dict[str, object]],
 ) -> str:
@@ -3235,18 +3358,19 @@ def build_index_page(
         title="Visible startup revenue workstation",
         lede="This operator surface packages the current processed TrustMRR visible sample into a dense, fully static Pages publication: summary metrics, charts, methodology, and machine-readable provenance live together with no runtime server.",
         status=str(validation_report["status"]),
-        aside_html=f"""
-<div class="hero-aside">
-  <p class="eyebrow">Current build snapshot</p>
-  <p class="hero-aside-value">{int(metrics["sample_size"])} startups</p>
-  <p class="hero-aside-note">30 public source pages, deterministic charts, and validation manifests copied directly into the published site output.</p>
-  {metric_list([
-      ("Visible revenue", usd_short(metrics["total_visible_revenue_usd"])),
-      ("Median startup", usd_short(metrics["median_revenue_usd"])),
-      ("Top-10 share", pct(metrics["top_10_revenue_share"])),
-  ])}
-</div>
-""",
+        aside_html=hero_aside_panel(
+            eyebrow="Current build snapshot",
+            value=f"{int(metrics['sample_size'])} startups",
+            note="30 public source pages, deterministic charts, and validation manifests copied directly into the published site output.",
+            story_html=overview_hero_story_rail(metrics, validation_report),
+            metrics_html=metric_list(
+                [
+                    ("Visible revenue", usd_short(metrics["total_visible_revenue_usd"])),
+                    ("Median startup", usd_short(metrics["median_revenue_usd"])),
+                    ("Top-10 share", pct(metrics["top_10_revenue_share"])),
+                ]
+            ),
+        ),
     )
 
     monitor_html = "".join(
@@ -3446,18 +3570,19 @@ def build_methodology_page(
         title="How the visible sample is defined, validated, and limited",
         lede="This pane keeps the inclusion rule, heuristic-field caveats, and publication limitations visible inside the static bundle so the research surface does not outgrow its evidence.",
         status=str(validation_report["status"]),
-        aside_html=f"""
-<div class="hero-aside">
-  <p class="eyebrow">Warning-only signals</p>
-  <p class="hero-aside-value">{html.escape(methodology_warning_snapshot(validation_report))}</p>
-  <p class="hero-aside-note">Warning-only checks currently cover duplicate startup names and heuristic label gaps, while missing provenance, threshold violations, and duplicate (name, source_url) pairs still fail the build.</p>
-  {metric_list([
-      ("Validation", status_label(str(validation_report["status"]))),
-      ("Duplicate names", str(int(validation_report.get("duplicate_name_count", 0)))),
-      ("Heuristic gaps", str(int(validation_report["null_counts"]["biz_model"]) + int(validation_report["null_counts"]["gtm_model"]))),
-  ])}
-</div>
-""",
+        aside_html=hero_aside_panel(
+            eyebrow="Warning-only signals",
+            value=methodology_warning_snapshot(validation_report),
+            note="Warning-only checks currently cover duplicate startup names and heuristic label gaps, while missing provenance, threshold violations, and duplicate (name, source_url) pairs still fail the build.",
+            story_html=methodology_hero_story_rail(validation_report),
+            metrics_html=metric_list(
+                [
+                    ("Validation", status_label(str(validation_report["status"]))),
+                    ("Duplicate names", str(int(validation_report.get("duplicate_name_count", 0)))),
+                    ("Heuristic gaps", str(int(validation_report["null_counts"]["biz_model"]) + int(validation_report["null_counts"]["gtm_model"]))),
+                ]
+            ),
+        ),
     )
 
     methodology_monitor_html = "".join(
@@ -3576,18 +3701,23 @@ def build_data_page(
         title="Machine-readable outputs, source coverage, and manifest details",
         lede="This operator pane ships the current JSON outputs alongside human-readable summaries so the published artifact stays inspectable without cloning the repository.",
         status=str(validation_report["status"]),
-        aside_html=f"""
-<div class="hero-aside">
-  <p class="eyebrow">Manifest summary</p>
-  <p class="hero-aside-value">{len(pipeline_manifest['generated_outputs'])} generated outputs</p>
-  <p class="hero-aside-note">{source_coverage_report['source_page_count']} source pages and {pipeline_manifest['input_dataset']['rows']} visible startups feed the current site build.</p>
-  {metric_list([
-      ("Publication input", str(publication_input["source_label"])),
-      ("Validation", status_label(str(validation_report["status"]))),
-      ("Diagnostics", "attached" if source_pipeline_diagnostics["available"] else "seed only"),
-  ])}
-</div>
-""",
+        aside_html=hero_aside_panel(
+            eyebrow="Manifest summary",
+            value=f"{len(pipeline_manifest['generated_outputs'])} generated outputs",
+            note=f"{source_coverage_report['source_page_count']} source pages and {pipeline_manifest['input_dataset']['rows']} visible startups feed the current site build.",
+            story_html=data_hero_story_rail(
+                pipeline_manifest,
+                source_coverage_report,
+                source_pipeline_diagnostics,
+            ),
+            metrics_html=metric_list(
+                [
+                    ("Publication input", str(publication_input["source_label"])),
+                    ("Validation", status_label(str(validation_report["status"]))),
+                    ("Diagnostics", "attached" if source_pipeline_diagnostics["available"] else "seed only"),
+                ]
+            ),
+        ),
     )
 
     publication_bundle_items = manifest_generated_download_items(pipeline_manifest)

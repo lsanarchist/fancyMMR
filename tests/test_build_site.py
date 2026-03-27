@@ -100,6 +100,31 @@ def extract_rail_module(text: str, kicker: str) -> str:
     raise AssertionError(kicker)
 
 
+def extract_hero_aside(text: str, eyebrow: str) -> str:
+    marker = f'<p class="eyebrow">{eyebrow}</p>'
+    marker_index = text.find(marker)
+    assert marker_index != -1, eyebrow
+    container_start = text.rfind('<div class="hero-aside">', 0, marker_index)
+    assert container_start != -1, eyebrow
+
+    depth = 0
+    cursor = container_start
+    while cursor < len(text):
+        next_open = text.find("<div", cursor)
+        next_close = text.find("</div>", cursor)
+        assert next_close != -1, eyebrow
+        if next_open != -1 and next_open < next_close:
+            depth += 1
+            cursor = next_open + len("<div")
+            continue
+        depth -= 1
+        cursor = next_close + len("</div>")
+        if depth == 0:
+            return text[container_start:cursor]
+
+    raise AssertionError(eyebrow)
+
+
 def format_byte_count(byte_count: int) -> str:
     if byte_count == 1:
         return "1 byte"
@@ -693,6 +718,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     revenue_lens_section = extract_rail_module(index_html, "Revenue lens")
     concentration_monitor_section = extract_rail_module(index_html, "Concentration monitor")
     warning_posture_section = extract_rail_module(index_html, "Warning posture")
+    overview_hero_aside = extract_hero_aside(index_html, "Current build snapshot")
     assert "Route spread" in route_map_section
     assert "3 routes keep overview, methodology, and data one jump away." in route_map_section
     assert ">Overview<" in route_map_section
@@ -745,6 +771,13 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Passed with warnings validation still tracks 9 duplicate startup names in the visible sample." in warning_posture_section
     assert "Duplicate names" in warning_posture_section
     assert "Heuristic gaps" in warning_posture_section
+    assert "Snapshot aperture" in overview_hero_aside
+    assert "249 visible startups and $24.39M anchor the current published snapshot." in overview_hero_aside
+    assert "Sample size" in overview_hero_aside
+    assert "Visible revenue" in overview_hero_aside
+    assert "Validation" in overview_hero_aside
+    assert "Current build snapshot" in overview_hero_aside
+    assert "249 startups" in overview_hero_aside
     publication_output_section = extract_hot_output_section(index_html, "Publication outputs")
     staged_output_section = extract_hot_output_section(index_html, "Staged provenance")
     assert "Registry shape" in publication_output_section
@@ -884,6 +917,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     methodology_inclusion_rule_section = extract_rail_module(methodology_html, "Inclusion rule")
     methodology_validation_posture_section = extract_rail_module(methodology_html, "Validation posture")
     methodology_publication_caveat_section = extract_rail_module(methodology_html, "Publication caveat")
+    methodology_hero_aside = extract_hero_aside(methodology_html, "Warning-only signals")
     assert "Gate contract" in methodology_inclusion_rule_section
     assert "The methodology keeps the visible sample tied to the public-page &gt;= $5,000 / 30d inclusion rule." in methodology_inclusion_rule_section
     assert "Threshold" in methodology_inclusion_rule_section
@@ -900,6 +934,13 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Output blocks" in methodology_publication_caveat_section
     assert "Doc panes" in methodology_publication_caveat_section
     assert "Claim scope" in methodology_publication_caveat_section
+    assert "Warning map" in methodology_hero_aside
+    assert "9 duplicate names and 0 heuristic gaps define the current warning-only methodology envelope." in methodology_hero_aside
+    assert "Validation" in methodology_hero_aside
+    assert "Duplicate names" in methodology_hero_aside
+    assert "Heuristic gaps" in methodology_hero_aside
+    assert "Warning-only signals" in methodology_hero_aside
+    assert "9 duplicate names / 0 heuristic gaps" in methodology_hero_aside
 
     assert "metrics.json" in data_html
     assert f'<meta http-equiv="Content-Security-Policy" content="{ESCAPED_CSP_SNIPPET}">' in data_html
@@ -1014,6 +1055,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     publication_source_section = extract_rail_module(data_html, "Publication source")
     download_surface_section = extract_rail_module(data_html, "Download surface")
     diagnostics_feed_section = extract_rail_module(data_html, "Diagnostics feed")
+    data_hero_aside = extract_hero_aside(data_html, "Manifest summary")
     assert "Route spread" in data_route_map_section
     assert "3 routes keep overview, methodology, and data one jump away." in data_route_map_section
     assert ">Data<" in data_route_map_section
@@ -1067,6 +1109,13 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Registry coverage" in diagnostics_feed_section
     assert "Validation" in diagnostics_feed_section
     assert "Fetch failures" in diagnostics_feed_section
+    assert "Manifest cut" in data_hero_aside
+    assert "21 generated outputs package 249 visible rows from 30 source pages into the current build." in data_hero_aside
+    assert "Outputs" in data_hero_aside
+    assert "Visible rows" in data_hero_aside
+    assert "Diagnostics" in data_hero_aside
+    assert "Manifest summary" in data_hero_aside
+    assert "21 generated outputs" in data_hero_aside
     assert "Registry shape" in data_html
     assert "Signal anchors" in data_html
     assert "keep the publication command surface self-contained at" in data_html
