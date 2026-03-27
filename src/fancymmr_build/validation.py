@@ -580,11 +580,26 @@ def _group_fetch_failure_sources_by_next_action(
     for failure_source in fetch_failure_sources:
         failure_next_action = str(failure_source.get("failure_next_action") or "unknown")
         source_id = str(failure_source.get("source_id") or "")
+        recorded_at = str(failure_source.get("recorded_at") or "")
+        status_code = failure_source.get("status_code")
+        status_code_text = f"HTTP {status_code}" if status_code not in (None, "") else "HTTP n/a"
+        error_type = str(failure_source.get("error_type") or "unknown")
+        failure_severity = str(failure_source.get("failure_severity") or "unknown")
+        failure_retryability = str(failure_source.get("failure_retryability") or "unknown")
+        failure_context_parts = [status_code_text, error_type, failure_severity, failure_retryability]
+        if recorded_at:
+            failure_context_parts.insert(0, recorded_at)
         grouped_sources.setdefault(failure_next_action, []).append(
             {
                 "source_id": source_id,
                 "source_label": str(failure_source.get("source_label") or source_id or "unknown"),
                 "source_url": str(failure_source.get("source_url") or ""),
+                "recorded_at": recorded_at,
+                "status_code": status_code_text,
+                "error_type": error_type,
+                "failure_severity": failure_severity,
+                "failure_retryability": failure_retryability,
+                "failure_context_summary": " · ".join(failure_context_parts),
             }
         )
 

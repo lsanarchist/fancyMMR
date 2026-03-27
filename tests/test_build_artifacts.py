@@ -456,6 +456,14 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                     "source_id": "category--sales",
                     "source_label": "Sales",
                     "source_url": "https://trustmrr.com/category/sales",
+                    "recorded_at": "2026-03-27T00:05:00Z",
+                    "status_code": "HTTP n/a",
+                    "error_type": "FetchError",
+                    "failure_severity": "policy_blocked",
+                    "failure_retryability": "do_not_retry",
+                    "failure_context_summary": (
+                        "2026-03-27T00:05:00Z · HTTP n/a · FetchError · policy_blocked · do_not_retry"
+                    ),
                 }
             ],
         },
@@ -467,6 +475,14 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                     "source_id": "category--ai",
                     "source_label": "AI",
                     "source_url": "https://trustmrr.com/category/ai",
+                    "recorded_at": "2026-03-27T00:00:00Z",
+                    "status_code": "HTTP 500",
+                    "error_type": "HTTPError",
+                    "failure_severity": "server_error",
+                    "failure_retryability": "retryable",
+                    "failure_context_summary": (
+                        "2026-03-27T00:00:00Z · HTTP 500 · HTTPError · server_error · retryable"
+                    ),
                 }
             ],
         },
@@ -522,6 +538,14 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                     "source_id": "category--sales",
                     "source_label": "Sales",
                     "source_url": "https://trustmrr.com/category/sales",
+                    "recorded_at": "2026-03-27T00:05:00Z",
+                    "status_code": "HTTP n/a",
+                    "error_type": "FetchError",
+                    "failure_severity": "policy_blocked",
+                    "failure_retryability": "do_not_retry",
+                    "failure_context_summary": (
+                        "2026-03-27T00:05:00Z · HTTP n/a · FetchError · policy_blocked · do_not_retry"
+                    ),
                 }
             ],
         },
@@ -533,6 +557,14 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                     "source_id": "category--ai",
                     "source_label": "AI",
                     "source_url": "https://trustmrr.com/category/ai",
+                    "recorded_at": "2026-03-27T00:00:00Z",
+                    "status_code": "HTTP 500",
+                    "error_type": "HTTPError",
+                    "failure_severity": "server_error",
+                    "failure_retryability": "retryable",
+                    "failure_context_summary": (
+                        "2026-03-27T00:00:00Z · HTTP 500 · HTTPError · server_error · retryable"
+                    ),
                 }
             ],
         },
