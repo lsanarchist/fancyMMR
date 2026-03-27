@@ -803,6 +803,11 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "source_pipeline/processed/detail_page_rows.csv" in data_html
     assert "source_pipeline/processed/detail_field_coverage.json" in data_html
     assert "Source-pipeline diagnostics" in data_html
+    assert "Registry posture" in data_html
+    assert "Mapping surface" in data_html
+    assert "Detail staging posture" in data_html
+    assert "Failure posture" in data_html
+    assert "These diagnostics story rails reuse the same staged source-pipeline metadata already published in the bundle" in data_html
     assert "Detail-page staging" in data_html
     assert "Fetch failures" in data_html
     assert "Fetch-failure causes" in data_html
@@ -873,6 +878,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".skip-link {" in site_css
     assert ".chart-detail-grid {" in site_css
     assert ".chart-annotation-rail {" in site_css
+    assert ".annotation-rail-grid {" in site_css
+    assert ".chart-annotation-rail-standalone {" in site_css
     assert ".chart-annotation-kicker {" in site_css
     assert ".skip-link:focus {" in site_css
     assert ".skip-link:focus-visible," in site_css

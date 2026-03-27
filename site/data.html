@@ -600,7 +600,163 @@
     <span class="panel-tag">provenance monitor</span>
   </div>
   <div class="section-body">
+    <div class="annotation-rail-grid">
+<aside class="chart-annotation-rail chart-annotation-rail-standalone">
+  <p class="chart-annotation-kicker">Registry posture</p>
+  <h4>30/30 registered sources are attached to the promoted manifest.</h4>
+  <p class="chart-annotation-note">Staged validation is passed and run-manifest validation is passed.</p>
+  <div class="chart-annotation-stack">
     
+<div class="infographic-meter">
+  <div class="infographic-meter-head">
+    <span>Selected sources</span>
+    <strong>30 sources</strong>
+  </div>
+  <div class="infographic-track" aria-hidden="true">
+    <span class="infographic-fill tone-accent" style="width: 100.0%"></span>
+  </div>
+</div>
+
+<div class="infographic-meter">
+  <div class="infographic-meter-head">
+    <span>Staged validation</span>
+    <strong>Passed</strong>
+  </div>
+  <div class="infographic-track" aria-hidden="true">
+    <span class="infographic-fill tone-green" style="width: 100.0%"></span>
+  </div>
+</div>
+
+<div class="infographic-meter">
+  <div class="infographic-meter-head">
+    <span>Run manifest</span>
+    <strong>Passed</strong>
+  </div>
+  <div class="infographic-track" aria-hidden="true">
+    <span class="infographic-fill tone-green" style="width: 100.0%"></span>
+  </div>
+</div>
+
+  </div>
+</aside>
+
+<aside class="chart-annotation-rail chart-annotation-rail-standalone">
+  <p class="chart-annotation-kicker">Mapping surface</p>
+  <h4>249 visible rows are mapped, with 24 alias-resolved cases.</h4>
+  <p class="chart-annotation-note">Override coverage stays inspectable in the publication-facing diagnostics instead of becoming a repo-only staging detail.</p>
+  <div class="chart-annotation-stack">
+    
+<div class="infographic-meter">
+  <div class="infographic-meter-head">
+    <span>Fully mapped</span>
+    <strong>249 rows</strong>
+  </div>
+  <div class="infographic-track" aria-hidden="true">
+    <span class="infographic-fill tone-green" style="width: 100.0%"></span>
+  </div>
+</div>
+
+<div class="infographic-meter">
+  <div class="infographic-meter-head">
+    <span>Alias resolved</span>
+    <strong>24 rows</strong>
+  </div>
+  <div class="infographic-track" aria-hidden="true">
+    <span class="infographic-fill tone-cyan" style="width: 9.6%"></span>
+  </div>
+</div>
+
+<div class="infographic-meter">
+  <div class="infographic-meter-head">
+    <span>Unmapped</span>
+    <strong>0 rows</strong>
+  </div>
+  <div class="infographic-track" aria-hidden="true">
+    <span class="infographic-fill tone-red" style="width: 0.0%"></span>
+  </div>
+</div>
+
+  </div>
+</aside>
+
+<aside class="chart-annotation-rail chart-annotation-rail-standalone">
+  <p class="chart-annotation-kicker">Detail staging posture</p>
+  <h4>852 target detail pages remain staged, with 852 currently left opt-in.</h4>
+  <p class="chart-annotation-note">The promoted bundle keeps the deeper detail path visible without silently widening the crawl scope on GitHub Pages.</p>
+  <div class="chart-annotation-stack">
+    
+<div class="infographic-meter">
+  <div class="infographic-meter-head">
+    <span>Not requested</span>
+    <strong>852 pages</strong>
+  </div>
+  <div class="infographic-track" aria-hidden="true">
+    <span class="infographic-fill tone-accent" style="width: 100.0%"></span>
+  </div>
+</div>
+
+<div class="infographic-meter">
+  <div class="infographic-meter-head">
+    <span>Fetched</span>
+    <strong>0 pages</strong>
+  </div>
+  <div class="infographic-track" aria-hidden="true">
+    <span class="infographic-fill tone-cyan" style="width: 0.0%"></span>
+  </div>
+</div>
+
+<div class="infographic-meter">
+  <div class="infographic-meter-head">
+    <span>Parsed</span>
+    <strong>0 pages</strong>
+  </div>
+  <div class="infographic-track" aria-hidden="true">
+    <span class="infographic-fill tone-green" style="width: 0.0%"></span>
+  </div>
+</div>
+
+  </div>
+</aside>
+
+<aside class="chart-annotation-rail chart-annotation-rail-standalone">
+  <p class="chart-annotation-kicker">Failure posture</p>
+  <h4>No staged fetch-failure or detail-failure sources are attached to the active manifest.</h4>
+  <p class="chart-annotation-note">Zero-state reporting stays explicit so a clean promoted run is distinguishable from missing diagnostics.</p>
+  <div class="chart-annotation-stack">
+    
+<div class="infographic-meter">
+  <div class="infographic-meter-head">
+    <span>Clean sources</span>
+    <strong>30 sources</strong>
+  </div>
+  <div class="infographic-track" aria-hidden="true">
+    <span class="infographic-fill tone-green" style="width: 100.0%"></span>
+  </div>
+</div>
+
+<div class="infographic-meter">
+  <div class="infographic-meter-head">
+    <span>Fetch failures</span>
+    <strong>0 sources</strong>
+  </div>
+  <div class="infographic-track" aria-hidden="true">
+    <span class="infographic-fill tone-red" style="width: 0.0%"></span>
+  </div>
+</div>
+
+<div class="infographic-meter">
+  <div class="infographic-meter-head">
+    <span>Detail failures</span>
+    <strong>0 pages</strong>
+  </div>
+  <div class="infographic-track" aria-hidden="true">
+    <span class="infographic-fill tone-red" style="width: 0.0%"></span>
+  </div>
+</div>
+
+  </div>
+</aside>
+</div><p class="section-note">These diagnostics story rails reuse the same staged source-pipeline metadata already published in the bundle, so the operator readout stays deterministic and GitHub-Pages-safe.</p>
 <div class="card-grid">
   <article class="callout-card">
     <h3>Promotion cutover</h3>

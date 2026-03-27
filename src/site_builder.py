@@ -1453,9 +1453,19 @@ def methodology_infographic_cards(
     return "".join(cards)
 
 
-def chart_annotation_rail(*, kicker: str, headline: str, note: str, meters_html: str) -> str:
+def chart_annotation_rail(
+    *,
+    kicker: str,
+    headline: str,
+    note: str,
+    meters_html: str,
+    extra_class: str = "",
+) -> str:
+    class_name = "chart-annotation-rail"
+    if extra_class:
+        class_name += f" {extra_class}"
     return f"""
-<aside class="chart-annotation-rail">
+<aside class="{html.escape(class_name, quote=True)}">
   <p class="chart-annotation-kicker">{html.escape(kicker)}</p>
   <h4>{html.escape(headline)}</h4>
   <p class="chart-annotation-note">{html.escape(note)}</p>
@@ -1604,6 +1614,191 @@ def overview_chart_annotation_rails(
             ),
         ),
     }
+
+
+def status_meter_ratio(status: str) -> float:
+    normalized = str(status).strip().lower()
+    if normalized == "passed":
+        return 1.0
+    if normalized == "passed_with_warnings":
+        return 0.72
+    return 0.0
+
+
+def status_meter_tone(status: str) -> str:
+    normalized = str(status).strip().lower()
+    if normalized == "passed":
+        return "green"
+    if normalized == "passed_with_warnings":
+        return "accent"
+    return "red"
+
+
+def diagnostics_story_rails(source_pipeline_diagnostics: dict[str, object]) -> str:
+    if not source_pipeline_diagnostics.get("available"):
+        return ""
+
+    selected_source_count = int(source_pipeline_diagnostics.get("selected_source_count", 0))
+    expected_source_count = int(source_pipeline_diagnostics.get("expected_source_count", 0))
+    visible_sample_row_count = int(source_pipeline_diagnostics.get("visible_sample_row_count", 0))
+    fully_mapped_visible_row_count = int(source_pipeline_diagnostics.get("fully_mapped_visible_row_count", 0))
+    alias_resolved_visible_row_count = int(source_pipeline_diagnostics.get("alias_resolved_visible_row_count", 0))
+    unmapped_visible_row_count = int(source_pipeline_diagnostics.get("unmapped_visible_row_count", 0))
+    suspicious_duplicate_group_count = int(source_pipeline_diagnostics.get("suspicious_duplicate_group_count", 0))
+    fetch_failure_source_count = int(source_pipeline_diagnostics.get("fetch_failure_source_count", 0))
+    detail_parse_failure_source_count = int(source_pipeline_diagnostics.get("detail_parse_failure_source_count", 0))
+    detail_page_target_count = int(source_pipeline_diagnostics.get("detail_page_target_count", 0))
+    fetched_detail_page_count = int(source_pipeline_diagnostics.get("fetched_detail_page_count", 0))
+    parsed_detail_page_count = int(source_pipeline_diagnostics.get("parsed_detail_page_count", 0))
+    failed_detail_page_count = int(source_pipeline_diagnostics.get("failed_detail_page_count", 0))
+    validation_status = str(source_pipeline_diagnostics.get("validation_status") or "unknown")
+    run_manifest_validation_status = str(source_pipeline_diagnostics.get("run_manifest_validation_status") or "unknown")
+    detail_parse_status_counts = source_pipeline_diagnostics.get("detail_parse_status_counts", {}) or {}
+    not_requested_detail_count = int(detail_parse_status_counts.get("not_requested", 0))
+
+    rails = [
+        chart_annotation_rail(
+            kicker="Registry posture",
+            headline=(
+                f"{selected_source_count:,}/{expected_source_count:,} registered sources are attached to the promoted manifest."
+            ),
+            note=(
+                f"Staged validation is {status_label(validation_status).lower()} and run-manifest validation is "
+                f"{status_label(run_manifest_validation_status).lower()}."
+            ),
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Selected sources",
+                        count_label(selected_source_count, "source"),
+                        normalized_ratio(selected_source_count, expected_source_count or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Staged validation",
+                        status_label(validation_status),
+                        status_meter_ratio(validation_status),
+                        tone=status_meter_tone(validation_status),
+                    ),
+                    infographic_meter(
+                        "Run manifest",
+                        status_label(run_manifest_validation_status),
+                        status_meter_ratio(run_manifest_validation_status),
+                        tone=status_meter_tone(run_manifest_validation_status),
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+        chart_annotation_rail(
+            kicker="Mapping surface",
+            headline=(
+                f"{fully_mapped_visible_row_count:,} visible rows are mapped, with "
+                f"{alias_resolved_visible_row_count:,} alias-resolved cases."
+            ),
+            note="Override coverage stays inspectable in the publication-facing diagnostics instead of becoming a repo-only staging detail.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Fully mapped",
+                        count_label(fully_mapped_visible_row_count, "row"),
+                        normalized_ratio(fully_mapped_visible_row_count, visible_sample_row_count or 1),
+                        tone="green",
+                    ),
+                    infographic_meter(
+                        "Alias resolved",
+                        count_label(alias_resolved_visible_row_count, "row"),
+                        normalized_ratio(alias_resolved_visible_row_count, visible_sample_row_count or 1),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Unmapped",
+                        count_label(unmapped_visible_row_count, "row"),
+                        normalized_ratio(unmapped_visible_row_count, visible_sample_row_count or 1),
+                        tone="red",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+        chart_annotation_rail(
+            kicker="Detail staging posture",
+            headline=(
+                f"{detail_page_target_count:,} target detail pages remain staged, with "
+                f"{not_requested_detail_count:,} currently left opt-in."
+            ),
+            note="The promoted bundle keeps the deeper detail path visible without silently widening the crawl scope on GitHub Pages.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Not requested",
+                        count_label(not_requested_detail_count, "page"),
+                        normalized_ratio(not_requested_detail_count, detail_page_target_count or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Fetched",
+                        count_label(fetched_detail_page_count, "page"),
+                        normalized_ratio(fetched_detail_page_count, detail_page_target_count or 1),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Parsed",
+                        count_label(parsed_detail_page_count, "page"),
+                        normalized_ratio(parsed_detail_page_count, detail_page_target_count or 1),
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+        chart_annotation_rail(
+            kicker="Failure posture",
+            headline=(
+                "No staged fetch-failure or detail-failure sources are attached to the active manifest."
+                if fetch_failure_source_count == 0 and detail_parse_failure_source_count == 0
+                else (
+                    f"{fetch_failure_source_count:,} source pages carry fetch failures and "
+                    f"{detail_parse_failure_source_count:,} source pages carry detail parse failures."
+                )
+            ),
+            note=(
+                "Zero-state reporting stays explicit so a clean promoted run is distinguishable from missing diagnostics."
+                if fetch_failure_source_count == 0 and detail_parse_failure_source_count == 0
+                else (
+                    f"Suspicious duplicate groups are currently {suspicious_duplicate_group_count:,}, "
+                    "so the pane keeps failure and duplicate posture visible together."
+                )
+            ),
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Clean sources",
+                        count_label(max(0, selected_source_count - fetch_failure_source_count), "source"),
+                        normalized_ratio(max(0, selected_source_count - fetch_failure_source_count), selected_source_count or 1),
+                        tone="green",
+                    ),
+                    infographic_meter(
+                        "Fetch failures",
+                        count_label(fetch_failure_source_count, "source"),
+                        normalized_ratio(fetch_failure_source_count, selected_source_count or 1),
+                        tone="red",
+                    ),
+                    infographic_meter(
+                        "Detail failures",
+                        count_label(failed_detail_page_count, "page"),
+                        normalized_ratio(failed_detail_page_count, detail_page_target_count or 1),
+                        tone="red",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+    ]
+    return (
+        f'<div class="annotation-rail-grid">{"".join(rails)}</div>'
+        '<p class="section-note">These diagnostics story rails reuse the same staged source-pipeline metadata already published in the bundle, so the operator readout stays deterministic and GitHub-Pages-safe.</p>'
+    )
 
 
 def section(
@@ -2207,6 +2402,7 @@ def build_data_page(
     )
 
     if source_pipeline_diagnostics["available"]:
+        diagnostics_story_rails_html = diagnostics_story_rails(source_pipeline_diagnostics)
         diagnostics_cards = f"""
 <div class="card-grid">
   <article class="callout-card">
@@ -2750,7 +2946,8 @@ def build_data_page(
         diagnostics_section = section(
             "Source-pipeline diagnostics",
             "The promoted bundle keeps the staged parser/override/duplicate provenance visible instead of burying it inside the repo-only staging directory.",
-            diagnostics_cards
+            diagnostics_story_rails_html
+            + diagnostics_cards
             + diagnostics_table
             + diagnostics_failure_section
             + diagnostics_fetch_failure_section
@@ -3959,6 +4156,25 @@ h3 {
   gap: 10px;
 }
 
+.annotation-rail-grid {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.chart-annotation-rail-standalone {
+  position: relative;
+  overflow: hidden;
+  padding: 16px 18px 18px;
+  border-left: 0;
+  border: 1px solid rgba(98, 201, 214, 0.18);
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(circle at top right, rgba(98, 201, 214, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(18, 24, 31, 0.92), rgba(11, 15, 19, 0.98));
+}
+
 .chart-copy a,
 .download-card a,
 .table-wrap a,
@@ -4181,6 +4397,11 @@ pre code {
     padding-top: 14px;
     border-left: 0;
     border-top: 1px solid rgba(98, 201, 214, 0.18);
+  }
+
+  .chart-annotation-rail-standalone {
+    padding-top: 16px;
+    border-top: 0;
   }
 }
 

@@ -1033,6 +1033,25 @@ h3 {
   gap: 10px;
 }
 
+.annotation-rail-grid {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.chart-annotation-rail-standalone {
+  position: relative;
+  overflow: hidden;
+  padding: 16px 18px 18px;
+  border-left: 0;
+  border: 1px solid rgba(98, 201, 214, 0.18);
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(circle at top right, rgba(98, 201, 214, 0.12), transparent 34%),
+    linear-gradient(180deg, rgba(18, 24, 31, 0.92), rgba(11, 15, 19, 0.98));
+}
+
 .chart-copy a,
 .download-card a,
 .table-wrap a,
@@ -1255,6 +1274,11 @@ pre code {
     padding-top: 14px;
     border-left: 0;
     border-top: 1px solid rgba(98, 201, 214, 0.18);
+  }
+
+  .chart-annotation-rail-standalone {
+    padding-top: 16px;
+    border-top: 0;
   }
 }
 
