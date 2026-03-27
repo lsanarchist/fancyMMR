@@ -629,6 +629,12 @@ body {
   background: rgba(255, 123, 105, 0.08);
 }
 
+.output-registry-badge-format-total {
+  color: var(--green);
+  border-color: rgba(131, 212, 134, 0.22);
+  background: rgba(131, 212, 134, 0.08);
+}
+
 .nav-link:hover,
 .nav-link.is-active,
 .rail-command-link:hover,

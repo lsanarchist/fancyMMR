@@ -655,6 +655,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     item_byte_rank = str(item.get("byte_rank") or "")
     item_format_rank = str(item.get("format_rank") or "")
     item_format_share = str(item.get("format_share") or "")
+    item_format_total = str(item.get("format_total") or "")
     byte_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
         if isinstance(item_bytes, int)
@@ -680,6 +681,11 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         if item_format_share
         else ""
     )
+    format_total_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-format-total">{html.escape(item_format_total)}</span>'
+        if item_format_total
+        else ""
+    )
     return (
         f'<a class="rail-command-link output-registry-link" href="{html.escape(target, quote=True)}" '
         f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
@@ -696,6 +702,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         f"{rank_badge_html}"
         f"{format_rank_badge_html}"
         f"{format_share_badge_html}"
+        f"{format_total_badge_html}"
         "</span>"
         "</a>"
     )
@@ -834,6 +841,8 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
         description = str(artifact.get("description") or "")
         human_label = str(artifact.get("label") or "")
         artifact_format = str(artifact.get("format") or "")
+        artifact_format_key = artifact_format.strip().lower() or "other"
+        artifact_format_label = artifact_format_key.upper()
         items.append(
             command_item(
                 label=label,
@@ -852,9 +861,10 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
             items[-1]["byte_rank"] = byte_rank_lookup.get(site_path, "")
             items[-1]["format_rank"] = format_rank_lookup.get(site_path, "")
             items[-1]["format_share"] = (
-                f"{artifact_format.upper()} {format_byte_share(artifact_bytes, format_total_bytes.get(artifact_format, 0))}"
-                if artifact_format
-                else ""
+                f"{artifact_format_label} {format_byte_share(artifact_bytes, format_total_bytes.get(artifact_format_key, 0))}"
+            )
+            items[-1]["format_total"] = (
+                f"{artifact_format_label} {format_byte_count(format_total_bytes.get(artifact_format_key, 0))}"
             )
     return items
 
@@ -5665,6 +5675,12 @@ body {
   color: var(--red);
   border-color: rgba(255, 123, 105, 0.22);
   background: rgba(255, 123, 105, 0.08);
+}
+
+.output-registry-badge-format-total {
+  color: var(--green);
+  border-color: rgba(131, 212, 134, 0.22);
+  background: rgba(131, 212, 134, 0.08);
 }
 
 .nav-link:hover,
