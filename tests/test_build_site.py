@@ -104,6 +104,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Command deck" in index_html
     assert "Route registry" in index_html
     assert "Hot outputs" in index_html
+    assert "Publication outputs" in index_html
+    assert "Staged provenance" in index_html
+    assert "Fetch-failure evidence" in index_html
     assert "Jump palette" in index_html
     assert "GO / Overview" in index_html
     assert "GO / Data" in index_html
@@ -193,6 +196,10 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Jump palette" in data_html
     assert "Route registry" in data_html
     assert "Hot outputs" in data_html
+    assert "Publication outputs" in data_html
+    assert "Staged provenance" in data_html
+    assert "Fetch-failure evidence" in data_html
+    assert "No fetch-failure evidence is currently attached to the active manifest." in data_html
     assert "GET category_summary.csv" in data_html
     assert "GET source_pipeline/snapshots/run_manifest.json" in data_html
     assert "GET source_pipeline/processed/detail_field_coverage.json" in data_html
@@ -208,6 +215,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".workstation {" in site_css
     assert ".command-strip {" in site_css
     assert ".command-input {" in site_css
+    assert ".rail-command-group {" in site_css
+    assert ".rail-command-group-head {" in site_css
+    assert ".rail-command-group-empty {" in site_css
     assert ".download-summary {" in site_css
     assert ".download-badge {" in site_css
     assert ".download-badge-format {" in site_css
@@ -363,6 +373,7 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "GET fetch_failures/category--ai.json" in data_html
     assert "GET fetch_failures/category--ai.html" in data_html
     assert "GET fetch_failures/category--sales.json" in data_html
+    assert "Fetch-failure evidence" in data_html
     assert "3 files" in data_html
     assert "2 JSON" in data_html
     assert "1 HTML" in data_html

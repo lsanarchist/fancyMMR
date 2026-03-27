@@ -621,6 +621,44 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
     return items
 
 
+def build_output_registry_sections(
+    source_pipeline_diagnostics: dict[str, object],
+    pipeline_manifest: dict[str, object],
+) -> list[dict[str, object]]:
+    section_specs = [
+        (
+            "Publication outputs",
+            "Publication outputs",
+            "No publication outputs are currently indexed in the static command surface.",
+            manifest_generated_download_items(pipeline_manifest),
+        ),
+        (
+            "Staged provenance",
+            "Staged provenance",
+            "No staged provenance downloads are currently attached to the active manifest.",
+            staged_source_pipeline_download_items(source_pipeline_diagnostics, pipeline_manifest),
+        ),
+        (
+            "Fetch-failure evidence",
+            "Fetch-failure evidence",
+            "No fetch-failure evidence is currently attached to the active manifest.",
+            fetch_failure_download_items(source_pipeline_diagnostics, pipeline_manifest),
+        ),
+    ]
+    sections: list[dict[str, object]] = []
+    for title, aria_label, empty_message, artifacts in section_specs:
+        sections.append(
+            {
+                "title": title,
+                "aria_label": aria_label,
+                "empty_message": empty_message,
+                "count_label": count_label(len(artifacts), "file"),
+                "items": global_output_command_items(artifacts),
+            }
+        )
+    return sections
+
+
 def command_links_markup(command_items: list[dict[str, str]], *, link_class: str) -> str:
     return "".join(
         (
@@ -635,6 +673,39 @@ def command_links_markup(command_items: list[dict[str, str]], *, link_class: str
         )
         for item in command_items
     )
+
+
+def output_registry_sections_markup(output_registry_sections: list[dict[str, object]]) -> str:
+    parts: list[str] = []
+    for section in output_registry_sections:
+        title = str(section.get("title") or "")
+        aria_label = str(section.get("aria_label") or title)
+        empty_message = str(section.get("empty_message") or "")
+        count_text = str(section.get("count_label") or "0 files")
+        items = [
+            item
+            for item in section.get("items", [])
+            if isinstance(item, dict)
+        ]
+        body_html = (
+            f'<nav class="rail-command-links" aria-label="{html.escape(aria_label, quote=True)}">'
+            f'{command_links_markup(items, link_class="rail-command-link")}'
+            "</nav>"
+            if items
+            else f'<p class="rail-command-group-empty">{html.escape(empty_message)}</p>'
+        )
+        parts.append(
+            f"""
+<div class="rail-command-group">
+  <div class="rail-command-group-head">
+    <p class="rail-command-group-title">{html.escape(title)}</p>
+    {download_badge(count_text, tone="count")}
+  </div>
+  {body_html}
+</div>
+"""
+        )
+    return "".join(parts)
 
 
 def metric_list(items: list[tuple[str, str]]) -> str:
@@ -671,12 +742,18 @@ def page_shell(
     description: str,
     status: str,
     command_links: list[tuple[str, str]],
-    output_registry_items: list[dict[str, str]],
+    output_registry_sections: list[dict[str, object]],
     monitor_html: str,
     body_html: str,
 ) -> str:
     local_panel_items = panel_command_items(active=active, command_links=command_links)
     route_registry_items = global_route_command_items()
+    output_registry_items = [
+        item
+        for section in output_registry_sections
+        for item in section.get("items", [])
+        if isinstance(item, dict)
+    ]
     nav_items = [
         ("index", "Overview", "index.html"),
         ("methodology", "Methodology", "methodology.html"),
@@ -691,7 +768,7 @@ def page_shell(
     command_bar_links = command_links_markup(local_panel_items, link_class="command-chip")
     command_deck_links = command_links_markup(local_panel_items, link_class="rail-command-link")
     route_registry_links = command_links_markup(route_registry_items, link_class="rail-command-link")
-    output_registry_links = command_links_markup(output_registry_items, link_class="rail-command-link")
+    output_registry_links = output_registry_sections_markup(output_registry_sections)
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -737,9 +814,7 @@ def page_shell(
       </section>
       <section class="rail-module">
         <p class="rail-kicker">Hot outputs</p>
-        <nav class="rail-command-links" aria-label="High-value downloads">
-          {output_registry_links}
-        </nav>
+        {output_registry_links}
       </section>
       <section class="rail-module">
         <p class="rail-kicker">Operating mode</p>
@@ -939,7 +1014,7 @@ def build_index_page(
     metrics: dict[str, object],
     validation_report: dict[str, object],
     category_rows: list[dict[str, str]],
-    output_registry_items: list[dict[str, str]],
+    output_registry_sections: list[dict[str, object]],
 ) -> str:
     command_links = [
         ("OV.00 Top", "#top"),
@@ -1118,7 +1193,7 @@ def build_index_page(
         description="Static overview of the TrustMRR visible-sample research bundle.",
         status=str(validation_report["status"]),
         command_links=command_links,
-        output_registry_items=output_registry_items,
+        output_registry_sections=output_registry_sections,
         monitor_html=monitor_html,
         body_html=body,
     )
@@ -1128,7 +1203,7 @@ def build_methodology_page(
     methodology_markdown: str,
     data_notice_markdown: str,
     validation_report: dict[str, object],
-    output_registry_items: list[dict[str, str]],
+    output_registry_sections: list[dict[str, object]],
 ) -> str:
     command_links = [
         ("MD.00 Top", "#top"),
@@ -1222,7 +1297,7 @@ def build_methodology_page(
         description="Methodology and data caveats for the TrustMRR visible-sample static site.",
         status=str(validation_report["status"]),
         command_links=command_links,
-        output_registry_items=output_registry_items,
+        output_registry_sections=output_registry_sections,
         monitor_html=methodology_monitor_html,
         body_html=body,
     )
@@ -1237,7 +1312,7 @@ def build_data_page(
     pipeline_manifest: dict[str, object],
     category_rows: list[dict[str, str]],
     revenue_band_rows: list[dict[str, str]],
-    output_registry_items: list[dict[str, str]],
+    output_registry_sections: list[dict[str, object]],
 ) -> str:
     command_links = [
         ("DT.00 Top", "#top"),
@@ -2087,7 +2162,7 @@ def build_data_page(
         description="Download links and source coverage for the TrustMRR visible-sample static site.",
         status=str(validation_report["status"]),
         command_links=command_links,
-        output_registry_items=output_registry_items,
+        output_registry_sections=output_registry_sections,
         monitor_html=data_monitor_html,
         body_html=body,
     )
@@ -2262,6 +2337,40 @@ body {
 .rail-command-links {
   display: grid;
   gap: 8px;
+}
+
+.rail-command-group {
+  display: grid;
+  gap: 10px;
+}
+
+.rail-command-group + .rail-command-group {
+  padding-top: 10px;
+  border-top: 1px dashed rgba(246, 165, 58, 0.16);
+}
+
+.rail-command-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.rail-command-group-title,
+.rail-command-group-empty {
+  margin: 0;
+}
+
+.rail-command-group-title {
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.68rem;
+}
+
+.rail-command-group-empty {
+  color: var(--ink-dim);
+  font-size: 0.76rem;
 }
 
 .nav-link,
@@ -3276,8 +3385,9 @@ def write_site_pages() -> None:
     source_coverage_report = read_json(DATA_DIR / "source_coverage_report.json")
     source_pipeline_diagnostics = read_json(DATA_DIR / "source_pipeline_diagnostics.json")
     pipeline_manifest = read_json(DATA_DIR / "pipeline_manifest.json")
-    output_registry_items = global_output_command_items(
-        publication_download_items(source_pipeline_diagnostics, pipeline_manifest)
+    output_registry_sections = build_output_registry_sections(
+        source_pipeline_diagnostics,
+        pipeline_manifest,
     )
     category_rows = read_csv_rows(DATA_DIR / "category_summary.csv")
     revenue_band_rows = read_csv_rows(DATA_DIR / "revenue_band_summary.csv")
@@ -3285,12 +3395,12 @@ def write_site_pages() -> None:
     data_notice_markdown = (ROOT / "DATA-NOTICE.md").read_text(encoding="utf-8")
 
     pages = {
-        "index.html": build_index_page(metrics, validation_report, category_rows, output_registry_items),
+        "index.html": build_index_page(metrics, validation_report, category_rows, output_registry_sections),
         "methodology.html": build_methodology_page(
             methodology_markdown,
             data_notice_markdown,
             validation_report,
-            output_registry_items,
+            output_registry_sections,
         ),
         "data.html": build_data_page(
             metrics,
@@ -3301,7 +3411,7 @@ def write_site_pages() -> None:
             pipeline_manifest,
             category_rows,
             revenue_band_rows,
-            output_registry_items,
+            output_registry_sections,
         ),
     }
     for filename, content in pages.items():

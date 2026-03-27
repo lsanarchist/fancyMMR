@@ -167,6 +167,40 @@ body {
   gap: 8px;
 }
 
+.rail-command-group {
+  display: grid;
+  gap: 10px;
+}
+
+.rail-command-group + .rail-command-group {
+  padding-top: 10px;
+  border-top: 1px dashed rgba(246, 165, 58, 0.16);
+}
+
+.rail-command-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.rail-command-group-title,
+.rail-command-group-empty {
+  margin: 0;
+}
+
+.rail-command-group-title {
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.68rem;
+}
+
+.rail-command-group-empty {
+  color: var(--ink-dim);
+  font-size: 0.76rem;
+}
+
 .nav-link,
 .rail-command-link,
 .command-chip {
