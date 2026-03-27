@@ -10,6 +10,13 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
+ESCAPED_CSP_SNIPPET = (
+    "default-src &#x27;self&#x27;; "
+    "img-src &#x27;self&#x27; data:; "
+    "object-src &#x27;none&#x27;; "
+    "base-uri &#x27;self&#x27;; "
+    "form-action &#x27;self&#x27;"
+)
 
 
 def prepare_workspace(tmp_path: Path) -> Path:
@@ -588,6 +595,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     )
 
     assert "visible public sample" in index_html.lower()
+    assert f'<meta http-equiv="Content-Security-Policy" content="{ESCAPED_CSP_SNIPPET}">' in index_html
+    assert '<meta http-equiv="Referrer-Policy" content="no-referrer, strict-origin-when-cross-origin">' in index_html
     assert 'href="methodology.html"' in index_html
     assert 'href="data.html"' in index_html
     assert 'src="assets/charts/category_share_map.png"' in index_html
@@ -715,6 +724,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "data-command-input" in index_html
 
     assert "not a full database export" in methodology_html.lower()
+    assert f'<meta http-equiv="Content-Security-Policy" content="{ESCAPED_CSP_SNIPPET}">' in methodology_html
+    assert '<meta http-equiv="Referrer-Policy" content="no-referrer, strict-origin-when-cross-origin">' in methodology_html
     assert "source-derived visible sample" in methodology_html.lower()
     assert "passed with warnings" in methodology_html.lower()
     assert "data/source_pipeline/" in methodology_html
@@ -722,6 +733,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "9 duplicate names / 0 heuristic gaps" in methodology_html
 
     assert "metrics.json" in data_html
+    assert f'<meta http-equiv="Content-Security-Policy" content="{ESCAPED_CSP_SNIPPET}">' in data_html
+    assert '<meta http-equiv="Referrer-Policy" content="no-referrer, strict-origin-when-cross-origin">' in data_html
     assert "Category summary" in data_html
     assert "Business model summary" in data_html
     assert "GTM model summary" in data_html

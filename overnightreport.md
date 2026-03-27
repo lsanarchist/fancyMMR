@@ -131,3 +131,61 @@
 
 - This note is again written before the commit/push step so the code change can stay in one clean task-scoped commit
 - Any push or remote-log limitation is reported in the terminal summary for this run
+
+## 2026-03-27 07:05:00 CET (+0100)
+
+- Run timing note: this entry starts after the previous note at `2026-03-27 06:58:23 CET (+0100)` and records the next quality pass
+- Intent: improve static-site delivery security without changing analytics behavior or requiring any backend/runtime change
+
+### What I looked for this time
+
+- A security-hardening improvement that fits a static GitHub Pages deployment
+- A change that improves delivery quality for the operator shell while staying compatible with the existing terminal-style UX
+- Something we could verify locally and deterministically, given the lack of live DB/Railway/Instantly access
+
+### External research used
+
+- I checked current MDN guidance for practical Content Security Policy implementation and meta `http-equiv` usage in static HTML contexts
+- I used that to keep the hardening narrow and compatible with a Pages-served static shell instead of inventing server-side headers we cannot actually ship from this repo alone
+
+### Main finding from this pass
+
+- The static Pages shell had no explicit document-level security policy, so the browser was relying on default behavior for resource loading and referrer behavior
+- For a fully static site with self-hosted CSS/JS/charts, that is an easy place to improve quality and safety without touching the business/reporting logic
+
+### What I changed
+
+1. Added explicit static-safe document policies to [src/site_builder.py](/run/media/doomguy/Новый%20том/fancy/fancyMMR/src/site_builder.py):
+   - `SITE_CONTENT_SECURITY_POLICY`
+   - `SITE_REFERRER_POLICY`
+2. The generated shell now emits:
+   - a Content Security Policy meta tag restricting the site to self-hosted resources plus `data:` images
+   - a Referrer Policy meta tag using `no-referrer, strict-origin-when-cross-origin`
+3. Regenerated the static Pages outputs so the policy is present on:
+   - [site/index.html](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/index.html)
+   - [site/methodology.html](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/methodology.html)
+   - [site/data.html](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/data.html)
+4. Updated [tests/test_build_site.py](/run/media/doomguy/Новый%20том/fancy/fancyMMR/tests/test_build_site.py) so the CSP and referrer policy are now part of the site contract
+
+### Why this refactor is safe
+
+- It does not alter datasets, reports, source parsing, promotion, validation, or analytics computations
+- It keeps the deployment fully GitHub-Pages-safe and static
+- It only tightens document policy for a site that already loads local CSS/JS/assets from the same origin
+
+### Verification
+
+- `python -m py_compile src/site_builder.py tests/test_build_site.py`
+- `python src/build_site.py`
+- `python -m pytest tests/test_build_site.py -q` -> `3 passed`
+- `python -m pytest` -> `46 passed`
+
+### Honest remaining gaps
+
+- This still does not create any direct alignment with live Instantly truth, because there is still no external source-of-truth adapter or accessible DB/Railway/MCP connector in this environment
+- So this pass improves static delivery security, not upstream metric reconciliation
+
+### Note about push/log follow-up
+
+- This note is again written before the commit/push step so the code change can stay in one clean task-scoped commit
+- Any push or remote-log limitation is reported in the terminal summary for this run

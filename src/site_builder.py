@@ -19,6 +19,14 @@ SITE_DIR = ROOT / "site"
 SITE_ASSETS_DIR = SITE_DIR / "assets"
 SITE_CHARTS_DIR = SITE_ASSETS_DIR / "charts"
 SITE_DATA_DIR = SITE_DIR / "data"
+SITE_CONTENT_SECURITY_POLICY = (
+    "default-src 'self'; "
+    "img-src 'self' data:; "
+    "object-src 'none'; "
+    "base-uri 'self'; "
+    "form-action 'self'"
+)
+SITE_REFERRER_POLICY = "no-referrer, strict-origin-when-cross-origin"
 
 JSON_EXPORTS = [
     "metrics.json",
@@ -825,6 +833,8 @@ def page_shell(
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="{html.escape(SITE_CONTENT_SECURITY_POLICY, quote=True)}">
+  <meta http-equiv="Referrer-Policy" content="{html.escape(SITE_REFERRER_POLICY, quote=True)}">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{html.escape(title)} | TrustMRR visible sample</title>
   <meta name="description" content="{html.escape(description, quote=True)}">
