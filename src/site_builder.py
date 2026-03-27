@@ -291,6 +291,25 @@ def format_average_byte_count(total_bytes: int, item_count: int) -> str:
     return f"avg {format_byte_count(average_bytes)}"
 
 
+def median_byte_value(byte_values: list[int]) -> int | None:
+    if not byte_values:
+        return None
+    ordered_values = sorted(byte_values)
+    midpoint = len(ordered_values) // 2
+    if len(ordered_values) % 2 == 1:
+        return ordered_values[midpoint]
+    lower = ordered_values[midpoint - 1]
+    upper = ordered_values[midpoint]
+    return (lower + upper + 1) // 2
+
+
+def format_median_byte_count(byte_values: list[int]) -> str:
+    median_bytes = median_byte_value(byte_values)
+    if median_bytes is None:
+        return "med 0 bytes"
+    return f"med {format_byte_count(median_bytes)}"
+
+
 def artifact_format_label(artifact: dict[str, object]) -> str:
     artifact_format = str(artifact.get("format") or "").strip().lower()
     if artifact_format:
@@ -673,6 +692,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     item_format_count = str(item.get("format_count") or "")
     item_format_file_share = str(item.get("format_file_share") or "")
     item_format_average_size = str(item.get("format_average_size") or "")
+    item_format_median_size = str(item.get("format_median_size") or "")
     byte_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
         if isinstance(item_bytes, int)
@@ -718,6 +738,11 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         if item_format_average_size
         else ""
     )
+    format_median_size_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-format-median-size">{html.escape(item_format_median_size)}</span>'
+        if item_format_median_size
+        else ""
+    )
     return (
         f'<a class="rail-command-link output-registry-link" href="{html.escape(target, quote=True)}" '
         f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
@@ -738,6 +763,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         f"{format_count_badge_html}"
         f"{format_file_share_badge_html}"
         f"{format_average_size_badge_html}"
+        f"{format_median_size_badge_html}"
         "</span>"
         "</a>"
     )
@@ -849,6 +875,7 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
     format_ranked_site_paths: dict[str, list[tuple[str, int]]] = {}
     format_item_counts: dict[str, int] = {}
     format_total_bytes: dict[str, int] = {}
+    format_byte_values: dict[str, list[int]] = {}
     for artifact in download_items:
         site_path = str(artifact.get("site_path") or "")
         artifact_format = str(artifact.get("format") or "").strip().lower() or "other"
@@ -860,6 +887,7 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
         if not isinstance(artifact_bytes, int):
             continue
         format_total_bytes[artifact_format] = format_total_bytes.get(artifact_format, 0) + artifact_bytes
+        format_byte_values.setdefault(artifact_format, []).append(artifact_bytes)
         format_ranked_site_paths.setdefault(artifact_format, []).append((site_path, artifact_bytes))
     for artifact_format, ranked_items in format_ranked_site_paths.items():
         format_count = len(ranked_items)
@@ -903,6 +931,9 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
         )
         items[-1]["format_average_size"] = (
             f"{artifact_format_label} {format_average_byte_count(format_total_bytes.get(artifact_format_key, 0), format_item_counts.get(artifact_format_key, 0))}"
+        )
+        items[-1]["format_median_size"] = (
+            f"{artifact_format_label} {format_median_byte_count(format_byte_values.get(artifact_format_key, []))}"
         )
         artifact_bytes = artifact.get("bytes")
         if isinstance(artifact_bytes, int):
@@ -5749,6 +5780,12 @@ body {
   color: var(--cyan);
   border-color: rgba(98, 201, 214, 0.22);
   background: rgba(98, 201, 214, 0.12);
+}
+
+.output-registry-badge-format-median-size {
+  color: var(--warning);
+  border-color: rgba(255, 191, 97, 0.22);
+  background: rgba(255, 191, 97, 0.12);
 }
 
 .nav-link:hover,
