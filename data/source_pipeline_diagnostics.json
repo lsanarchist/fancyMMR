@@ -87,6 +87,8 @@
   "fetch_failure_earliest_recorded_at": null,
   "fetch_failure_error_type_counts": {},
   "fetch_failure_latest_recorded_at": null,
+  "fetch_failure_robots_policy_counts": {},
+  "fetch_failure_robots_status_code_counts": {},
   "fetch_failure_source_count": 0,
   "fetch_failure_sources": [],
   "fetch_failure_status_code_counts": {},

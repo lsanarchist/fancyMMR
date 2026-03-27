@@ -128,6 +128,8 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert source_pipeline_diagnostics["fetch_failure_error_type_counts"] is None
     assert source_pipeline_diagnostics["fetch_failure_earliest_recorded_at"] is None
     assert source_pipeline_diagnostics["fetch_failure_latest_recorded_at"] is None
+    assert source_pipeline_diagnostics["fetch_failure_robots_policy_counts"] is None
+    assert source_pipeline_diagnostics["fetch_failure_robots_status_code_counts"] is None
     assert source_pipeline_diagnostics["fetch_failure_status_code_counts"] is None
     assert source_pipeline_diagnostics["detail_parse_failure_source_count"] is None
     assert source_pipeline_diagnostics["detail_parse_status_counts"] is None
@@ -167,6 +169,8 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_error_type_counts"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_earliest_recorded_at"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_latest_recorded_at"] is None
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_robots_policy_counts"] is None
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_robots_status_code_counts"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"] == []
 
@@ -211,6 +215,8 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert diagnostics["fetch_failure_error_type_counts"] == {}
     assert diagnostics["fetch_failure_earliest_recorded_at"] is None
     assert diagnostics["fetch_failure_latest_recorded_at"] is None
+    assert diagnostics["fetch_failure_robots_policy_counts"] == {}
+    assert diagnostics["fetch_failure_robots_status_code_counts"] == {}
     assert diagnostics["fetch_failure_status_code_counts"] == {}
     assert diagnostics["detail_parse_failure_source_count"] == 0
     assert diagnostics["detail_parse_status_counts"]["not_requested"] == 852
@@ -248,6 +254,8 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_error_type_counts"] == {}
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_earliest_recorded_at"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_latest_recorded_at"] is None
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_robots_policy_counts"] == {}
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_robots_status_code_counts"] == {}
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] == {}
     assert pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"] == []
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_failure_source_count"] == 0
@@ -286,7 +294,37 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                 "error_type": "HTTPError",
                 "message": "HTTP Error 500: server exploded",
                 "status_code": 500,
+                "robots": {
+                    "allowed": True,
+                    "effective_delay_seconds": 0.0,
+                    "robots_url": "https://trustmrr.com/robots.txt",
+                    "status_code": 200,
+                },
                 "html_snapshot_path": "data/fetch_failures/category--ai.html",
+            },
+            indent=2,
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    (failure_dir / "category--sales.json").write_text(
+        json.dumps(
+            {
+                "source_id": "category--sales",
+                "url": "https://trustmrr.com/category/sales",
+                "parser_strategy": "trustmrr_category_listing",
+                "source_group": "category",
+                "recorded_at": "2026-03-27T00:05:00Z",
+                "error_type": "FetchError",
+                "message": "Fetching https://trustmrr.com/category/sales is disallowed by robots.txt",
+                "status_code": None,
+                "robots": {
+                    "allowed": False,
+                    "effective_delay_seconds": 15.0,
+                    "robots_url": "https://trustmrr.com/robots.txt",
+                    "status_code": 200,
+                },
+                "html_snapshot_path": None,
             },
             indent=2,
             sort_keys=True,
@@ -299,7 +337,7 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
     diagnostics = json.loads((workspace / "data" / "source_pipeline_diagnostics.json").read_text(encoding="utf-8"))
     pipeline_manifest = json.loads((workspace / "data" / "pipeline_manifest.json").read_text(encoding="utf-8"))
 
-    assert diagnostics["fetch_failure_source_count"] == 1
+    assert diagnostics["fetch_failure_source_count"] == 2
     assert diagnostics["fetch_failure_sources"] == [
         {
             "category_label": "AI",
@@ -309,26 +347,61 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
             "html_snapshot_path": "data/fetch_failures/category--ai.html",
             "message": "HTTP Error 500: server exploded",
             "parser_strategy": "trustmrr_category_listing",
+            "robots_effective_delay_seconds": 0.0,
+            "robots_policy": "allowed",
+            "robots_status_code": 200,
+            "robots_url": "https://trustmrr.com/robots.txt",
             "source_group": "category",
             "source_id": "category--ai",
             "source_url": "https://trustmrr.com/category/ai",
             "status_code": 500,
+        },
+        {
+            "category_label": "Sales",
+            "recorded_at": "2026-03-27T00:05:00Z",
+            "error_type": "FetchError",
+            "has_html_snapshot": False,
+            "html_snapshot_path": None,
+            "message": "Fetching https://trustmrr.com/category/sales is disallowed by robots.txt",
+            "parser_strategy": "trustmrr_category_listing",
+            "robots_effective_delay_seconds": 15.0,
+            "robots_policy": "disallowed",
+            "robots_status_code": 200,
+            "robots_url": "https://trustmrr.com/robots.txt",
+            "source_group": "category",
+            "source_id": "category--sales",
+            "source_url": "https://trustmrr.com/category/sales",
+            "status_code": None,
         }
     ]
-    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_count"] == 1
-    assert diagnostics["fetch_failure_error_type_counts"] == {"HTTPError": 1}
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_count"] == 2
+    assert diagnostics["fetch_failure_error_type_counts"] == {"FetchError": 1, "HTTPError": 1}
     assert diagnostics["fetch_failure_earliest_recorded_at"] == "2026-03-27T00:00:00Z"
-    assert diagnostics["fetch_failure_latest_recorded_at"] == "2026-03-27T00:00:00Z"
-    assert diagnostics["fetch_failure_status_code_counts"] == {"500": 1}
-    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_error_type_counts"] == {"HTTPError": 1}
+    assert diagnostics["fetch_failure_latest_recorded_at"] == "2026-03-27T00:05:00Z"
+    assert diagnostics["fetch_failure_robots_policy_counts"] == {"allowed": 1, "disallowed": 1}
+    assert diagnostics["fetch_failure_robots_status_code_counts"] == {"200": 2}
+    assert diagnostics["fetch_failure_status_code_counts"] == {"500": 1, "n/a": 1}
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_error_type_counts"] == {
+        "FetchError": 1,
+        "HTTPError": 1,
+    }
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_earliest_recorded_at"] == "2026-03-27T00:00:00Z"
-    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_latest_recorded_at"] == "2026-03-27T00:00:00Z"
-    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] == {"500": 1}
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_latest_recorded_at"] == "2026-03-27T00:05:00Z"
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_robots_policy_counts"] == {
+        "allowed": 1,
+        "disallowed": 1,
+    }
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_robots_status_code_counts"] == {"200": 2}
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] == {
+        "500": 1,
+        "n/a": 1,
+    }
     assert [
         artifact["path"] for artifact in diagnostics["downloadable_fetch_failure_artifacts"]
     ] == [
         "data/fetch_failures/category--ai.json",
         "data/fetch_failures/category--ai.html",
+        "data/fetch_failures/category--sales.json",
     ]
     for artifact in diagnostics["downloadable_fetch_failure_artifacts"]:
         artifact_path = workspace / artifact["path"]

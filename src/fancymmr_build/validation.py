@@ -275,6 +275,14 @@ def _timestamp_bounds(
     return parsed_rows[0][1], parsed_rows[-1][1]
 
 
+def _robots_policy_label(value: object) -> str | None:
+    if isinstance(value, bool):
+        return "allowed" if value else "disallowed"
+    if value in (None, ""):
+        return None
+    return str(value)
+
+
 def _artifact_download_record(
     *,
     relative_path: str,
@@ -369,6 +377,17 @@ def _load_fetch_failure_sources(
         if source_id not in selected_sources_by_id:
             continue
 
+        robots = snapshot.get("robots")
+        robots_policy = None
+        robots_status_code = None
+        robots_url = None
+        robots_effective_delay_seconds = None
+        if isinstance(robots, dict):
+            robots_policy = _robots_policy_label(robots.get("allowed"))
+            robots_status_code = robots.get("status_code")
+            robots_url = robots.get("robots_url")
+            robots_effective_delay_seconds = robots.get("effective_delay_seconds")
+
         source_metadata = selected_sources_by_id.get(source_id, {})
         failure_sources.append(
             {
@@ -381,6 +400,10 @@ def _load_fetch_failure_sources(
                 "error_type": str(snapshot.get("error_type") or ""),
                 "message": str(snapshot.get("message") or ""),
                 "status_code": snapshot.get("status_code"),
+                "robots_policy": robots_policy,
+                "robots_status_code": robots_status_code,
+                "robots_url": robots_url,
+                "robots_effective_delay_seconds": robots_effective_delay_seconds,
                 "has_html_snapshot": bool(snapshot.get("html_snapshot_path")),
                 "html_snapshot_path": snapshot.get("html_snapshot_path"),
             }
@@ -463,6 +486,8 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "fetch_failure_error_type_counts": None,
         "fetch_failure_earliest_recorded_at": None,
         "fetch_failure_latest_recorded_at": None,
+        "fetch_failure_robots_policy_counts": None,
+        "fetch_failure_robots_status_code_counts": None,
         "fetch_failure_status_code_counts": None,
         "detail_parse_failure_source_count": None,
         "detail_parse_status_counts": None,
@@ -622,6 +647,16 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
             ),
             "fetch_failure_earliest_recorded_at": fetch_failure_earliest_recorded_at,
             "fetch_failure_latest_recorded_at": fetch_failure_latest_recorded_at,
+            "fetch_failure_robots_policy_counts": _count_values(
+                fetch_failure_sources,
+                "robots_policy",
+                none_label="unknown",
+            ),
+            "fetch_failure_robots_status_code_counts": _count_values(
+                fetch_failure_sources,
+                "robots_status_code",
+                none_label="n/a",
+            ),
             "fetch_failure_status_code_counts": _count_values(
                 fetch_failure_sources,
                 "status_code",
@@ -759,6 +794,12 @@ def write_pipeline_manifest(
             ],
             "fetch_failure_latest_recorded_at": source_pipeline_diagnostics_report[
                 "fetch_failure_latest_recorded_at"
+            ],
+            "fetch_failure_robots_policy_counts": source_pipeline_diagnostics_report[
+                "fetch_failure_robots_policy_counts"
+            ],
+            "fetch_failure_robots_status_code_counts": source_pipeline_diagnostics_report[
+                "fetch_failure_robots_status_code_counts"
             ],
             "fetch_failure_status_code_counts": source_pipeline_diagnostics_report["fetch_failure_status_code_counts"],
             "detail_parse_failure_source_count": source_pipeline_diagnostics_report["detail_parse_failure_source_count"],

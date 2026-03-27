@@ -161,9 +161,56 @@ def test_fetch_source_saves_html_snapshot_on_http_error(tmp_path: Path) -> None:
     snapshot = json.loads(failure_meta.read_text(encoding="utf-8"))
     assert snapshot["recorded_at"].endswith("Z")
     assert snapshot["status_code"] == 500
+    assert snapshot["robots"]["allowed"] is True
     assert snapshot["html_snapshot_path"] == "data/fetch_failures/category--ai.html"
     assert "server exploded" in snapshot["message"]
     assert "broken" in failure_html.read_text(encoding="utf-8")
+
+
+def test_fetch_source_saves_snapshot_when_disallowed_by_robots(tmp_path: Path) -> None:
+    paths = FetchPaths(
+        root=tmp_path,
+        data_dir=tmp_path / "data",
+        cache_dir=tmp_path / "data" / "fetch_cache",
+        failure_snapshot_dir=tmp_path / "data" / "fetch_failures",
+    )
+    source = SourceConfig(
+        source_id="category--sales",
+        url="https://example.com/category/sales",
+        parser_strategy="trustmrr_category_listing",
+        category_slug="sales",
+        category_label="Sales",
+        source_group="category",
+    )
+    robots = {
+        "robots_url": "https://example.com/robots.txt",
+        "status_code": 200,
+        "allowed": False,
+        "crawl_delay_seconds": 12,
+        "request_rate": None,
+        "effective_delay_seconds": 12.0,
+    }
+
+    with pytest.raises(FetchError, match="disallowed by robots.txt"):
+        fetch_source(
+            source,
+            paths=paths,
+            policy=DEFAULT_FETCH_POLICY,
+            opener=lambda *args, **kwargs: pytest.fail("robots-disallowed fetch should not hit the network"),
+            robots_resolver=lambda *args, **kwargs: robots,
+            sleeper=lambda _: None,
+            monotonic=lambda: 10.0,
+        )
+
+    failure_meta = tmp_path / "data" / "fetch_failures" / "category--sales.json"
+    assert failure_meta.exists()
+    snapshot = json.loads(failure_meta.read_text(encoding="utf-8"))
+    assert snapshot["status_code"] is None
+    assert snapshot["html_snapshot_path"] is None
+    assert snapshot["robots"]["allowed"] is False
+    assert snapshot["robots"]["status_code"] == 200
+    assert snapshot["robots"]["effective_delay_seconds"] == 12.0
+    assert "disallowed by robots.txt" in snapshot["message"]
 
 
 def test_save_failure_snapshot_without_html_body_writes_metadata(tmp_path: Path) -> None:

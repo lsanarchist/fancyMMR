@@ -120,6 +120,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Fetch failures" in data_html
     assert "Fetch-failure causes" in data_html
     assert "Fetch-failure timing" in data_html
+    assert "Fetch-failure robots context" in data_html
     assert "Detail parse failures" in data_html
     assert "Detail-field coverage" in data_html
     assert "staged provenance" in data_html
@@ -127,6 +128,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "No staged source fetch failures are currently recorded for the active manifest." in data_html
     assert "No staged fetch-failure causes are currently recorded for the active manifest." in data_html
     assert "No staged fetch-failure timing is currently recorded for the active manifest." in data_html
+    assert "No staged fetch-failure robots context is currently recorded for the active manifest." in data_html
     assert "No source pages in the active manifest currently report staged detail parse failures." in data_html
     assert "No staged detail rows in the active manifest currently populate the shared detail fields." in data_html
     assert "Staged run manifest" in data_html
@@ -156,7 +158,37 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
                 "error_type": "HTTPError",
                 "message": "HTTP Error 500: server exploded",
                 "status_code": 500,
+                "robots": {
+                    "allowed": True,
+                    "effective_delay_seconds": 0.0,
+                    "robots_url": "https://trustmrr.com/robots.txt",
+                    "status_code": 200,
+                },
                 "html_snapshot_path": "data/fetch_failures/category--ai.html",
+            },
+            indent=2,
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+    (failure_dir / "category--sales.json").write_text(
+        json.dumps(
+            {
+                "source_id": "category--sales",
+                "url": "https://trustmrr.com/category/sales",
+                "parser_strategy": "trustmrr_category_listing",
+                "source_group": "category",
+                "recorded_at": "2026-03-27T00:05:00Z",
+                "error_type": "FetchError",
+                "message": "Fetching https://trustmrr.com/category/sales is disallowed by robots.txt",
+                "status_code": None,
+                "robots": {
+                    "allowed": False,
+                    "effective_delay_seconds": 15.0,
+                    "robots_url": "https://trustmrr.com/robots.txt",
+                    "status_code": 200,
+                },
+                "html_snapshot_path": None,
             },
             indent=2,
             sort_keys=True,
@@ -175,13 +207,21 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert (site_root / "data" / "fetch_failures" / "category--ai.html").exists()
     assert "Fetch failure metadata - AI" in data_html
     assert "Fetch failure HTML snapshot - AI" in data_html
+    assert "Fetch failure metadata - Sales" in data_html
     assert "Fetch-failure causes" in data_html
     assert "Fetch-failure timing" in data_html
+    assert "Fetch-failure robots context" in data_html
     assert "HTTPError" in data_html
+    assert "FetchError" in data_html
     assert ">500<" in data_html
     assert "2026-03-27T00:00:00Z" in data_html
+    assert "2026-03-27T00:05:00Z" in data_html
+    assert "disallowed" in data_html
+    assert "allowed" in data_html
+    assert ">200<" in data_html
     assert "data/fetch_failures/category--ai.json" in data_html
     assert "data/fetch_failures/category--ai.html" in data_html
+    assert "data/fetch_failures/category--sales.json" in data_html
     for artifact in pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"]:
         assert artifact["site_path"] in data_html
         assert artifact["sha256"] in data_html

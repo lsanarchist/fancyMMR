@@ -805,11 +805,15 @@ def build_data_page(
         fetch_failure_sources = source_pipeline_diagnostics.get("fetch_failure_sources", [])
         if fetch_failure_sources:
             diagnostics_fetch_failure_section = render_table(
-                ["Source page", "Recorded at", "Status", "Error", "HTML snapshot", "Message"],
+                ["Source page", "Recorded at", "Robots", "robots.txt", "Status", "Error", "HTML snapshot", "Message"],
                 [
                     [
                         f'<a href="{html.escape(row["source_url"], quote=True)}">{html.escape(row["source_url"])}</a>',
                         html.escape(str(row.get("recorded_at") or "n/a")),
+                        html.escape(str(row.get("robots_policy") or "unknown")),
+                        html.escape(
+                            str(row.get("robots_status_code") if row.get("robots_status_code") is not None else "n/a")
+                        ),
                         html.escape(str(row.get("status_code") if row.get("status_code") is not None else "n/a")),
                         html.escape(str(row.get("error_type") or "unknown")),
                         html.escape("yes" if row.get("has_html_snapshot") else "no"),
@@ -834,6 +838,39 @@ def build_data_page(
             diagnostics_fetch_failure_timing_section = (
                 "<h3>Fetch-failure timing</h3>"
                 '<p class="section-note">No staged fetch-failure timing is currently recorded for the active manifest.</p>'
+            )
+        fetch_failure_robots_policy_counts = source_pipeline_diagnostics.get("fetch_failure_robots_policy_counts", {}) or {}
+        fetch_failure_robots_status_code_counts = (
+            source_pipeline_diagnostics.get("fetch_failure_robots_status_code_counts", {}) or {}
+        )
+        if fetch_failure_sources:
+            diagnostics_fetch_failure_robots_section = (
+                "<h3>Fetch-failure robots context</h3>"
+                + render_table(
+                    ["Robots policy", "Affected sources"],
+                    [
+                        [
+                            html.escape(str(policy)),
+                            html.escape(f"{int(count):,}"),
+                        ]
+                        for policy, count in fetch_failure_robots_policy_counts.items()
+                    ],
+                )
+                + render_table(
+                    ["robots.txt status", "Affected sources"],
+                    [
+                        [
+                            html.escape(str(status_code)),
+                            html.escape(f"{int(count):,}"),
+                        ]
+                        for status_code, count in fetch_failure_robots_status_code_counts.items()
+                    ],
+                )
+            )
+        else:
+            diagnostics_fetch_failure_robots_section = (
+                "<h3>Fetch-failure robots context</h3>"
+                '<p class="section-note">No staged fetch-failure robots context is currently recorded for the active manifest.</p>'
             )
         fetch_failure_error_type_counts = source_pipeline_diagnostics.get("fetch_failure_error_type_counts", {}) or {}
         fetch_failure_status_code_counts = source_pipeline_diagnostics.get("fetch_failure_status_code_counts", {}) or {}
@@ -915,6 +952,7 @@ def build_data_page(
             + diagnostics_failure_section
             + diagnostics_fetch_failure_section
             + diagnostics_fetch_failure_timing_section
+            + diagnostics_fetch_failure_robots_section
             + diagnostics_fetch_failure_breakdown_section
             + diagnostics_coverage_section
             + (
