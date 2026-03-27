@@ -696,6 +696,20 @@ def _summarize_fetch_failure_artifact_format_source_count_total(
     }
 
 
+def _summarize_fetch_failure_artifact_format_distinct_count(
+    artifact_format_counts: dict[str, int],
+) -> dict[str, object]:
+    distinct_format_count = len(artifact_format_counts)
+    return {
+        "artifact_format_distinct_count": distinct_format_count,
+        "artifact_format_distinct_count_summary": (
+            f"{distinct_format_count} distinct artifact format"
+            if distinct_format_count == 1
+            else f"{distinct_format_count} distinct artifact formats"
+        ),
+    }
+
+
 def _build_fetch_failure_next_action_artifact_rollups(
     fetch_failure_next_action_source_lists: list[dict[str, object]],
 ) -> list[dict[str, object]]:
@@ -719,6 +733,9 @@ def _build_fetch_failure_next_action_artifact_rollups(
         artifact_format_source_count_total = _summarize_fetch_failure_artifact_format_source_count_total(
             artifact_format_source_counts
         )
+        artifact_format_distinct_count = _summarize_fetch_failure_artifact_format_distinct_count(
+            artifact_format_counts
+        )
         rollups.append(
             {
                 "failure_next_action": str(action_group.get("failure_next_action") or "unknown"),
@@ -740,6 +757,12 @@ def _build_fetch_failure_next_action_artifact_rollups(
                 ),
                 "artifact_format_source_count_total_summary": str(
                     artifact_format_source_count_total["artifact_format_source_count_total_summary"]
+                ),
+                "artifact_format_distinct_count": int(
+                    artifact_format_distinct_count["artifact_format_distinct_count"]
+                ),
+                "artifact_format_distinct_count_summary": str(
+                    artifact_format_distinct_count["artifact_format_distinct_count_summary"]
                 ),
             }
         )

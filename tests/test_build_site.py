@@ -149,7 +149,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "No staged fetch-failure severity context is currently recorded for the active manifest." in data_html
     assert "No staged fetch-failure retryability context is currently recorded for the active manifest." in data_html
     assert (
-        "No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, artifact rollups, artifact format counts, artifact-format source lists, artifact-format source-count summaries, or artifact-format source-count totals are currently recorded for the active manifest."
+        "No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, artifact rollups, artifact format counts, artifact-format source lists, artifact-format source-count summaries, artifact-format source-count totals, or distinct artifact-format counts are currently recorded for the active manifest."
         in data_html
     )
     assert "No staged fetch-failure snapshot-availability context is currently recorded for the active manifest." in data_html
@@ -259,6 +259,7 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "Artifact format counts" in data_html
     assert "Artifact-format source counts" in data_html
     assert "Artifact-format source-count total" in data_html
+    assert "Distinct artifact formats" in data_html
     assert "Artifact format" in data_html
     assert "Format source count" in data_html
     assert "Format source labels" in data_html
@@ -301,6 +302,8 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "HTML: 1 source, JSON: 1 source" in data_html
     assert "1 format-source entry" in data_html
     assert "2 format-source entries" in data_html
+    assert "1 distinct artifact format" in data_html
+    assert "2 distinct artifact formats" in data_html
     assert data_html.count("https://trustmrr.com/category/ai") >= 5
     assert data_html.count("https://trustmrr.com/category/sales") >= 4
     assert ">available<" in data_html
