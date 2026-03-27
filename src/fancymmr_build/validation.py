@@ -682,6 +682,20 @@ def _summarize_fetch_failure_artifact_format_source_counts(
     )
 
 
+def _summarize_fetch_failure_artifact_format_source_count_total(
+    artifact_format_source_counts: dict[str, int],
+) -> dict[str, object]:
+    source_count_total = sum(int(source_count) for source_count in artifact_format_source_counts.values())
+    return {
+        "artifact_format_source_count_total": source_count_total,
+        "artifact_format_source_count_total_summary": (
+            f"{source_count_total} format-source entry"
+            if source_count_total == 1
+            else f"{source_count_total} format-source entries"
+        ),
+    }
+
+
 def _build_fetch_failure_next_action_artifact_rollups(
     fetch_failure_next_action_source_lists: list[dict[str, object]],
 ) -> list[dict[str, object]]:
@@ -702,6 +716,9 @@ def _build_fetch_failure_next_action_artifact_rollups(
         artifact_format_source_counts = _count_fetch_failure_artifact_format_sources(
             artifact_format_source_lists
         )
+        artifact_format_source_count_total = _summarize_fetch_failure_artifact_format_source_count_total(
+            artifact_format_source_counts
+        )
         rollups.append(
             {
                 "failure_next_action": str(action_group.get("failure_next_action") or "unknown"),
@@ -717,6 +734,12 @@ def _build_fetch_failure_next_action_artifact_rollups(
                 "artifact_format_source_counts": artifact_format_source_counts,
                 "artifact_format_source_count_summary": _summarize_fetch_failure_artifact_format_source_counts(
                     artifact_format_source_counts
+                ),
+                "artifact_format_source_count_total": int(
+                    artifact_format_source_count_total["artifact_format_source_count_total"]
+                ),
+                "artifact_format_source_count_total_summary": str(
+                    artifact_format_source_count_total["artifact_format_source_count_total_summary"]
                 ),
             }
         )

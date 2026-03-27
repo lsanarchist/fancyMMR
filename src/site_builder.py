@@ -989,6 +989,7 @@ def build_data_page(
                         "Action artifact rollup",
                         "Artifact format counts",
                         "Artifact-format source counts",
+                        "Artifact-format source-count total",
                     ],
                     [
                         [
@@ -1007,6 +1008,12 @@ def build_data_page(
                                 str(
                                     rollup.get("artifact_format_source_count_summary")
                                     or "No staged fetch-failure artifact-format source counts"
+                                )
+                            ),
+                            html.escape(
+                                str(
+                                    rollup.get("artifact_format_source_count_total_summary")
+                                    or "No staged fetch-failure artifact-format source-count total"
                                 )
                             ),
                         ]
@@ -1102,7 +1109,7 @@ def build_data_page(
         else:
             diagnostics_fetch_failure_next_action_section = (
                 "<h3>Fetch-failure next actions</h3>"
-                '<p class="section-note">No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, artifact rollups, artifact format counts, artifact-format source lists, or artifact-format source-count summaries are currently recorded for the active manifest.</p>'
+                '<p class="section-note">No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, artifact rollups, artifact format counts, artifact-format source lists, artifact-format source-count summaries, or artifact-format source-count totals are currently recorded for the active manifest.</p>'
             )
         fetch_failure_html_snapshot_availability_counts = (
             source_pipeline_diagnostics.get("fetch_failure_html_snapshot_availability_counts", {}) or {}
