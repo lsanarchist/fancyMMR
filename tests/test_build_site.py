@@ -122,6 +122,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Fetch-failure timing" in data_html
     assert "Fetch-failure source context" in data_html
     assert "Fetch-failure parser context" in data_html
+    assert "Fetch-failure snapshot availability" in data_html
     assert "Fetch-failure delay context" in data_html
     assert "Fetch-failure robots context" in data_html
     assert "Detail parse failures" in data_html
@@ -133,6 +134,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "No staged fetch-failure timing is currently recorded for the active manifest." in data_html
     assert "No staged fetch-failure source-label context is currently recorded for the active manifest." in data_html
     assert "No staged fetch-failure parser-strategy context is currently recorded for the active manifest." in data_html
+    assert "No staged fetch-failure snapshot-availability context is currently recorded for the active manifest." in data_html
     assert "No staged fetch-failure delay context is currently recorded for the active manifest." in data_html
     assert "No staged fetch-failure robots context is currently recorded for the active manifest." in data_html
     assert "No source pages in the active manifest currently report staged detail parse failures." in data_html
@@ -218,6 +220,7 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "Fetch-failure timing" in data_html
     assert "Fetch-failure source context" in data_html
     assert "Fetch-failure parser context" in data_html
+    assert "Fetch-failure snapshot availability" in data_html
     assert "Fetch-failure delay context" in data_html
     assert "Fetch-failure robots context" in data_html
     assert "HTTPError" in data_html
@@ -233,6 +236,8 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert ">Sales<" in data_html
     assert ">category<" in data_html
     assert "trustmrr_category_listing" in data_html
+    assert ">available<" in data_html
+    assert ">missing<" in data_html
     assert "disallowed" in data_html
     assert "allowed" in data_html
     assert ">200<" in data_html

@@ -87,6 +87,7 @@
   "fetch_failure_earliest_recorded_at": null,
   "fetch_failure_effective_delay_seconds_counts": {},
   "fetch_failure_error_type_counts": {},
+  "fetch_failure_html_snapshot_availability_counts": {},
   "fetch_failure_latest_recorded_at": null,
   "fetch_failure_max_effective_delay_seconds": null,
   "fetch_failure_min_effective_delay_seconds": null,

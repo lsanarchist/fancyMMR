@@ -902,6 +902,28 @@ def build_data_page(
                 "<h3>Fetch-failure parser context</h3>"
                 '<p class="section-note">No staged fetch-failure parser-strategy context is currently recorded for the active manifest.</p>'
             )
+        fetch_failure_html_snapshot_availability_counts = (
+            source_pipeline_diagnostics.get("fetch_failure_html_snapshot_availability_counts", {}) or {}
+        )
+        if fetch_failure_sources:
+            diagnostics_fetch_failure_snapshot_context_section = (
+                "<h3>Fetch-failure snapshot availability</h3>"
+                + render_table(
+                    ["HTML snapshot", "Affected sources"],
+                    [
+                        [
+                            html.escape(str(snapshot_availability)),
+                            html.escape(f"{int(count):,}"),
+                        ]
+                        for snapshot_availability, count in fetch_failure_html_snapshot_availability_counts.items()
+                    ],
+                )
+            )
+        else:
+            diagnostics_fetch_failure_snapshot_context_section = (
+                "<h3>Fetch-failure snapshot availability</h3>"
+                '<p class="section-note">No staged fetch-failure snapshot-availability context is currently recorded for the active manifest.</p>'
+            )
         fetch_failure_robots_policy_counts = source_pipeline_diagnostics.get("fetch_failure_robots_policy_counts", {}) or {}
         fetch_failure_robots_status_code_counts = (
             source_pipeline_diagnostics.get("fetch_failure_robots_status_code_counts", {}) or {}
@@ -1059,6 +1081,7 @@ def build_data_page(
             + diagnostics_fetch_failure_timing_section
             + diagnostics_fetch_failure_source_context_section
             + diagnostics_fetch_failure_parser_context_section
+            + diagnostics_fetch_failure_snapshot_context_section
             + diagnostics_fetch_failure_delay_section
             + diagnostics_fetch_failure_robots_section
             + diagnostics_fetch_failure_breakdown_section

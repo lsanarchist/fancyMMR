@@ -309,6 +309,12 @@ def _source_label(category_label: object, source_id: object) -> str:
     return "unknown"
 
 
+def _snapshot_availability_label(value: object) -> str:
+    if bool(value):
+        return "available"
+    return "missing"
+
+
 def _artifact_download_record(
     *,
     relative_path: str,
@@ -416,6 +422,7 @@ def _load_fetch_failure_sources(
 
         source_metadata = selected_sources_by_id.get(source_id, {})
         category_label = source_metadata.get("category_label")
+        has_html_snapshot = bool(snapshot.get("html_snapshot_path"))
         failure_sources.append(
             {
                 "source_id": source_id,
@@ -432,7 +439,8 @@ def _load_fetch_failure_sources(
                 "robots_status_code": robots_status_code,
                 "robots_url": robots_url,
                 "robots_effective_delay_seconds": robots_effective_delay_seconds,
-                "has_html_snapshot": bool(snapshot.get("html_snapshot_path")),
+                "has_html_snapshot": has_html_snapshot,
+                "html_snapshot_availability": _snapshot_availability_label(has_html_snapshot),
                 "html_snapshot_path": snapshot.get("html_snapshot_path"),
             }
         )
@@ -522,6 +530,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "fetch_failure_source_label_counts": None,
         "fetch_failure_source_group_counts": None,
         "fetch_failure_parser_strategy_counts": None,
+        "fetch_failure_html_snapshot_availability_counts": None,
         "fetch_failure_status_code_counts": None,
         "detail_parse_failure_source_count": None,
         "detail_parse_status_counts": None,
@@ -720,6 +729,11 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
                 "parser_strategy",
                 none_label="unknown",
             ),
+            "fetch_failure_html_snapshot_availability_counts": _count_values(
+                fetch_failure_sources,
+                "html_snapshot_availability",
+                none_label="unknown",
+            ),
             "fetch_failure_status_code_counts": _count_values(
                 fetch_failure_sources,
                 "status_code",
@@ -881,6 +895,9 @@ def write_pipeline_manifest(
             ],
             "fetch_failure_parser_strategy_counts": source_pipeline_diagnostics_report[
                 "fetch_failure_parser_strategy_counts"
+            ],
+            "fetch_failure_html_snapshot_availability_counts": source_pipeline_diagnostics_report[
+                "fetch_failure_html_snapshot_availability_counts"
             ],
             "fetch_failure_status_code_counts": source_pipeline_diagnostics_report["fetch_failure_status_code_counts"],
             "detail_parse_failure_source_count": source_pipeline_diagnostics_report["detail_parse_failure_source_count"],
