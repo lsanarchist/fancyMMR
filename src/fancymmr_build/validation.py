@@ -281,7 +281,8 @@ def _build_downloadable_staged_artifacts(
         relative_path = artifact_paths.get(artifact_key)
         if not relative_path:
             continue
-        if not (BUILD_PATHS.root / relative_path).exists():
+        artifact_path = BUILD_PATHS.root / relative_path
+        if not artifact_path.exists():
             continue
         artifacts.append(
             {
@@ -290,6 +291,8 @@ def _build_downloadable_staged_artifacts(
                 "label": label,
                 "description": description,
                 "format": artifact_format,
+                "bytes": int(artifact_path.stat().st_size),
+                "sha256": _sha256(artifact_path),
             }
         )
     return artifacts

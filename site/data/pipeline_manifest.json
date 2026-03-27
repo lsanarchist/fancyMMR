@@ -43,9 +43,9 @@
       "sha256": "1063d12d8aa30809c2c9a8f0d95caa0a3cf04474b784e3729143c03963063515"
     },
     {
-      "bytes": 38319,
+      "bytes": 38950,
       "path": "data/source_pipeline_diagnostics.json",
-      "sha256": "f60f209ba7217ed21d93d8d8e891189a21f62be0b9961b31cd6cf5071746932f"
+      "sha256": "d4dbdef33810d0211f77f88d2fcd300e4204c9b2711c2127b0332539d6e79e55"
     },
     {
       "bytes": 275582,
@@ -181,45 +181,57 @@
     },
     "downloadable_staged_artifacts": [
       {
+        "bytes": 26100,
         "description": "End-to-end staged fetch/parse/normalize snapshot for the active promoted source-pipeline bundle.",
         "format": "json",
         "label": "Staged run manifest",
         "path": "data/source_pipeline/snapshots/run_manifest.json",
+        "sha256": "605be42f1fe2ce579d1a718dd70824814fef806ea5299dfbc209f6caba1b0df7",
         "site_path": "data/source_pipeline/snapshots/run_manifest.json"
       },
       {
+        "bytes": 3209,
         "description": "Staged source-pipeline validation status, checks, and failure details for the active promoted bundle.",
         "format": "json",
         "label": "Staged validation report",
         "path": "data/source_pipeline/processed/validation_report.json",
+        "sha256": "e5380247f5afae049468d6ecdfe91fb03cc7a55ef361d13b97e5c8f7189a01fd",
         "site_path": "data/source_pipeline/processed/validation_report.json"
       },
       {
+        "bytes": 582,
         "description": "Heuristic override coverage and alias-resolution counts for the staged promoted source-pipeline bundle.",
         "format": "json",
         "label": "Staged override coverage",
         "path": "data/source_pipeline/processed/heuristic_override_report.json",
+        "sha256": "2c52c07182a9bb755b733bb23c18195d02ddc2beb59c39e776d54f3a29f42f4f",
         "site_path": "data/source_pipeline/processed/heuristic_override_report.json"
       },
       {
+        "bytes": 56,
         "description": "Suspicious duplicate review output for the staged promoted source-pipeline bundle.",
         "format": "json",
         "label": "Staged duplicate review",
         "path": "data/source_pipeline/processed/suspicious_duplicates.json",
+        "sha256": "787345a43ac3946e7190fd360f4539303a3f043ea8e192e967192adbb12ae2d5",
         "site_path": "data/source_pipeline/processed/suspicious_duplicates.json"
       },
       {
+        "bytes": 208823,
         "description": "Flattened staged detail-page outcomes and parsed shared fields. This is staged provenance, not a promoted dataset column contract.",
         "format": "csv",
         "label": "Staged detail rows",
         "path": "data/source_pipeline/processed/detail_page_rows.csv",
+        "sha256": "76fa1b27532a25b6b2fba5eb6fe7d3556d40c0a1f07cb3aa89e1f6d42c5068a5",
         "site_path": "data/source_pipeline/processed/detail_page_rows.csv"
       },
       {
+        "bytes": 21780,
         "description": "Aggregate and per-source shared detail-field coverage derived from the staged detail rows. This remains staged provenance.",
         "format": "json",
         "label": "Staged detail coverage",
         "path": "data/source_pipeline/processed/detail_field_coverage.json",
+        "sha256": "bae57cb8b869c8d144f47a0299f20ae20f63279c0dd8f6da38cf0b4f04a7bf69",
         "site_path": "data/source_pipeline/processed/detail_field_coverage.json"
       }
     ],

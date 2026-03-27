@@ -311,6 +311,16 @@ h3 {
   background: rgba(29, 78, 216, 0.08);
 }
 
+.download-provenance,
+.download-hash {
+  margin: 12px 0 0;
+}
+
+.download-hash code {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+
 .table-wrap {
   overflow-x: auto;
   border-radius: var(--radius-md);

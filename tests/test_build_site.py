@@ -115,8 +115,11 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Staged validation report" in data_html
     assert "Staged override coverage" in data_html
     assert "Staged duplicate review" in data_html
+    assert "SHA256" in data_html
     for artifact in pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"]:
         assert artifact["site_path"] in data_html
+        assert artifact["sha256"] in data_html
+        assert f"{artifact['bytes']:,} bytes" in data_html
 
 
 def test_build_site_is_deterministic_across_rebuilds(tmp_path: Path) -> None:

@@ -211,6 +211,10 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert all(
         artifact["path"] == artifact["site_path"] for artifact in diagnostics["downloadable_staged_artifacts"]
     )
+    for artifact in diagnostics["downloadable_staged_artifacts"]:
+        artifact_path = workspace / artifact["path"]
+        assert artifact["bytes"] == artifact_path.stat().st_size
+        assert artifact["sha256"] == hashlib.sha256(artifact_path.read_bytes()).hexdigest()
     assert diagnostics["fully_mapped_visible_row_count"] == 249
     assert diagnostics["source_pages"]
     assert diagnostics["source_pages"][0]["parsed_card_count"] >= diagnostics["source_pages"][-1]["parsed_card_count"]
@@ -234,6 +238,10 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
         "data/source_pipeline/processed/detail_page_rows.csv",
         "data/source_pipeline/processed/detail_field_coverage.json",
     ]
+    assert (
+        pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"]
+        == diagnostics["downloadable_staged_artifacts"]
+    )
 
 
 def test_validation_report_fails_for_missing_columns_and_threshold_violations() -> None:

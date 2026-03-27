@@ -59,6 +59,12 @@ def read_csv_rows(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
+def format_byte_count(byte_count: int) -> str:
+    if byte_count == 1:
+        return "1 byte"
+    return f"{byte_count:,} bytes"
+
+
 def clean_site_dir() -> None:
     if SITE_DIR.exists():
         shutil.rmtree(SITE_DIR)
@@ -69,13 +75,13 @@ def clean_site_dir() -> None:
 def staged_source_pipeline_download_items(
     source_pipeline_diagnostics: dict[str, object],
     pipeline_manifest: dict[str, object],
-) -> list[dict[str, str]]:
+) -> list[dict[str, object]]:
     manifest_artifacts = pipeline_manifest.get("source_pipeline_diagnostics", {}).get(
         "downloadable_staged_artifacts", []
     )
     diagnostics_artifacts = source_pipeline_diagnostics.get("downloadable_staged_artifacts", [])
     selected_artifacts = manifest_artifacts or diagnostics_artifacts
-    items: list[dict[str, str]] = []
+    items: list[dict[str, object]] = []
     for artifact in selected_artifacts:
         if not isinstance(artifact, dict):
             continue
@@ -87,20 +93,28 @@ def staged_source_pipeline_download_items(
             continue
         if not (ROOT / path).exists():
             continue
-        items.append(
-            {
-                "path": path,
-                "site_path": site_path,
-                "label": label,
-                "description": description,
-            }
-        )
+        item: dict[str, object] = {
+            "path": path,
+            "site_path": site_path,
+            "label": label,
+            "description": description,
+        }
+        artifact_format = str(artifact.get("format") or "")
+        if artifact_format:
+            item["format"] = artifact_format
+        artifact_bytes = artifact.get("bytes")
+        if isinstance(artifact_bytes, int):
+            item["bytes"] = artifact_bytes
+        artifact_sha256 = str(artifact.get("sha256") or "")
+        if artifact_sha256:
+            item["sha256"] = artifact_sha256
+        items.append(item)
     return items
 
 
 def copy_assets(
     *,
-    staged_download_items: list[dict[str, str]],
+    staged_download_items: list[dict[str, object]],
 ) -> None:
     for stem, _, _ in CHART_STEMS:
         for suffix in (".png", ".svg"):
@@ -136,6 +150,28 @@ def render_inline(text: str) -> str:
     escaped = INLINE_BOLD_RE.sub(r"<strong>\1</strong>", escaped)
     escaped = INLINE_CODE_RE.sub(r"<code>\1</code>", escaped)
     return escaped
+
+
+def staged_download_provenance_html(artifact: dict[str, object]) -> str:
+    metadata_parts: list[str] = []
+    artifact_format = str(artifact.get("format") or "")
+    if artifact_format:
+        metadata_parts.append(artifact_format.upper())
+    artifact_bytes = artifact.get("bytes")
+    if isinstance(artifact_bytes, int):
+        metadata_parts.append(format_byte_count(artifact_bytes))
+
+    provenance = ""
+    if metadata_parts:
+        provenance += f'<p class="download-provenance">{" · ".join(html.escape(part) for part in metadata_parts)}</p>'
+
+    artifact_sha256 = str(artifact.get("sha256") or "")
+    if artifact_sha256:
+        provenance += (
+            '<p class="download-hash"><strong>SHA256</strong> '
+            f'<code>{html.escape(artifact_sha256)}</code></p>'
+        )
+    return provenance
 
 
 def markdown_to_html(markdown_text: str) -> str:
@@ -621,6 +657,7 @@ def build_data_page(
 <article class="download-card">
   <h3>{html.escape(artifact['label'])}</h3>
   <p>{html.escape(artifact['description'])}</p>
+  {staged_download_provenance_html(artifact)}
   <a href="{html.escape(artifact['site_path'], quote=True)}">Download</a>
 </article>
 """
@@ -1179,6 +1216,16 @@ h3 {
   padding: 14px 16px;
   border-radius: 16px;
   background: rgba(29, 78, 216, 0.08);
+}
+
+.download-provenance,
+.download-hash {
+  margin: 12px 0 0;
+}
+
+.download-hash code {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  overflow-wrap: anywhere;
 }
 
 .table-wrap {
