@@ -114,45 +114,86 @@
     <div class="section-head-copy">
       <p class="panel-kicker">DT.01</p>
       <h2>Downloads</h2>
-      <p>Core JSON outputs are copied into the site so the published Pages bundle stays inspectable on its own.</p>
+      <p>Manifest-driven publication outputs are copied into the site so the published Pages bundle stays inspectable on its own.</p>
     </div>
     <span class="panel-tag">core outputs</span>
   </div>
   <div class="section-body">
     <div class="card-grid">
 <article class="download-card">
-  <h3>Top-line metrics</h3>
-  <p>Sample size, revenue concentration, and dominant-category snapshots.</p>
-  <a href="data/metrics.json">Download</a>
+  <h3>Category summary</h3>
+  <p>Visible revenue, median revenue, startup share, and revenue share by category.</p>
+  <p class="download-provenance">CSV · 2,767 bytes</p><p class="download-hash"><strong>SHA256</strong> <code>c0b1aae9658adac534772975456a11ce52f2df1a099a7f53466f8e6d401090be</code></p>
+  <a href="data/category_summary.csv">Download</a>
 </article>
 
 <article class="download-card">
-  <h3>Publication input manifest</h3>
-  <p>The active published dataset path plus any live-source promotion provenance.</p>
-  <a href="data/publication_input.json">Download</a>
+  <h3>Business model summary</h3>
+  <p>Visible-sample counts and revenue totals grouped by heuristic business-model labels.</p>
+  <p class="download-provenance">CSV · 515 bytes</p><p class="download-hash"><strong>SHA256</strong> <code>c3f67db681b5cd0c3c2b18f1b4252d58bf8faa47c4650246c7757c38c0fc3aa9</code></p>
+  <a href="data/business_model_summary.csv">Download</a>
+</article>
+
+<article class="download-card">
+  <h3>GTM model summary</h3>
+  <p>Visible-sample counts and revenue totals grouped by heuristic go-to-market labels.</p>
+  <p class="download-provenance">CSV · 526 bytes</p><p class="download-hash"><strong>SHA256</strong> <code>ed5393c3d6c319f9036cea485d501a13663f60766e9e86ccb497d25b02a268fb</code></p>
+  <a href="data/gtm_model_summary.csv">Download</a>
+</article>
+
+<article class="download-card">
+  <h3>Revenue band summary</h3>
+  <p>Visible-sample startup counts and revenue totals grouped into threshold-aware revenue bands.</p>
+  <p class="download-provenance">CSV · 439 bytes</p><p class="download-hash"><strong>SHA256</strong> <code>480ca5b4b0aecd757aaab338b8959a22331dbcedc5dc92895d89dd298c920fbb</code></p>
+  <a href="data/revenue_band_summary.csv">Download</a>
+</article>
+
+<article class="download-card">
+  <h3>Public source pages</h3>
+  <p>The current public-page source registry that seeds the reproducible listing-page fetch/parse pipeline.</p>
+  <p class="download-provenance">CSV · 1,239 bytes</p><p class="download-hash"><strong>SHA256</strong> <code>3f45dbaa8ed0830c4f34a1e3815a0e6f2d15d6cef833a88325a266d673fe1fc5</code></p>
+  <a href="data/public_source_pages.csv">Download</a>
+</article>
+
+<article class="download-card">
+  <h3>Top-line metrics</h3>
+  <p>Sample size, revenue concentration, and dominant-category snapshots.</p>
+  <p class="download-provenance">JSON · 544 bytes</p><p class="download-hash"><strong>SHA256</strong> <code>c67a2e6238c1da03a4161f008e03c3b908eb9560b87ecb34d3572b7477a23e59</code></p>
+  <a href="data/metrics.json">Download</a>
 </article>
 
 <article class="download-card">
   <h3>Validation report</h3>
   <p>Required-column, threshold, duplicate, and warning-level label checks.</p>
+  <p class="download-provenance">JSON · 2,524 bytes</p><p class="download-hash"><strong>SHA256</strong> <code>31ab744923a8dd805b8b240c6278dbf8640192528a826c27d68951d93b9146eb</code></p>
   <a href="data/validation_report.json">Download</a>
 </article>
 
 <article class="download-card">
   <h3>Source coverage report</h3>
   <p>Per-source-page startup counts, revenue shares, and category coverage.</p>
+  <p class="download-provenance">JSON · 11,509 bytes</p><p class="download-hash"><strong>SHA256</strong> <code>1063d12d8aa30809c2c9a8f0d95caa0a3cf04474b784e3729143c03963063515</code></p>
   <a href="data/source_coverage_report.json">Download</a>
 </article>
 
 <article class="download-card">
   <h3>Source-pipeline diagnostics</h3>
   <p>Promotion provenance, override coverage, duplicate review, per-source parser output counts, and shared detail-field coverage.</p>
+  <p class="download-provenance">JSON · 39,901 bytes</p><p class="download-hash"><strong>SHA256</strong> <code>f5019675040bbce35913eb9bfa9d95d94c34f7699d2e7c93830aaf3346b2f6f1</code></p>
   <a href="data/source_pipeline_diagnostics.json">Download</a>
 </article>
 
 <article class="download-card">
+  <h3>Publication input manifest</h3>
+  <p>The active published dataset path plus any live-source promotion provenance.</p>
+  <p class="download-provenance">JSON · 1,346 bytes</p><p class="download-hash"><strong>SHA256</strong> <code>5449d32556a0cf18036f0e574cea151eeb8e276563211dff8202b88fcecc556d</code></p>
+  <a href="data/publication_input.json">Download</a>
+</article>
+
+<article class="download-card">
   <h3>Pipeline manifest</h3>
-  <p>Build command, input dataset hash, and copied-output inventory.</p>
+  <p>Build command, input dataset hash, copied-output inventory, and publication-input context.</p>
+  <p class="download-provenance">JSON · 10,692 bytes</p>
   <a href="data/pipeline_manifest.json">Download</a>
 </article>
 </div>
@@ -385,8 +426,8 @@
 
 <section class="rail-module">
   <p class="rail-kicker">Download surface</p>
-  <h2 class="rail-title">6 core JSON files</h2>
-  <p class="rail-copy">Core bundle downloads, staged provenance files, and fetch-failure snapshots are published as static artifacts.</p><dl class="metric-list"><div><dt>Staged bundle files</dt><dd>6</dd></div><div><dt>Fetch-failure files</dt><dd>0</dd></div></dl>
+  <h2 class="rail-title">11 publication files</h2>
+  <p class="rail-copy">Publication outputs, staged provenance files, and fetch-failure snapshots are published as static artifacts.</p><dl class="metric-list"><div><dt>Publication files</dt><dd>11</dd></div><div><dt>Staged bundle files</dt><dd>6</dd></div><div><dt>Fetch-failure files</dt><dd>0</dd></div></dl>
 </section>
 
 <section class="rail-module rail-module-good">

@@ -67,6 +67,11 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert (site_root / "assets" / "charts" / "category_share_map.png").exists()
     assert (site_root / "assets" / "charts" / "category_share_map.svg").exists()
     assert (site_root / "data" / "metrics.json").exists()
+    assert (site_root / "data" / "category_summary.csv").exists()
+    assert (site_root / "data" / "business_model_summary.csv").exists()
+    assert (site_root / "data" / "gtm_model_summary.csv").exists()
+    assert (site_root / "data" / "revenue_band_summary.csv").exists()
+    assert (site_root / "data" / "public_source_pages.csv").exists()
     assert (site_root / "data" / "publication_input.json").exists()
     assert (site_root / "data" / "validation_report.json").exists()
     assert (site_root / "data" / "source_coverage_report.json").exists()
@@ -126,6 +131,11 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "9 duplicate names / 0 heuristic gaps" in methodology_html
 
     assert "metrics.json" in data_html
+    assert "Category summary" in data_html
+    assert "Business model summary" in data_html
+    assert "GTM model summary" in data_html
+    assert "Revenue band summary" in data_html
+    assert "Public source pages" in data_html
     assert "publication_input.json" in data_html
     assert "validation_report.json" in data_html
     assert "source_coverage_report.json" in data_html

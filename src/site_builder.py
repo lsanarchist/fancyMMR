@@ -206,16 +206,72 @@ def publication_download_items(
     return items
 
 
+def publication_download_card_metadata(path: str) -> tuple[str, str]:
+    metadata = {
+        "data/category_summary.csv": (
+            "Category summary",
+            "Visible revenue, median revenue, startup share, and revenue share by category.",
+        ),
+        "data/business_model_summary.csv": (
+            "Business model summary",
+            "Visible-sample counts and revenue totals grouped by heuristic business-model labels.",
+        ),
+        "data/gtm_model_summary.csv": (
+            "GTM model summary",
+            "Visible-sample counts and revenue totals grouped by heuristic go-to-market labels.",
+        ),
+        "data/revenue_band_summary.csv": (
+            "Revenue band summary",
+            "Visible-sample startup counts and revenue totals grouped into threshold-aware revenue bands.",
+        ),
+        "data/public_source_pages.csv": (
+            "Public source pages",
+            "The current public-page source registry that seeds the reproducible listing-page fetch/parse pipeline.",
+        ),
+        "data/metrics.json": (
+            "Top-line metrics",
+            "Sample size, revenue concentration, and dominant-category snapshots.",
+        ),
+        "data/publication_input.json": (
+            "Publication input manifest",
+            "The active published dataset path plus any live-source promotion provenance.",
+        ),
+        "data/validation_report.json": (
+            "Validation report",
+            "Required-column, threshold, duplicate, and warning-level label checks.",
+        ),
+        "data/source_coverage_report.json": (
+            "Source coverage report",
+            "Per-source-page startup counts, revenue shares, and category coverage.",
+        ),
+        "data/source_pipeline_diagnostics.json": (
+            "Source-pipeline diagnostics",
+            "Promotion provenance, override coverage, duplicate review, per-source parser output counts, and shared detail-field coverage.",
+        ),
+        "data/pipeline_manifest.json": (
+            "Pipeline manifest",
+            "Build command, input dataset hash, copied-output inventory, and publication-input context.",
+        ),
+    }
+    return metadata.get(
+        path,
+        (
+            Path(path).name,
+            f"Publication bundle artifact copied into the static site: {path}.",
+        ),
+    )
+
+
 def copy_assets(
     *,
-    staged_download_items: list[dict[str, object]],
+    publication_download_items: list[dict[str, object]],
 ) -> None:
     for stem, _, _ in CHART_STEMS:
         for suffix in (".png", ".svg"):
             shutil.copy2(CHARTS_DIR / f"{stem}{suffix}", SITE_CHARTS_DIR / f"{stem}{suffix}")
     for name in JSON_EXPORTS:
         shutil.copy2(DATA_DIR / name, SITE_DATA_DIR / name)
-    for artifact in staged_download_items:
+    for artifact in publication_download_items:
         source_path = ROOT / artifact["path"]
         destination_path = SITE_DIR / artifact["site_path"]
         destination_path.parent.mkdir(parents=True, exist_ok=True)
@@ -266,6 +322,25 @@ def staged_download_provenance_html(artifact: dict[str, object]) -> str:
             f'<code>{html.escape(artifact_sha256)}</code></p>'
         )
     return provenance
+
+
+def download_card_html(
+    artifact: dict[str, object],
+    *,
+    label: str | None = None,
+    description: str | None = None,
+) -> str:
+    card_label = label or str(artifact.get("label") or "")
+    card_description = description or str(artifact.get("description") or "")
+    site_path = str(artifact.get("site_path") or "")
+    return f"""
+<article class="download-card">
+  <h3>{html.escape(card_label)}</h3>
+  <p>{html.escape(card_description)}</p>
+  {staged_download_provenance_html(artifact)}
+  <a href="{html.escape(site_path, quote=True)}">Download</a>
+</article>
+"""
 
 
 def markdown_to_html(markdown_text: str) -> str:
@@ -1144,22 +1219,7 @@ def build_data_page(
 """,
     )
 
-    core_download_items = [
-        ("data/metrics.json", "Top-line metrics", "Sample size, revenue concentration, and dominant-category snapshots."),
-        (
-            "data/publication_input.json",
-            "Publication input manifest",
-            "The active published dataset path plus any live-source promotion provenance.",
-        ),
-        ("data/validation_report.json", "Validation report", "Required-column, threshold, duplicate, and warning-level label checks."),
-        ("data/source_coverage_report.json", "Source coverage report", "Per-source-page startup counts, revenue shares, and category coverage."),
-        (
-            "data/source_pipeline_diagnostics.json",
-            "Source-pipeline diagnostics",
-            "Promotion provenance, override coverage, duplicate review, per-source parser output counts, and shared detail-field coverage.",
-        ),
-        ("data/pipeline_manifest.json", "Pipeline manifest", "Build command, input dataset hash, and copied-output inventory."),
-    ]
+    publication_bundle_items = manifest_generated_download_items(pipeline_manifest)
     staged_bundle_items = staged_source_pipeline_download_items(source_pipeline_diagnostics, pipeline_manifest)
     fetch_failure_items = fetch_failure_download_items(source_pipeline_diagnostics, pipeline_manifest)
 
@@ -1201,11 +1261,12 @@ def build_data_page(
             ),
             rail_module(
                 kicker="Download surface",
-                title=f"{len(JSON_EXPORTS)} core JSON files",
+                title=f"{len(publication_bundle_items)} publication files",
                 body_html=(
-                    '<p class="rail-copy">Core bundle downloads, staged provenance files, and fetch-failure snapshots are published as static artifacts.</p>'
+                    '<p class="rail-copy">Publication outputs, staged provenance files, and fetch-failure snapshots are published as static artifacts.</p>'
                     + metric_list(
                         [
+                            ("Publication files", str(len(publication_bundle_items))),
                             ("Staged bundle files", str(len(staged_bundle_items))),
                             ("Fetch-failure files", str(len(fetch_failure_items))),
                         ]
@@ -1222,35 +1283,20 @@ def build_data_page(
     )
 
     downloads = "".join(
-        f"""
-<article class="download-card">
-  <h3>{html.escape(name)}</h3>
-  <p>{html.escape(description)}</p>
-  <a href="{html.escape(filename, quote=True)}">Download</a>
-</article>
-"""
-        for filename, name, description in core_download_items
+        download_card_html(
+            artifact,
+            label=label,
+            description=description,
+        )
+        for artifact in publication_bundle_items
+        for label, description in [publication_download_card_metadata(str(artifact["site_path"]))]
     )
     staged_bundle_downloads = "".join(
-        f"""
-<article class="download-card">
-  <h3>{html.escape(artifact['label'])}</h3>
-  <p>{html.escape(artifact['description'])}</p>
-  {staged_download_provenance_html(artifact)}
-  <a href="{html.escape(artifact['site_path'], quote=True)}">Download</a>
-</article>
-"""
+        download_card_html(artifact)
         for artifact in staged_bundle_items
     )
     fetch_failure_downloads = "".join(
-        f"""
-<article class="download-card">
-  <h3>{html.escape(artifact['label'])}</h3>
-  <p>{html.escape(artifact['description'])}</p>
-  {staged_download_provenance_html(artifact)}
-  <a href="{html.escape(artifact['site_path'], quote=True)}">Download</a>
-</article>
-"""
+        download_card_html(artifact)
         for artifact in fetch_failure_items
     )
 
@@ -1895,7 +1941,7 @@ def build_data_page(
     sections = [
         section(
             "Downloads",
-            "Core JSON outputs are copied into the site so the published Pages bundle stays inspectable on its own.",
+            "Manifest-driven publication outputs are copied into the site so the published Pages bundle stays inspectable on its own.",
             f'<div class="card-grid">{downloads}</div>',
             section_id="downloads",
             panel_code="DT.01",
@@ -3168,8 +3214,7 @@ def write_site_pages() -> None:
 def build_site() -> None:
     source_pipeline_diagnostics = read_json(DATA_DIR / "source_pipeline_diagnostics.json")
     pipeline_manifest = read_json(DATA_DIR / "pipeline_manifest.json")
-    staged_download_items = staged_source_pipeline_download_items(source_pipeline_diagnostics, pipeline_manifest)
-    fetch_failure_items = fetch_failure_download_items(source_pipeline_diagnostics, pipeline_manifest)
+    all_download_items = publication_download_items(source_pipeline_diagnostics, pipeline_manifest)
     clean_site_dir()
-    copy_assets(staged_download_items=staged_download_items + fetch_failure_items)
+    copy_assets(publication_download_items=all_download_items)
     write_site_pages()
