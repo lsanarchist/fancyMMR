@@ -966,6 +966,9 @@ def build_data_page(
         fetch_failure_next_action_source_lists = (
             source_pipeline_diagnostics.get("fetch_failure_next_action_source_lists", []) or []
         )
+        fetch_failure_next_action_artifact_rollups = (
+            source_pipeline_diagnostics.get("fetch_failure_next_action_artifact_rollups", []) or []
+        )
         if fetch_failure_sources:
             diagnostics_fetch_failure_next_action_section = (
                 "<h3>Fetch-failure next actions</h3>"
@@ -977,6 +980,19 @@ def build_data_page(
                             html.escape(f"{int(count):,}"),
                         ]
                         for next_action, count in fetch_failure_next_action_counts.items()
+                    ],
+                )
+                + render_table(
+                    ["Recommended action", "Affected sources", "Action artifact rollup"],
+                    [
+                        [
+                            html.escape(str(rollup.get("failure_next_action") or "unknown")),
+                            html.escape(f"{int(rollup.get('source_count') or 0):,}"),
+                            html.escape(
+                                str(rollup.get("artifact_summary") or "No staged fetch-failure artifact rollup")
+                            ),
+                        ]
+                        for rollup in fetch_failure_next_action_artifact_rollups
                     ],
                 )
                 + render_table(
@@ -1033,7 +1049,7 @@ def build_data_page(
         else:
             diagnostics_fetch_failure_next_action_section = (
                 "<h3>Fetch-failure next actions</h3>"
-                '<p class="section-note">No staged fetch-failure next-action recommendations, source lists, source details, artifact links, or artifact summaries are currently recorded for the active manifest.</p>'
+                '<p class="section-note">No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, or artifact rollups are currently recorded for the active manifest.</p>'
             )
         fetch_failure_html_snapshot_availability_counts = (
             source_pipeline_diagnostics.get("fetch_failure_html_snapshot_availability_counts", {}) or {}

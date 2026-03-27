@@ -146,6 +146,7 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert source_pipeline_diagnostics["detail_field_population_counts"] is None
     assert source_pipeline_diagnostics["fetch_failure_sources"] == []
     assert source_pipeline_diagnostics["fetch_failure_next_action_source_lists"] == []
+    assert source_pipeline_diagnostics["fetch_failure_next_action_artifact_rollups"] == []
     assert source_pipeline_diagnostics["downloadable_fetch_failure_artifacts"] == []
     assert source_pipeline_diagnostics["detail_parse_failure_sources"] == []
     assert source_pipeline_diagnostics["downloadable_staged_artifacts"] == []
@@ -194,6 +195,7 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_next_action_counts"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_next_action_source_lists"] == []
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_next_action_artifact_rollups"] == []
     assert pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"] == []
 
 
@@ -257,6 +259,7 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert diagnostics["detail_field_population_counts"]["founder_name"] == 0
     assert diagnostics["detail_parse_failure_sources"] == []
     assert diagnostics["fetch_failure_next_action_source_lists"] == []
+    assert diagnostics["fetch_failure_next_action_artifact_rollups"] == []
     assert diagnostics["downloadable_fetch_failure_artifacts"] == []
     assert [artifact["path"] for artifact in diagnostics["downloadable_staged_artifacts"]] == [
         "data/source_pipeline/snapshots/run_manifest.json",
@@ -301,6 +304,7 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_next_action_counts"] == {}
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] == {}
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_next_action_source_lists"] == []
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_next_action_artifact_rollups"] == []
     assert pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"] == []
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_failure_source_count"] == 0
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_status_counts"]["not_requested"] == 852
@@ -447,6 +451,22 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
         "respect_robots_policy": 1,
         "retry_after_backoff": 1,
     }
+    assert diagnostics["fetch_failure_next_action_artifact_rollups"] == [
+        {
+            "failure_next_action": "respect_robots_policy",
+            "source_count": 1,
+            "artifact_count": 1,
+            "artifact_formats": ["json"],
+            "artifact_summary": "1 artifact · JSON",
+        },
+        {
+            "failure_next_action": "retry_after_backoff",
+            "source_count": 1,
+            "artifact_count": 2,
+            "artifact_formats": ["html", "json"],
+            "artifact_summary": "2 artifacts · HTML, JSON",
+        },
+    ]
     assert diagnostics["fetch_failure_next_action_source_lists"] == [
         {
             "failure_next_action": "respect_robots_policy",
@@ -557,6 +577,22 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
         "respect_robots_policy": 1,
         "retry_after_backoff": 1,
     }
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_next_action_artifact_rollups"] == [
+        {
+            "failure_next_action": "respect_robots_policy",
+            "source_count": 1,
+            "artifact_count": 1,
+            "artifact_formats": ["json"],
+            "artifact_summary": "1 artifact · JSON",
+        },
+        {
+            "failure_next_action": "retry_after_backoff",
+            "source_count": 1,
+            "artifact_count": 2,
+            "artifact_formats": ["html", "json"],
+            "artifact_summary": "2 artifacts · HTML, JSON",
+        },
+    ]
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_next_action_source_lists"] == [
         {
             "failure_next_action": "respect_robots_policy",

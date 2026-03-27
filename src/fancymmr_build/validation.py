@@ -596,6 +596,31 @@ def _summarize_fetch_failure_artifact_links(
     }
 
 
+def _build_fetch_failure_next_action_artifact_rollups(
+    fetch_failure_next_action_source_lists: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    rollups: list[dict[str, object]] = []
+    for action_group in fetch_failure_next_action_source_lists:
+        sources = action_group.get("sources", [])
+        artifact_links = [
+            artifact_link
+            for source in sources
+            for artifact_link in source.get("artifact_links", [])
+            if isinstance(artifact_link, dict)
+        ]
+        artifact_summary = _summarize_fetch_failure_artifact_links(artifact_links)
+        rollups.append(
+            {
+                "failure_next_action": str(action_group.get("failure_next_action") or "unknown"),
+                "source_count": int(action_group.get("source_count") or len(sources)),
+                "artifact_count": int(artifact_summary["artifact_count"]),
+                "artifact_formats": artifact_summary["artifact_formats"],
+                "artifact_summary": str(artifact_summary["artifact_summary"]),
+            }
+        )
+    return rollups
+
+
 def _group_fetch_failure_sources_by_next_action(
     fetch_failure_sources: list[dict[str, object]],
 ) -> list[dict[str, object]]:
@@ -726,6 +751,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "downloadable_fetch_failure_artifacts": [],
         "fetch_failure_sources": [],
         "fetch_failure_next_action_source_lists": [],
+        "fetch_failure_next_action_artifact_rollups": [],
         "detail_parse_failure_sources": [],
         "downloadable_staged_artifacts": [],
         "source_pages": [],
@@ -782,6 +808,9 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
     fetch_failure_sources = _load_fetch_failure_sources(selected_sources_by_id)
     fetch_failure_next_action_source_lists = _group_fetch_failure_sources_by_next_action(
         fetch_failure_sources
+    )
+    fetch_failure_next_action_artifact_rollups = _build_fetch_failure_next_action_artifact_rollups(
+        fetch_failure_next_action_source_lists
     )
     downloadable_fetch_failure_artifacts = _build_downloadable_fetch_failure_artifacts(fetch_failure_sources)
     fetch_failure_earliest_recorded_at, fetch_failure_latest_recorded_at = _timestamp_bounds(
@@ -968,6 +997,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
             "downloadable_fetch_failure_artifacts": downloadable_fetch_failure_artifacts,
             "fetch_failure_sources": fetch_failure_sources,
             "fetch_failure_next_action_source_lists": fetch_failure_next_action_source_lists,
+            "fetch_failure_next_action_artifact_rollups": fetch_failure_next_action_artifact_rollups,
             "detail_parse_failure_sources": detail_parse_failure_sources,
             "downloadable_staged_artifacts": downloadable_staged_artifacts,
             "source_pages": source_pages,
@@ -1108,6 +1138,9 @@ def write_pipeline_manifest(
             "fetch_failure_status_code_counts": source_pipeline_diagnostics_report["fetch_failure_status_code_counts"],
             "fetch_failure_next_action_source_lists": source_pipeline_diagnostics_report[
                 "fetch_failure_next_action_source_lists"
+            ],
+            "fetch_failure_next_action_artifact_rollups": source_pipeline_diagnostics_report[
+                "fetch_failure_next_action_artifact_rollups"
             ],
             "detail_parse_failure_source_count": source_pipeline_diagnostics_report["detail_parse_failure_source_count"],
             "detail_parse_status_counts": source_pipeline_diagnostics_report["detail_parse_status_counts"],

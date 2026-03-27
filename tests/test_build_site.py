@@ -140,7 +140,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "No staged fetch-failure severity context is currently recorded for the active manifest." in data_html
     assert "No staged fetch-failure retryability context is currently recorded for the active manifest." in data_html
     assert (
-        "No staged fetch-failure next-action recommendations, source lists, source details, artifact links, or artifact summaries are currently recorded for the active manifest."
+        "No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, or artifact rollups are currently recorded for the active manifest."
         in data_html
     )
     assert "No staged fetch-failure snapshot-availability context is currently recorded for the active manifest." in data_html
@@ -234,6 +234,7 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "Fetch-failure next actions" in data_html
     assert "Affected source labels" in data_html
     assert "Affected source pages" in data_html
+    assert "Action artifact rollup" in data_html
     assert "Failure context" in data_html
     assert "Artifact summary" in data_html
     assert "Artifact links" in data_html
