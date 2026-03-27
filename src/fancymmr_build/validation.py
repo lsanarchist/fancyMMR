@@ -315,6 +315,40 @@ def _snapshot_availability_label(value: object) -> str:
     return "missing"
 
 
+def _status_code_int(value: object) -> int | None:
+    if value in (None, ""):
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _fetch_failure_severity_label(
+    *,
+    robots_policy: object,
+    status_code: object,
+    error_type: object,
+) -> str:
+    if robots_policy == "disallowed":
+        return "policy_blocked"
+
+    parsed_status_code = _status_code_int(status_code)
+    if parsed_status_code is not None:
+        if parsed_status_code >= 500:
+            return "server_error"
+        if parsed_status_code >= 400:
+            return "client_error"
+        return "http_status_other"
+
+    error_type_text = str(error_type or "")
+    if error_type_text == "URLError":
+        return "transport_error"
+    if error_type_text:
+        return "request_error"
+    return "unknown"
+
+
 def _artifact_download_record(
     *,
     relative_path: str,
@@ -423,6 +457,8 @@ def _load_fetch_failure_sources(
         source_metadata = selected_sources_by_id.get(source_id, {})
         category_label = source_metadata.get("category_label")
         has_html_snapshot = bool(snapshot.get("html_snapshot_path"))
+        error_type = str(snapshot.get("error_type") or "")
+        status_code = snapshot.get("status_code")
         failure_sources.append(
             {
                 "source_id": source_id,
@@ -432,13 +468,18 @@ def _load_fetch_failure_sources(
                 "category_label": category_label,
                 "source_label": _source_label(category_label, source_id),
                 "recorded_at": snapshot.get("recorded_at"),
-                "error_type": str(snapshot.get("error_type") or ""),
+                "error_type": error_type,
                 "message": str(snapshot.get("message") or ""),
-                "status_code": snapshot.get("status_code"),
+                "status_code": status_code,
                 "robots_policy": robots_policy,
                 "robots_status_code": robots_status_code,
                 "robots_url": robots_url,
                 "robots_effective_delay_seconds": robots_effective_delay_seconds,
+                "failure_severity": _fetch_failure_severity_label(
+                    robots_policy=robots_policy,
+                    status_code=status_code,
+                    error_type=error_type,
+                ),
                 "has_html_snapshot": has_html_snapshot,
                 "html_snapshot_availability": _snapshot_availability_label(has_html_snapshot),
                 "html_snapshot_path": snapshot.get("html_snapshot_path"),
@@ -531,6 +572,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "fetch_failure_source_group_counts": None,
         "fetch_failure_parser_strategy_counts": None,
         "fetch_failure_html_snapshot_availability_counts": None,
+        "fetch_failure_severity_counts": None,
         "fetch_failure_status_code_counts": None,
         "detail_parse_failure_source_count": None,
         "detail_parse_status_counts": None,
@@ -734,6 +776,11 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
                 "html_snapshot_availability",
                 none_label="unknown",
             ),
+            "fetch_failure_severity_counts": _count_values(
+                fetch_failure_sources,
+                "failure_severity",
+                none_label="unknown",
+            ),
             "fetch_failure_status_code_counts": _count_values(
                 fetch_failure_sources,
                 "status_code",
@@ -898,6 +945,9 @@ def write_pipeline_manifest(
             ],
             "fetch_failure_html_snapshot_availability_counts": source_pipeline_diagnostics_report[
                 "fetch_failure_html_snapshot_availability_counts"
+            ],
+            "fetch_failure_severity_counts": source_pipeline_diagnostics_report[
+                "fetch_failure_severity_counts"
             ],
             "fetch_failure_status_code_counts": source_pipeline_diagnostics_report["fetch_failure_status_code_counts"],
             "detail_parse_failure_source_count": source_pipeline_diagnostics_report["detail_parse_failure_source_count"],

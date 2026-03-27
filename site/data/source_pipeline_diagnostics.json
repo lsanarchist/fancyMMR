@@ -94,6 +94,7 @@
   "fetch_failure_parser_strategy_counts": {},
   "fetch_failure_robots_policy_counts": {},
   "fetch_failure_robots_status_code_counts": {},
+  "fetch_failure_severity_counts": {},
   "fetch_failure_source_count": 0,
   "fetch_failure_source_group_counts": {},
   "fetch_failure_source_label_counts": {},
