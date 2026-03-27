@@ -75,3 +75,59 @@
 
 - This note is written before the commit/push step so the repo can stay on one clean task-scoped commit for the code change itself
 - Post-push status and any available remote log checks are reported in the terminal summary for this run
+
+## 2026-03-27 06:58:23 CET (+0100)
+
+- Run timing note: this entry starts after the previous note at `2026-03-27 06:48:44 CET (+0100)` and records the next refactor pass
+- Intent: keep reducing delivery-risk in the static terminal/workstation layer without changing any published analytics logic
+
+### What I looked for this time
+
+- Another place where the implementation was technically correct but structurally too easy to break later
+- A refactor that improves architecture and maintainability while staying invisible to the business outputs
+- A slice that remains fully GitHub-Pages-safe and does not depend on unavailable external systems
+
+### Additional research signal used
+
+- I reused the earlier accessibility and analytics-discrepancy research direction, especially the general principle that operator-facing interfaces and reporting layers should expose clear state without burying transformation logic inside monolith renderers
+
+### Main finding from this pass
+
+- Even after the previous cleanup, the `Hot outputs` rail summary logic still lived inside `src/site_builder.py`, which is already very large
+- That means future work on the operator shell would still be forced to touch a huge mixed-responsibility file, increasing the chance of accidental renderer drift or hard-to-review changes
+
+### What I changed
+
+1. Extracted the `Hot outputs` summary/markup logic into a new focused module:
+   - [src/site_output_registry.py](/run/media/doomguy/Новый%20том/fancy/fancyMMR/src/site_output_registry.py)
+2. Moved the rail-specific formatting/stat helpers there, including:
+   - byte/count share formatting
+   - median and max-to-median helpers
+   - per-format summary dataclass
+   - divider markup generation
+   - command-link grouping markup
+3. Simplified [src/site_builder.py](/run/media/doomguy/Новый%20том/fancy/fancyMMR/src/site_builder.py) so it now keeps page wiring and delegates the `Hot outputs` summary rendering to the focused module
+4. Re-ran the site build and test suite to verify the extraction did not change generated output behavior
+
+### Why this refactor is safe
+
+- No dataset, report, promotion, fetch, parse, normalize, or validation logic changed
+- No generated site output changed from this extraction pass
+- This is a pure architectural cleanup around the delivery layer for the static operator shell
+
+### Verification
+
+- `python -m py_compile src/site_builder.py src/site_output_registry.py tests/test_build_site.py`
+- `python src/build_site.py`
+- `python -m pytest tests/test_build_site.py -q` -> `3 passed`
+- `python -m pytest` -> `46 passed`
+
+### Honest remaining gaps
+
+- The repo still has no live Instantly reconciliation surface, no DB mirror, and no Railway/MCP connector available from this environment
+- So this pass improved architecture and maintainability, but it still did not create direct truth-alignment against an upstream operational system
+
+### Note about push/log follow-up
+
+- This note is again written before the commit/push step so the code change can stay in one clean task-scoped commit
+- Any push or remote-log limitation is reported in the terminal summary for this run
