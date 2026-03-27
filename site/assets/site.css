@@ -677,6 +677,12 @@ body {
   background: rgba(244, 234, 215, 0.12);
 }
 
+.output-registry-badge-format-share-gap {
+  color: var(--warning);
+  border-color: rgba(255, 191, 97, 0.22);
+  background: rgba(255, 191, 97, 0.12);
+}
+
 .nav-link:hover,
 .nav-link.is-active,
 .rail-command-link:hover,

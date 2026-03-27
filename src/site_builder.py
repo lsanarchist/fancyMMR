@@ -333,6 +333,13 @@ def format_smallest_file_share(min_bytes: int | None, total_bytes: int) -> str:
     return f"min {share:.0f}%"
 
 
+def format_share_gap(min_bytes: int | None, max_bytes: int | None, total_bytes: int) -> str:
+    if min_bytes is None or max_bytes is None or total_bytes <= 0:
+        return "gap n/a"
+    gap = ((max_bytes - min_bytes) * 100) / total_bytes
+    return f"gap {gap:.0f}pp"
+
+
 def artifact_format_label(artifact: dict[str, object]) -> str:
     artifact_format = str(artifact.get("format") or "").strip().lower()
     if artifact_format:
@@ -719,6 +726,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     item_format_max_median = str(item.get("format_max_median") or "")
     item_format_top_share = str(item.get("format_top_share") or "")
     item_format_smallest_share = str(item.get("format_smallest_share") or "")
+    item_format_share_gap = str(item.get("format_share_gap") or "")
     byte_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
         if isinstance(item_bytes, int)
@@ -784,6 +792,11 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         if item_format_smallest_share
         else ""
     )
+    format_share_gap_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-format-share-gap">{html.escape(item_format_share_gap)}</span>'
+        if item_format_share_gap
+        else ""
+    )
     return (
         f'<a class="rail-command-link output-registry-link" href="{html.escape(target, quote=True)}" '
         f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
@@ -808,6 +821,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         f"{format_max_median_badge_html}"
         f"{format_top_share_badge_html}"
         f"{format_smallest_share_badge_html}"
+        f"{format_share_gap_badge_html}"
         "</span>"
         "</a>"
     )
@@ -996,6 +1010,14 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
         items[-1]["format_smallest_share"] = (
             f"{artifact_format_label} "
             f"{format_smallest_file_share(format_min_bytes.get(artifact_format_key), format_total_bytes.get(artifact_format_key, 0))}"
+        )
+        items[-1]["format_share_gap"] = (
+            f"{artifact_format_label} "
+            f"{format_share_gap(
+                format_min_bytes.get(artifact_format_key),
+                format_max_bytes.get(artifact_format_key),
+                format_total_bytes.get(artifact_format_key, 0),
+            )}"
         )
         artifact_bytes = artifact.get("bytes")
         if isinstance(artifact_bytes, int):
@@ -5866,6 +5888,12 @@ body {
   color: var(--ink);
   border-color: rgba(244, 234, 215, 0.22);
   background: rgba(244, 234, 215, 0.12);
+}
+
+.output-registry-badge-format-share-gap {
+  color: var(--warning);
+  border-color: rgba(255, 191, 97, 0.22);
+  background: rgba(255, 191, 97, 0.12);
 }
 
 .nav-link:hover,
