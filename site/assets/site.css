@@ -192,6 +192,28 @@ body {
   gap: 8px;
 }
 
+.rail-command-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0 0;
+  color: var(--ink-dim);
+}
+
+.rail-command-divider::before,
+.rail-command-divider::after {
+  content: "";
+  flex: 1 1 auto;
+  border-top: 1px dashed rgba(98, 201, 214, 0.2);
+}
+
+.rail-command-divider-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
 .rail-command-group-title,
 .rail-command-group-empty {
   margin: 0;

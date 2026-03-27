@@ -641,6 +641,8 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
                 terms=f"{query} {site_path} {human_label} {description} {artifact_format} download asset",
             )
         )
+        if artifact_format:
+            items[-1]["format"] = artifact_format
     return items
 
 
@@ -697,20 +699,37 @@ def build_output_registry_sections(
     return sections
 
 
-def command_links_markup(command_items: list[dict[str, str]], *, link_class: str) -> str:
-    return "".join(
-        (
-            f'<a class="{html.escape(link_class, quote=True)}" '
-            f'href="{html.escape(item["target"], quote=True)}" '
-            f'data-command-label="{html.escape(item["label"], quote=True)}" '
-            f'data-command-target="{html.escape(item["target"], quote=True)}" '
-            f'data-command-kind="{html.escape(item["kind"], quote=True)}" '
-            f'data-command-query="{html.escape(item["query"], quote=True)}" '
-            f'data-command-terms="{html.escape(item["terms"], quote=True)}">'
-            f'{html.escape(item["label"])}</a>'
-        )
-        for item in command_items
+def command_link_markup(item: dict[str, object], *, link_class: str) -> str:
+    return (
+        f'<a class="{html.escape(link_class, quote=True)}" '
+        f'href="{html.escape(str(item["target"]), quote=True)}" '
+        f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
+        f'data-command-target="{html.escape(str(item["target"]), quote=True)}" '
+        f'data-command-kind="{html.escape(str(item["kind"]), quote=True)}" '
+        f'data-command-query="{html.escape(str(item["query"]), quote=True)}" '
+        f'data-command-terms="{html.escape(str(item["terms"]), quote=True)}">'
+        f'{html.escape(str(item["label"]))}</a>'
     )
+
+
+def command_links_markup(command_items: list[dict[str, object]], *, link_class: str) -> str:
+    return "".join(command_link_markup(item, link_class=link_class) for item in command_items)
+
+
+def output_registry_command_links_markup(command_items: list[dict[str, object]]) -> str:
+    parts: list[str] = []
+    active_format = None
+    for item in command_items:
+        item_format = str(item.get("format") or "").strip().lower() or "other"
+        if item_format != active_format:
+            parts.append(
+                '<div class="rail-command-divider">'
+                f'<span class="rail-command-divider-label">{html.escape(item_format.upper())}</span>'
+                "</div>"
+            )
+            active_format = item_format
+        parts.append(command_link_markup(item, link_class="rail-command-link"))
+    return "".join(parts)
 
 
 def output_registry_sections_markup(output_registry_sections: list[dict[str, object]]) -> str:
@@ -729,7 +748,7 @@ def output_registry_sections_markup(output_registry_sections: list[dict[str, obj
         ]
         body_html = (
             f'<nav class="rail-command-links" aria-label="{html.escape(aria_label, quote=True)}">'
-            f'{command_links_markup(items, link_class="rail-command-link")}'
+            f"{output_registry_command_links_markup(items)}"
             "</nav>"
             if items
             else f'<p class="rail-command-group-empty">{html.escape(empty_message)}</p>'
@@ -2406,6 +2425,28 @@ body {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
+}
+
+.rail-command-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 0 0;
+  color: var(--ink-dim);
+}
+
+.rail-command-divider::before,
+.rail-command-divider::after {
+  content: "";
+  flex: 1 1 auto;
+  border-top: 1px dashed rgba(98, 201, 214, 0.2);
+}
+
+.rail-command-divider-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cyan);
 }
 
 .rail-command-group-title,

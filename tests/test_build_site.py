@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -55,6 +56,16 @@ def site_hashes(workspace: Path) -> dict[str, str]:
 def assert_text_order(text: str, snippets: list[str]) -> None:
     positions = [text.index(snippet) for snippet in snippets]
     assert positions == sorted(positions), {"snippets": snippets, "positions": positions}
+
+
+def extract_hot_output_section(text: str, title: str) -> str:
+    pattern = re.compile(
+        rf'<div class="rail-command-group">\s*<div class="rail-command-group-head">\s*<p class="rail-command-group-title">{re.escape(title)}</p>.*?</div>\s*<nav class="rail-command-links" aria-label="{re.escape(title)}">.*?</nav>\s*</div>',
+        re.DOTALL,
+    )
+    match = pattern.search(text)
+    assert match, title
+    return match.group(0)
 
 
 def format_byte_count(byte_count: int) -> str:
@@ -181,22 +192,32 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "GET public_source_pages.csv" in index_html
     assert "GET source_pipeline/snapshots/run_manifest.json" in index_html
     assert "GET source_pipeline/processed/detail_page_rows.csv" in index_html
+    publication_output_section = extract_hot_output_section(index_html, "Publication outputs")
+    staged_output_section = extract_hot_output_section(index_html, "Staged provenance")
+    assert 'rail-command-divider-label">CSV<' in publication_output_section
+    assert 'rail-command-divider-label">JSON<' in publication_output_section
+    assert 'rail-command-divider-label">CSV<' in staged_output_section
+    assert 'rail-command-divider-label">JSON<' in staged_output_section
     assert_text_order(
-        index_html,
+        publication_output_section,
         [
+            'rail-command-divider-label">CSV<',
             "GET business_model_summary.csv",
             "GET category_summary.csv",
             "GET gtm_model_summary.csv",
             "GET public_source_pages.csv",
             "GET revenue_band_summary.csv",
+            'rail-command-divider-label">JSON<',
             "GET metrics.json",
             "GET pipeline_manifest.json",
         ],
     )
     assert_text_order(
-        index_html,
+        staged_output_section,
         [
+            'rail-command-divider-label">CSV<',
             "GET source_pipeline/processed/detail_page_rows.csv",
+            'rail-command-divider-label">JSON<',
             "GET source_pipeline/processed/detail_field_coverage.json",
             "GET source_pipeline/processed/heuristic_override_report.json",
             "GET source_pipeline/processed/suspicious_duplicates.json",
@@ -308,6 +329,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".rail-command-group {" in site_css
     assert ".rail-command-group-head {" in site_css
     assert ".rail-command-group-meta {" in site_css
+    assert ".rail-command-divider {" in site_css
+    assert ".rail-command-divider-label {" in site_css
     assert ".rail-command-group-empty {" in site_css
     assert ".download-summary {" in site_css
     assert ".download-badge {" in site_css
@@ -472,10 +495,15 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "2 JSON" in data_html
     assert "1 HTML" in data_html
     assert fetch_failure_total_bytes in data_html
+    fetch_failure_output_section = extract_hot_output_section(data_html, "Fetch-failure evidence")
+    assert 'rail-command-divider-label">HTML<' in fetch_failure_output_section
+    assert 'rail-command-divider-label">JSON<' in fetch_failure_output_section
     assert_text_order(
-        data_html,
+        fetch_failure_output_section,
         [
+            'rail-command-divider-label">HTML<',
             "GET fetch_failures/category--ai.html",
+            'rail-command-divider-label">JSON<',
             "GET fetch_failures/category--ai.json",
             "GET fetch_failures/category--sales.json",
         ],
