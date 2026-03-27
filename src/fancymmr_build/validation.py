@@ -236,23 +236,49 @@ def _int_dict(value: dict[str, object] | None) -> dict[str, int]:
     return {str(key): int(count) for key, count in (value or {}).items()}
 
 
-def _build_downloadable_staged_artifacts(run_manifest: dict[str, object]) -> list[dict[str, object]]:
+def _build_downloadable_staged_artifacts(
+    artifact_paths: dict[str, str | None],
+) -> list[dict[str, object]]:
     artifacts: list[dict[str, object]] = []
-    for filename, label, description, artifact_format in [
+    for artifact_key, label, description, artifact_format in [
         (
-            "detail_page_rows.csv",
+            "run_manifest_path",
+            "Staged run manifest",
+            "End-to-end staged fetch/parse/normalize snapshot for the active promoted source-pipeline bundle.",
+            "json",
+        ),
+        (
+            "validation_report_path",
+            "Staged validation report",
+            "Staged source-pipeline validation status, checks, and failure details for the active promoted bundle.",
+            "json",
+        ),
+        (
+            "override_report_path",
+            "Staged override coverage",
+            "Heuristic override coverage and alias-resolution counts for the staged promoted source-pipeline bundle.",
+            "json",
+        ),
+        (
+            "duplicates_report_path",
+            "Staged duplicate review",
+            "Suspicious duplicate review output for the staged promoted source-pipeline bundle.",
+            "json",
+        ),
+        (
+            "detail_rows_path",
             "Staged detail rows",
             "Flattened staged detail-page outcomes and parsed shared fields. This is staged provenance, not a promoted dataset column contract.",
             "csv",
         ),
         (
-            "detail_field_coverage.json",
+            "detail_field_coverage_path",
             "Staged detail coverage",
             "Aggregate and per-source shared detail-field coverage derived from the staged detail rows. This remains staged provenance.",
             "json",
         ),
     ]:
-        relative_path = _find_generated_output_path(run_manifest, filename)
+        relative_path = artifact_paths.get(artifact_key)
         if not relative_path:
             continue
         if not (BUILD_PATHS.root / relative_path).exists():
@@ -429,7 +455,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         )
         if int(source["failed_detail_page_count"]) > 0
     ]
-    downloadable_staged_artifacts = _build_downloadable_staged_artifacts(run_manifest)
+    downloadable_staged_artifacts = _build_downloadable_staged_artifacts(report_paths)
 
     report.update(
         {

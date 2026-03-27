@@ -1,0 +1,625 @@
+{
+  "detail_page_target_count": 852,
+  "failed_detail_page_count": 0,
+  "fetched_detail_page_count": 0,
+  "fully_mapped_visible_row_count": 249,
+  "generated_outputs": [
+    "data/source_pipeline/processed/normalized_rows.csv",
+    "data/source_pipeline/processed/visible_sample_rows.csv",
+    "data/source_pipeline/processed/heuristic_override_report.json",
+    "data/source_pipeline/processed/suspicious_duplicates.json",
+    "data/source_pipeline/processed/detail_page_rows.csv",
+    "data/source_pipeline/processed/detail_field_coverage.json",
+    "data/source_pipeline/processed/validation_report.json"
+  ],
+  "normalized_row_count": 849,
+  "parsed_detail_page_count": 0,
+  "per_source_outputs": [
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--ai.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--ai.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--ai.html",
+      "source_id": "category--ai",
+      "source_url": "https://trustmrr.com/category/ai",
+      "visible_sample_row_count": 23
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--analytics.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--analytics.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--analytics.html",
+      "source_id": "category--analytics",
+      "source_url": "https://trustmrr.com/category/analytics",
+      "visible_sample_row_count": 12
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--community.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--community.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--community.html",
+      "source_id": "category--community",
+      "source_url": "https://trustmrr.com/category/community",
+      "visible_sample_row_count": 4
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--content-creation.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--content-creation.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--content-creation.html",
+      "source_id": "category--content-creation",
+      "source_url": "https://trustmrr.com/category/content-creation",
+      "visible_sample_row_count": 16
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--customer-support.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--customer-support.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--customer-support.html",
+      "source_id": "category--customer-support",
+      "source_url": "https://trustmrr.com/category/customer-support",
+      "visible_sample_row_count": 3
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--design-tools.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--design-tools.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--design-tools.html",
+      "source_id": "category--design-tools",
+      "source_url": "https://trustmrr.com/category/design-tools",
+      "visible_sample_row_count": 6
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--developer-tools.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--developer-tools.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--developer-tools.html",
+      "source_id": "category--developer-tools",
+      "source_url": "https://trustmrr.com/category/developer-tools",
+      "visible_sample_row_count": 12
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--ecommerce.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--ecommerce.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--ecommerce.html",
+      "source_id": "category--ecommerce",
+      "source_url": "https://trustmrr.com/category/ecommerce",
+      "visible_sample_row_count": 14
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--education.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--education.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--education.html",
+      "source_id": "category--education",
+      "source_url": "https://trustmrr.com/category/education",
+      "visible_sample_row_count": 15
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--entertainment.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--entertainment.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--entertainment.html",
+      "source_id": "category--entertainment",
+      "source_url": "https://trustmrr.com/category/entertainment",
+      "visible_sample_row_count": 4
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--fintech.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--fintech.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--fintech.html",
+      "source_id": "category--fintech",
+      "source_url": "https://trustmrr.com/category/fintech",
+      "visible_sample_row_count": 4
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--games.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--games.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--games.html",
+      "source_id": "category--games",
+      "source_url": "https://trustmrr.com/category/games",
+      "visible_sample_row_count": 4
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--health-fitness.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--health-fitness.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--health-fitness.html",
+      "source_id": "category--health-fitness",
+      "source_url": "https://trustmrr.com/category/health-fitness",
+      "visible_sample_row_count": 11
+    },
+    {
+      "detail_page_target_count": 7,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--iot-hardware.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--iot-hardware.json",
+      "parsed_card_count": 7,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--iot-hardware.html",
+      "source_id": "category--iot-hardware",
+      "source_url": "https://trustmrr.com/category/iot-hardware",
+      "visible_sample_row_count": 1
+    },
+    {
+      "detail_page_target_count": 13,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--legal.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--legal.json",
+      "parsed_card_count": 13,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--legal.html",
+      "source_id": "category--legal",
+      "source_url": "https://trustmrr.com/category/legal",
+      "visible_sample_row_count": 1
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--marketing.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--marketing.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--marketing.html",
+      "source_id": "category--marketing",
+      "source_url": "https://trustmrr.com/category/marketing",
+      "visible_sample_row_count": 20
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--marketplace.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--marketplace.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--marketplace.html",
+      "source_id": "category--marketplace",
+      "source_url": "https://trustmrr.com/category/marketplace",
+      "visible_sample_row_count": 11
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--mobile-apps.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--mobile-apps.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--mobile-apps.html",
+      "source_id": "category--mobile-apps",
+      "source_url": "https://trustmrr.com/category/mobile-apps",
+      "visible_sample_row_count": 15
+    },
+    {
+      "detail_page_target_count": 22,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--news-magazines.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--news-magazines.json",
+      "parsed_card_count": 22,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--news-magazines.html",
+      "source_id": "category--news-magazines",
+      "source_url": "https://trustmrr.com/category/news-magazines",
+      "visible_sample_row_count": 1
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--no-code.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--no-code.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--no-code.html",
+      "source_id": "category--no-code",
+      "source_url": "https://trustmrr.com/category/no-code",
+      "visible_sample_row_count": 2
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--productivity.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--productivity.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--productivity.html",
+      "source_id": "category--productivity",
+      "source_url": "https://trustmrr.com/category/productivity",
+      "visible_sample_row_count": 6
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--real-estate.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--real-estate.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--real-estate.html",
+      "source_id": "category--real-estate",
+      "source_url": "https://trustmrr.com/category/real-estate",
+      "visible_sample_row_count": 4
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--recruiting.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--recruiting.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--recruiting.html",
+      "source_id": "category--recruiting",
+      "source_url": "https://trustmrr.com/category/recruiting",
+      "visible_sample_row_count": 4
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--saas.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--saas.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--saas.html",
+      "source_id": "category--saas",
+      "source_url": "https://trustmrr.com/category/saas",
+      "visible_sample_row_count": 21
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--sales.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--sales.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--sales.html",
+      "source_id": "category--sales",
+      "source_url": "https://trustmrr.com/category/sales",
+      "visible_sample_row_count": 7
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--security.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--security.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--security.html",
+      "source_id": "category--security",
+      "source_url": "https://trustmrr.com/category/security",
+      "visible_sample_row_count": 3
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--social-media.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--social-media.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--social-media.html",
+      "source_id": "category--social-media",
+      "source_url": "https://trustmrr.com/category/social-media",
+      "visible_sample_row_count": 10
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--travel.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--travel.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--travel.html",
+      "source_id": "category--travel",
+      "source_url": "https://trustmrr.com/category/travel",
+      "visible_sample_row_count": 4
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/category--utilities.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/category--utilities.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/category--utilities.html",
+      "source_id": "category--utilities",
+      "source_url": "https://trustmrr.com/category/utilities",
+      "visible_sample_row_count": 2
+    },
+    {
+      "detail_page_target_count": 30,
+      "detail_scaffold_path": "data/source_pipeline/interim/special-category--openclaw.detail_pages.json",
+      "failed_detail_page_count": 0,
+      "fetched_detail_page_count": 0,
+      "interim_path": "data/source_pipeline/interim/special-category--openclaw.json",
+      "parsed_card_count": 30,
+      "parsed_detail_page_count": 0,
+      "raw_html_path": "data/source_pipeline/raw/special-category--openclaw.html",
+      "source_id": "special-category--openclaw",
+      "source_url": "https://trustmrr.com/special-category/openclaw",
+      "visible_sample_row_count": 12
+    }
+  ],
+  "selected_source_count": 30,
+  "selected_sources": [
+    {
+      "category_label": "AI",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--ai",
+      "source_url": "https://trustmrr.com/category/ai"
+    },
+    {
+      "category_label": "Analytics",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--analytics",
+      "source_url": "https://trustmrr.com/category/analytics"
+    },
+    {
+      "category_label": "Community",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--community",
+      "source_url": "https://trustmrr.com/category/community"
+    },
+    {
+      "category_label": "Content Creation",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--content-creation",
+      "source_url": "https://trustmrr.com/category/content-creation"
+    },
+    {
+      "category_label": "Customer Support",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--customer-support",
+      "source_url": "https://trustmrr.com/category/customer-support"
+    },
+    {
+      "category_label": "Design Tools",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--design-tools",
+      "source_url": "https://trustmrr.com/category/design-tools"
+    },
+    {
+      "category_label": "Developer Tools",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--developer-tools",
+      "source_url": "https://trustmrr.com/category/developer-tools"
+    },
+    {
+      "category_label": "E-commerce",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--ecommerce",
+      "source_url": "https://trustmrr.com/category/ecommerce"
+    },
+    {
+      "category_label": "Education",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--education",
+      "source_url": "https://trustmrr.com/category/education"
+    },
+    {
+      "category_label": "Entertainment",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--entertainment",
+      "source_url": "https://trustmrr.com/category/entertainment"
+    },
+    {
+      "category_label": "Fintech",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--fintech",
+      "source_url": "https://trustmrr.com/category/fintech"
+    },
+    {
+      "category_label": "Games",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--games",
+      "source_url": "https://trustmrr.com/category/games"
+    },
+    {
+      "category_label": "Health & Fitness",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--health-fitness",
+      "source_url": "https://trustmrr.com/category/health-fitness"
+    },
+    {
+      "category_label": "IoT & Hardware",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--iot-hardware",
+      "source_url": "https://trustmrr.com/category/iot-hardware"
+    },
+    {
+      "category_label": "Legal",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--legal",
+      "source_url": "https://trustmrr.com/category/legal"
+    },
+    {
+      "category_label": "Marketing",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--marketing",
+      "source_url": "https://trustmrr.com/category/marketing"
+    },
+    {
+      "category_label": "Marketplace",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--marketplace",
+      "source_url": "https://trustmrr.com/category/marketplace"
+    },
+    {
+      "category_label": "Mobile Apps",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--mobile-apps",
+      "source_url": "https://trustmrr.com/category/mobile-apps"
+    },
+    {
+      "category_label": "News & Magazines",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--news-magazines",
+      "source_url": "https://trustmrr.com/category/news-magazines"
+    },
+    {
+      "category_label": "No-Code",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--no-code",
+      "source_url": "https://trustmrr.com/category/no-code"
+    },
+    {
+      "category_label": "Productivity",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--productivity",
+      "source_url": "https://trustmrr.com/category/productivity"
+    },
+    {
+      "category_label": "Real Estate",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--real-estate",
+      "source_url": "https://trustmrr.com/category/real-estate"
+    },
+    {
+      "category_label": "Recruiting & HR",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--recruiting",
+      "source_url": "https://trustmrr.com/category/recruiting"
+    },
+    {
+      "category_label": "SaaS",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--saas",
+      "source_url": "https://trustmrr.com/category/saas"
+    },
+    {
+      "category_label": "Sales",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--sales",
+      "source_url": "https://trustmrr.com/category/sales"
+    },
+    {
+      "category_label": "Security",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--security",
+      "source_url": "https://trustmrr.com/category/security"
+    },
+    {
+      "category_label": "Social Media",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--social-media",
+      "source_url": "https://trustmrr.com/category/social-media"
+    },
+    {
+      "category_label": "Travel",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--travel",
+      "source_url": "https://trustmrr.com/category/travel"
+    },
+    {
+      "category_label": "Utilities",
+      "parser_strategy": "trustmrr_category_listing",
+      "source_group": "category",
+      "source_id": "category--utilities",
+      "source_url": "https://trustmrr.com/category/utilities"
+    },
+    {
+      "category_label": "OpenClaw (special)",
+      "parser_strategy": "trustmrr_special_category_listing",
+      "source_group": "special-category",
+      "source_id": "special-category--openclaw",
+      "source_url": "https://trustmrr.com/special-category/openclaw"
+    }
+  ],
+  "suspicious_duplicate_group_count": 0,
+  "validation_status": "passed",
+  "visible_sample_row_count": 249
+}

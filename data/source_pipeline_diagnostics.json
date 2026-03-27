@@ -23,6 +23,34 @@
   },
   "downloadable_staged_artifacts": [
     {
+      "description": "End-to-end staged fetch/parse/normalize snapshot for the active promoted source-pipeline bundle.",
+      "format": "json",
+      "label": "Staged run manifest",
+      "path": "data/source_pipeline/snapshots/run_manifest.json",
+      "site_path": "data/source_pipeline/snapshots/run_manifest.json"
+    },
+    {
+      "description": "Staged source-pipeline validation status, checks, and failure details for the active promoted bundle.",
+      "format": "json",
+      "label": "Staged validation report",
+      "path": "data/source_pipeline/processed/validation_report.json",
+      "site_path": "data/source_pipeline/processed/validation_report.json"
+    },
+    {
+      "description": "Heuristic override coverage and alias-resolution counts for the staged promoted source-pipeline bundle.",
+      "format": "json",
+      "label": "Staged override coverage",
+      "path": "data/source_pipeline/processed/heuristic_override_report.json",
+      "site_path": "data/source_pipeline/processed/heuristic_override_report.json"
+    },
+    {
+      "description": "Suspicious duplicate review output for the staged promoted source-pipeline bundle.",
+      "format": "json",
+      "label": "Staged duplicate review",
+      "path": "data/source_pipeline/processed/suspicious_duplicates.json",
+      "site_path": "data/source_pipeline/processed/suspicious_duplicates.json"
+    },
+    {
       "description": "Flattened staged detail-page outcomes and parsed shared fields. This is staged provenance, not a promoted dataset column contract.",
       "format": "csv",
       "label": "Staged detail rows",

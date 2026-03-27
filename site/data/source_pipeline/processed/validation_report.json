@@ -1,0 +1,109 @@
+{
+  "checks": [
+    {
+      "details": {
+        "parsed_row_count": 849
+      },
+      "id": "parsed_rows_present",
+      "message": "At least one startup card was parsed from the selected sources.",
+      "passed": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "visible_sample_row_count": 249
+      },
+      "id": "visible_rows_present",
+      "message": "At least one parsed startup remains after the visible-sample threshold filter.",
+      "passed": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "missing_required_field_counts": {
+          "canonical_slug": 0,
+          "category": 0,
+          "detail_url": 0,
+          "name": 0,
+          "revenue_30d": 0,
+          "scraped_at": 0,
+          "source_url": 0
+        }
+      },
+      "id": "required_fields_present",
+      "message": "Every normalized row keeps the required provenance and core metric fields.",
+      "passed": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "below_threshold_visible_count": 0,
+        "min_visible_revenue_30d": 5000,
+        "threshold_usd": 5000
+      },
+      "id": "visible_threshold_respected",
+      "message": "No included visible-sample row falls below the $5,000 threshold.",
+      "passed": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "duplicate_detail_url_count": 0
+      },
+      "id": "detail_urls_unique",
+      "message": "Parsed startup detail URLs are unique within the staged run.",
+      "passed": true,
+      "severity": "error"
+    },
+    {
+      "details": {
+        "duplicate_name_source_url_count": 0
+      },
+      "id": "visible_name_source_pairs_unique",
+      "message": "Visible-sample duplicate `(name, source_url)` pairs are surfaced as warnings only when they still collapse onto the same canonical slug after same-source disambiguation.",
+      "passed": true,
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "missing_biz_model_count": 0,
+        "missing_gtm_model_count": 0
+      },
+      "id": "heuristic_override_completeness",
+      "message": "Heuristic overrides are tracked explicitly and surfaced as warnings when rows remain unmapped.",
+      "passed": true,
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "suspicious_duplicate_group_count": 0,
+        "suspicious_duplicate_row_count": 0
+      },
+      "id": "suspicious_canonical_slug_duplicates",
+      "message": "Canonical-slug collisions across multiple detail URLs are surfaced as suspicious duplicate candidates.",
+      "passed": true,
+      "severity": "warning"
+    }
+  ],
+  "duplicate_detail_url_count": 0,
+  "duplicate_name_source_url_count": 0,
+  "excluded_below_threshold_count": 600,
+  "min_visible_revenue_30d": 5000,
+  "missing_biz_model_count": 0,
+  "missing_gtm_model_count": 0,
+  "missing_required_field_counts": {
+    "canonical_slug": 0,
+    "category": 0,
+    "detail_url": 0,
+    "name": 0,
+    "revenue_30d": 0,
+    "scraped_at": 0,
+    "source_url": 0
+  },
+  "parsed_row_count": 849,
+  "status": "passed",
+  "suspicious_duplicate_group_count": 0,
+  "suspicious_duplicate_row_count": 0,
+  "threshold_usd": 5000,
+  "visible_sample_row_count": 249
+}

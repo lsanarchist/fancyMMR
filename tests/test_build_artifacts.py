@@ -200,10 +200,17 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert diagnostics["detail_field_population_counts"]["problem_solved"] == 0
     assert diagnostics["detail_field_population_counts"]["founder_name"] == 0
     assert diagnostics["detail_parse_failure_sources"] == []
-    assert len(diagnostics["downloadable_staged_artifacts"]) == 2
-    assert diagnostics["downloadable_staged_artifacts"][0]["path"] == "data/source_pipeline/processed/detail_page_rows.csv"
-    assert diagnostics["downloadable_staged_artifacts"][0]["site_path"] == "data/source_pipeline/processed/detail_page_rows.csv"
-    assert diagnostics["downloadable_staged_artifacts"][1]["path"] == "data/source_pipeline/processed/detail_field_coverage.json"
+    assert [artifact["path"] for artifact in diagnostics["downloadable_staged_artifacts"]] == [
+        "data/source_pipeline/snapshots/run_manifest.json",
+        "data/source_pipeline/processed/validation_report.json",
+        "data/source_pipeline/processed/heuristic_override_report.json",
+        "data/source_pipeline/processed/suspicious_duplicates.json",
+        "data/source_pipeline/processed/detail_page_rows.csv",
+        "data/source_pipeline/processed/detail_field_coverage.json",
+    ]
+    assert all(
+        artifact["path"] == artifact["site_path"] for artifact in diagnostics["downloadable_staged_artifacts"]
+    )
     assert diagnostics["fully_mapped_visible_row_count"] == 249
     assert diagnostics["source_pages"]
     assert diagnostics["source_pages"][0]["parsed_card_count"] >= diagnostics["source_pages"][-1]["parsed_card_count"]
@@ -216,10 +223,17 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_failure_source_count"] == 0
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_status_counts"]["not_requested"] == 852
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_field_population_counts"]["problem_solved"] == 0
-    assert len(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"]) == 2
-    assert pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"][0]["site_path"] == (
-        "data/source_pipeline/processed/detail_page_rows.csv"
-    )
+    assert [
+        artifact["site_path"]
+        for artifact in pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"]
+    ] == [
+        "data/source_pipeline/snapshots/run_manifest.json",
+        "data/source_pipeline/processed/validation_report.json",
+        "data/source_pipeline/processed/heuristic_override_report.json",
+        "data/source_pipeline/processed/suspicious_duplicates.json",
+        "data/source_pipeline/processed/detail_page_rows.csv",
+        "data/source_pipeline/processed/detail_field_coverage.json",
+    ]
 
 
 def test_validation_report_fails_for_missing_columns_and_threshold_violations() -> None:

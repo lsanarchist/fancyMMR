@@ -1,0 +1,17 @@
+{
+  "alias_resolved_visible_row_count": 24,
+  "biz_model_override_count": 249,
+  "fully_mapped_visible_row_count": 249,
+  "gtm_model_override_count": 249,
+  "override_files": [
+    "data/source_pipeline/overrides/biz_model_overrides.json",
+    "data/source_pipeline/overrides/gtm_model_overrides.json",
+    "data/source_pipeline/overrides/canonical_slug_aliases.json"
+  ],
+  "override_key_format": "<source_url>::<canonical_slug>",
+  "schema_version": 1,
+  "total_row_count": 849,
+  "unmapped_visible_row_count": 0,
+  "unmapped_visible_rows": [],
+  "visible_sample_row_count": 249
+}

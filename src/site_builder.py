@@ -66,7 +66,7 @@ def clean_site_dir() -> None:
     SITE_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def staged_detail_download_items(
+def staged_source_pipeline_download_items(
     source_pipeline_diagnostics: dict[str, object],
     pipeline_manifest: dict[str, object],
 ) -> list[dict[str, str]]:
@@ -588,7 +588,7 @@ def build_data_page(
 """,
     )
 
-    download_items = [
+    core_download_items = [
         ("data/metrics.json", "Top-line metrics", "Sample size, revenue concentration, and dominant-category snapshots."),
         (
             "data/publication_input.json",
@@ -604,14 +604,7 @@ def build_data_page(
         ),
         ("data/pipeline_manifest.json", "Pipeline manifest", "Build command, input dataset hash, and copied-output inventory."),
     ]
-    download_items.extend(
-        (
-            artifact["site_path"],
-            artifact["label"],
-            artifact["description"],
-        )
-        for artifact in staged_detail_download_items(source_pipeline_diagnostics, pipeline_manifest)
-    )
+    staged_bundle_items = staged_source_pipeline_download_items(source_pipeline_diagnostics, pipeline_manifest)
 
     downloads = "".join(
         f"""
@@ -621,7 +614,17 @@ def build_data_page(
   <a href="{html.escape(filename, quote=True)}">Download</a>
 </article>
 """
-        for filename, name, description in download_items
+        for filename, name, description in core_download_items
+    )
+    staged_bundle_downloads = "".join(
+        f"""
+<article class="download-card">
+  <h3>{html.escape(artifact['label'])}</h3>
+  <p>{html.escape(artifact['description'])}</p>
+  <a href="{html.escape(artifact['site_path'], quote=True)}">Download</a>
+</article>
+"""
+        for artifact in staged_bundle_items
     )
 
     category_table = render_table(
@@ -808,8 +811,17 @@ def build_data_page(
     sections = [
         section(
             "Downloads",
-            "Core JSON outputs and selected staged provenance artifacts are copied into the site so the published Pages bundle stays inspectable on its own.",
+            "Core JSON outputs are copied into the site so the published Pages bundle stays inspectable on its own.",
             f'<div class="card-grid">{downloads}</div>',
+        ),
+        section(
+            "Staged Bundle",
+            "The active promoted staged source-pipeline bundle is exposed as a separate manifest-driven provenance surface, distinct from the promoted dataset contract.",
+            (
+                f'<div class="card-grid">{staged_bundle_downloads}</div>'
+                if staged_bundle_items
+                else '<p class="section-note">No staged source-pipeline bundle downloads are attached to the active publication manifest.</p>'
+            ),
         ),
         section(
             "Top categories",
@@ -1334,7 +1346,7 @@ def write_site_pages() -> None:
 def build_site() -> None:
     source_pipeline_diagnostics = read_json(DATA_DIR / "source_pipeline_diagnostics.json")
     pipeline_manifest = read_json(DATA_DIR / "pipeline_manifest.json")
-    staged_download_items = staged_detail_download_items(source_pipeline_diagnostics, pipeline_manifest)
+    staged_download_items = staged_source_pipeline_download_items(source_pipeline_diagnostics, pipeline_manifest)
     clean_site_dir()
     copy_assets(staged_download_items=staged_download_items)
     write_site_pages()

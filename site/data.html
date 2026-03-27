@@ -47,7 +47,7 @@
 <section class="section-card">
   <div class="section-head">
     <h2>Downloads</h2>
-    <p>Core JSON outputs and selected staged provenance artifacts are copied into the site so the published Pages bundle stays inspectable on its own.</p>
+    <p>Core JSON outputs are copied into the site so the published Pages bundle stays inspectable on its own.</p>
   </div>
   <div class="card-grid">
 <article class="download-card">
@@ -84,6 +84,38 @@
   <h3>Pipeline manifest</h3>
   <p>Build command, input dataset hash, and copied-output inventory.</p>
   <a href="data/pipeline_manifest.json">Download</a>
+</article>
+</div>
+</section>
+
+<section class="section-card">
+  <div class="section-head">
+    <h2>Staged Bundle</h2>
+    <p>The active promoted staged source-pipeline bundle is exposed as a separate manifest-driven provenance surface, distinct from the promoted dataset contract.</p>
+  </div>
+  <div class="card-grid">
+<article class="download-card">
+  <h3>Staged run manifest</h3>
+  <p>End-to-end staged fetch/parse/normalize snapshot for the active promoted source-pipeline bundle.</p>
+  <a href="data/source_pipeline/snapshots/run_manifest.json">Download</a>
+</article>
+
+<article class="download-card">
+  <h3>Staged validation report</h3>
+  <p>Staged source-pipeline validation status, checks, and failure details for the active promoted bundle.</p>
+  <a href="data/source_pipeline/processed/validation_report.json">Download</a>
+</article>
+
+<article class="download-card">
+  <h3>Staged override coverage</h3>
+  <p>Heuristic override coverage and alias-resolution counts for the staged promoted source-pipeline bundle.</p>
+  <a href="data/source_pipeline/processed/heuristic_override_report.json">Download</a>
+</article>
+
+<article class="download-card">
+  <h3>Staged duplicate review</h3>
+  <p>Suspicious duplicate review output for the staged promoted source-pipeline bundle.</p>
+  <a href="data/source_pipeline/processed/suspicious_duplicates.json">Download</a>
 </article>
 
 <article class="download-card">
