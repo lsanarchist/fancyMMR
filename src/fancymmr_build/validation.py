@@ -619,6 +619,47 @@ def _summarize_fetch_failure_artifact_format_counts(
     )
 
 
+def _build_fetch_failure_next_action_artifact_format_source_lists(
+    sources: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    grouped_sources_by_format: dict[str, list[dict[str, object]]] = {}
+    for source in sources:
+        source_id = str(source.get("source_id") or "")
+        source_summary = {
+            "source_id": source_id,
+            "source_label": str(source.get("source_label") or source_id or "unknown"),
+            "source_url": str(source.get("source_url") or ""),
+        }
+        source_formats = sorted(
+            {
+                str(artifact.get("format") or "").lower()
+                for artifact in source.get("artifact_links", [])
+                if str(artifact.get("format") or "")
+            }
+        )
+        for artifact_format in source_formats:
+            grouped_sources_by_format.setdefault(artifact_format, []).append(source_summary)
+
+    artifact_format_source_lists: list[dict[str, object]] = []
+    for artifact_format in sorted(grouped_sources_by_format):
+        format_sources = sorted(
+            grouped_sources_by_format[artifact_format],
+            key=lambda source: (
+                source["source_label"],
+                source["source_url"],
+                source["source_id"],
+            ),
+        )
+        artifact_format_source_lists.append(
+            {
+                "format": artifact_format,
+                "source_count": len(format_sources),
+                "sources": format_sources,
+            }
+        )
+    return artifact_format_source_lists
+
+
 def _build_fetch_failure_next_action_artifact_rollups(
     fetch_failure_next_action_source_lists: list[dict[str, object]],
 ) -> list[dict[str, object]]:
@@ -633,6 +674,9 @@ def _build_fetch_failure_next_action_artifact_rollups(
         ]
         artifact_summary = _summarize_fetch_failure_artifact_links(artifact_links)
         artifact_format_counts = _count_fetch_failure_artifact_formats(artifact_links)
+        artifact_format_source_lists = _build_fetch_failure_next_action_artifact_format_source_lists(
+            sources
+        )
         rollups.append(
             {
                 "failure_next_action": str(action_group.get("failure_next_action") or "unknown"),
@@ -644,6 +688,7 @@ def _build_fetch_failure_next_action_artifact_rollups(
                 "artifact_format_count_summary": _summarize_fetch_failure_artifact_format_counts(
                     artifact_format_counts
                 ),
+                "artifact_format_source_lists": artifact_format_source_lists,
             }
         )
     return rollups

@@ -1007,6 +1007,39 @@ def build_data_page(
                     ],
                 )
                 + render_table(
+                    [
+                        "Recommended action",
+                        "Artifact format",
+                        "Format source labels",
+                        "Format source pages",
+                    ],
+                    [
+                        [
+                            html.escape(str(rollup.get("failure_next_action") or "unknown")),
+                            html.escape(str(format_group.get("format") or "unknown").upper()),
+                            "<br>".join(
+                                html.escape(
+                                    str(source.get("source_label") or source.get("source_id") or "unknown")
+                                )
+                                for source in format_group.get("sources", [])
+                            )
+                            or html.escape("n/a"),
+                            "<br>".join(
+                                (
+                                    f'<a href="{html.escape(str(source.get("source_url") or ""), quote=True)}">'
+                                    f'{html.escape(str(source.get("source_url") or source.get("source_id") or "unknown"))}</a>'
+                                )
+                                if str(source.get("source_url") or "")
+                                else html.escape(str(source.get("source_id") or "unknown"))
+                                for source in format_group.get("sources", [])
+                            )
+                            or html.escape("n/a"),
+                        ]
+                        for rollup in fetch_failure_next_action_artifact_rollups
+                        for format_group in rollup.get("artifact_format_source_lists", [])
+                    ],
+                )
+                + render_table(
                     ["Recommended action", "Affected source labels", "Affected source pages"],
                     [
                         [
@@ -1060,7 +1093,7 @@ def build_data_page(
         else:
             diagnostics_fetch_failure_next_action_section = (
                 "<h3>Fetch-failure next actions</h3>"
-                '<p class="section-note">No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, artifact rollups, or artifact format counts are currently recorded for the active manifest.</p>'
+                '<p class="section-note">No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, artifact rollups, artifact format counts, or artifact-format source lists are currently recorded for the active manifest.</p>'
             )
         fetch_failure_html_snapshot_availability_counts = (
             source_pipeline_diagnostics.get("fetch_failure_html_snapshot_availability_counts", {}) or {}

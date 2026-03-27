@@ -460,6 +460,19 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
             "artifact_summary": "1 artifact · JSON",
             "artifact_format_counts": {"json": 1},
             "artifact_format_count_summary": "JSON: 1",
+            "artifact_format_source_lists": [
+                {
+                    "format": "json",
+                    "source_count": 1,
+                    "sources": [
+                        {
+                            "source_id": "category--sales",
+                            "source_label": "Sales",
+                            "source_url": "https://trustmrr.com/category/sales",
+                        }
+                    ],
+                }
+            ],
         },
         {
             "failure_next_action": "retry_after_backoff",
@@ -469,6 +482,30 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
             "artifact_summary": "2 artifacts · HTML, JSON",
             "artifact_format_counts": {"html": 1, "json": 1},
             "artifact_format_count_summary": "HTML: 1, JSON: 1",
+            "artifact_format_source_lists": [
+                {
+                    "format": "html",
+                    "source_count": 1,
+                    "sources": [
+                        {
+                            "source_id": "category--ai",
+                            "source_label": "AI",
+                            "source_url": "https://trustmrr.com/category/ai",
+                        }
+                    ],
+                },
+                {
+                    "format": "json",
+                    "source_count": 1,
+                    "sources": [
+                        {
+                            "source_id": "category--ai",
+                            "source_label": "AI",
+                            "source_url": "https://trustmrr.com/category/ai",
+                        }
+                    ],
+                },
+            ],
         },
     ]
     assert diagnostics["fetch_failure_next_action_source_lists"] == [
@@ -590,6 +627,19 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
             "artifact_summary": "1 artifact · JSON",
             "artifact_format_counts": {"json": 1},
             "artifact_format_count_summary": "JSON: 1",
+            "artifact_format_source_lists": [
+                {
+                    "format": "json",
+                    "source_count": 1,
+                    "sources": [
+                        {
+                            "source_id": "category--sales",
+                            "source_label": "Sales",
+                            "source_url": "https://trustmrr.com/category/sales",
+                        }
+                    ],
+                }
+            ],
         },
         {
             "failure_next_action": "retry_after_backoff",
@@ -599,6 +649,30 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
             "artifact_summary": "2 artifacts · HTML, JSON",
             "artifact_format_counts": {"html": 1, "json": 1},
             "artifact_format_count_summary": "HTML: 1, JSON: 1",
+            "artifact_format_source_lists": [
+                {
+                    "format": "html",
+                    "source_count": 1,
+                    "sources": [
+                        {
+                            "source_id": "category--ai",
+                            "source_label": "AI",
+                            "source_url": "https://trustmrr.com/category/ai",
+                        }
+                    ],
+                },
+                {
+                    "format": "json",
+                    "source_count": 1,
+                    "sources": [
+                        {
+                            "source_id": "category--ai",
+                            "source_label": "AI",
+                            "source_url": "https://trustmrr.com/category/ai",
+                        }
+                    ],
+                },
+            ],
         },
     ]
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_next_action_source_lists"] == [
