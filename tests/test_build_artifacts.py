@@ -473,6 +473,8 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                     ],
                 }
             ],
+            "artifact_format_source_counts": {"json": 1},
+            "artifact_format_source_count_summary": "JSON: 1 source",
         },
         {
             "failure_next_action": "retry_after_backoff",
@@ -506,6 +508,8 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                     ],
                 },
             ],
+            "artifact_format_source_counts": {"html": 1, "json": 1},
+            "artifact_format_source_count_summary": "HTML: 1 source, JSON: 1 source",
         },
     ]
     assert diagnostics["fetch_failure_next_action_source_lists"] == [
@@ -640,6 +644,8 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                     ],
                 }
             ],
+            "artifact_format_source_counts": {"json": 1},
+            "artifact_format_source_count_summary": "JSON: 1 source",
         },
         {
             "failure_next_action": "retry_after_backoff",
@@ -673,6 +679,8 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                     ],
                 },
             ],
+            "artifact_format_source_counts": {"html": 1, "json": 1},
+            "artifact_format_source_count_summary": "HTML: 1 source, JSON: 1 source",
         },
     ]
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_next_action_source_lists"] == [

@@ -140,7 +140,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "No staged fetch-failure severity context is currently recorded for the active manifest." in data_html
     assert "No staged fetch-failure retryability context is currently recorded for the active manifest." in data_html
     assert (
-        "No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, artifact rollups, artifact format counts, or artifact-format source lists are currently recorded for the active manifest."
+        "No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, artifact rollups, artifact format counts, artifact-format source lists, or artifact-format source-count summaries are currently recorded for the active manifest."
         in data_html
     )
     assert "No staged fetch-failure snapshot-availability context is currently recorded for the active manifest." in data_html
@@ -236,7 +236,9 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "Affected source pages" in data_html
     assert "Action artifact rollup" in data_html
     assert "Artifact format counts" in data_html
+    assert "Artifact-format source counts" in data_html
     assert "Artifact format" in data_html
+    assert "Format source count" in data_html
     assert "Format source labels" in data_html
     assert "Format source pages" in data_html
     assert "Failure context" in data_html
@@ -273,6 +275,8 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "2 artifacts · HTML, JSON" in data_html
     assert "JSON: 1" in data_html
     assert "HTML: 1, JSON: 1" in data_html
+    assert "JSON: 1 source" in data_html
+    assert "HTML: 1 source, JSON: 1 source" in data_html
     assert data_html.count("https://trustmrr.com/category/ai") >= 5
     assert data_html.count("https://trustmrr.com/category/sales") >= 4
     assert ">available<" in data_html

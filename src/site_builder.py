@@ -988,6 +988,7 @@ def build_data_page(
                         "Affected sources",
                         "Action artifact rollup",
                         "Artifact format counts",
+                        "Artifact-format source counts",
                     ],
                     [
                         [
@@ -1002,6 +1003,12 @@ def build_data_page(
                                     or "No staged fetch-failure artifact format counts"
                                 )
                             ),
+                            html.escape(
+                                str(
+                                    rollup.get("artifact_format_source_count_summary")
+                                    or "No staged fetch-failure artifact-format source counts"
+                                )
+                            ),
                         ]
                         for rollup in fetch_failure_next_action_artifact_rollups
                     ],
@@ -1010,6 +1017,7 @@ def build_data_page(
                     [
                         "Recommended action",
                         "Artifact format",
+                        "Format source count",
                         "Format source labels",
                         "Format source pages",
                     ],
@@ -1017,6 +1025,7 @@ def build_data_page(
                         [
                             html.escape(str(rollup.get("failure_next_action") or "unknown")),
                             html.escape(str(format_group.get("format") or "unknown").upper()),
+                            html.escape(f"{int(format_group.get('source_count') or 0):,}"),
                             "<br>".join(
                                 html.escape(
                                     str(source.get("source_label") or source.get("source_id") or "unknown")
@@ -1093,7 +1102,7 @@ def build_data_page(
         else:
             diagnostics_fetch_failure_next_action_section = (
                 "<h3>Fetch-failure next actions</h3>"
-                '<p class="section-note">No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, artifact rollups, artifact format counts, or artifact-format source lists are currently recorded for the active manifest.</p>'
+                '<p class="section-note">No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, artifact rollups, artifact format counts, artifact-format source lists, or artifact-format source-count summaries are currently recorded for the active manifest.</p>'
             )
         fetch_failure_html_snapshot_availability_counts = (
             source_pipeline_diagnostics.get("fetch_failure_html_snapshot_availability_counts", {}) or {}

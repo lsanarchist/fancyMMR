@@ -660,6 +660,28 @@ def _build_fetch_failure_next_action_artifact_format_source_lists(
     return artifact_format_source_lists
 
 
+def _count_fetch_failure_artifact_format_sources(
+    artifact_format_source_lists: list[dict[str, object]],
+) -> dict[str, int]:
+    return {
+        str(format_group.get("format") or "").lower(): int(format_group.get("source_count") or 0)
+        for format_group in artifact_format_source_lists
+        if str(format_group.get("format") or "")
+    }
+
+
+def _summarize_fetch_failure_artifact_format_source_counts(
+    artifact_format_source_counts: dict[str, int],
+) -> str:
+    if not artifact_format_source_counts:
+        return "No staged fetch-failure artifact-format source counts"
+    return ", ".join(
+        f"{artifact_format.upper()}: {int(source_count)} source"
+        + ("" if int(source_count) == 1 else "s")
+        for artifact_format, source_count in artifact_format_source_counts.items()
+    )
+
+
 def _build_fetch_failure_next_action_artifact_rollups(
     fetch_failure_next_action_source_lists: list[dict[str, object]],
 ) -> list[dict[str, object]]:
@@ -677,6 +699,9 @@ def _build_fetch_failure_next_action_artifact_rollups(
         artifact_format_source_lists = _build_fetch_failure_next_action_artifact_format_source_lists(
             sources
         )
+        artifact_format_source_counts = _count_fetch_failure_artifact_format_sources(
+            artifact_format_source_lists
+        )
         rollups.append(
             {
                 "failure_next_action": str(action_group.get("failure_next_action") or "unknown"),
@@ -689,6 +714,10 @@ def _build_fetch_failure_next_action_artifact_rollups(
                     artifact_format_counts
                 ),
                 "artifact_format_source_lists": artifact_format_source_lists,
+                "artifact_format_source_counts": artifact_format_source_counts,
+                "artifact_format_source_count_summary": _summarize_fetch_failure_artifact_format_source_counts(
+                    artifact_format_source_counts
+                ),
             }
         )
     return rollups
