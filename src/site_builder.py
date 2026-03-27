@@ -824,6 +824,7 @@ def build_data_page(
                     "Error",
                     "Severity",
                     "Retryability",
+                    "Next action",
                     "HTML snapshot",
                     "Message",
                 ],
@@ -840,6 +841,7 @@ def build_data_page(
                         html.escape(str(row.get("error_type") or "unknown")),
                         html.escape(str(row.get("failure_severity") or "unknown")),
                         html.escape(str(row.get("failure_retryability") or "unknown")),
+                        html.escape(str(row.get("failure_next_action") or "unknown")),
                         html.escape("yes" if row.get("has_html_snapshot") else "no"),
                         html.escape(str(row.get("message") or "")),
                     ]
@@ -957,6 +959,28 @@ def build_data_page(
             diagnostics_fetch_failure_retryability_section = (
                 "<h3>Fetch-failure retryability</h3>"
                 '<p class="section-note">No staged fetch-failure retryability context is currently recorded for the active manifest.</p>'
+            )
+        fetch_failure_next_action_counts = (
+            source_pipeline_diagnostics.get("fetch_failure_next_action_counts", {}) or {}
+        )
+        if fetch_failure_sources:
+            diagnostics_fetch_failure_next_action_section = (
+                "<h3>Fetch-failure next actions</h3>"
+                + render_table(
+                    ["Recommended action", "Affected sources"],
+                    [
+                        [
+                            html.escape(str(next_action)),
+                            html.escape(f"{int(count):,}"),
+                        ]
+                        for next_action, count in fetch_failure_next_action_counts.items()
+                    ],
+                )
+            )
+        else:
+            diagnostics_fetch_failure_next_action_section = (
+                "<h3>Fetch-failure next actions</h3>"
+                '<p class="section-note">No staged fetch-failure next-action recommendations are currently recorded for the active manifest.</p>'
             )
         fetch_failure_html_snapshot_availability_counts = (
             source_pipeline_diagnostics.get("fetch_failure_html_snapshot_availability_counts", {}) or {}
@@ -1139,6 +1163,7 @@ def build_data_page(
             + diagnostics_fetch_failure_parser_context_section
             + diagnostics_fetch_failure_severity_section
             + diagnostics_fetch_failure_retryability_section
+            + diagnostics_fetch_failure_next_action_section
             + diagnostics_fetch_failure_snapshot_context_section
             + diagnostics_fetch_failure_delay_section
             + diagnostics_fetch_failure_robots_section
