@@ -611,6 +611,12 @@ body {
   background: rgba(244, 234, 215, 0.06);
 }
 
+.output-registry-badge-rank {
+  color: var(--warning);
+  border-color: rgba(255, 191, 97, 0.22);
+  background: rgba(255, 191, 97, 0.08);
+}
+
 .nav-link:hover,
 .nav-link.is-active,
 .rail-command-link:hover,
