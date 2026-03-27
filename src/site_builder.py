@@ -109,6 +109,15 @@ def format_median_byte_count(byte_values: list[int]) -> str:
     return f"med {format_byte_count(median_bytes)}"
 
 
+def format_byte_spread_ratio(min_bytes: int | None, max_bytes: int | None) -> str:
+    if min_bytes is None or max_bytes is None or min_bytes <= 0:
+        return "spread n/a"
+    spread_ratio = max_bytes / min_bytes
+    if spread_ratio < 10:
+        return f"spread {spread_ratio:.1f}x"
+    return f"spread {spread_ratio:.0f}x"
+
+
 def format_delay_seconds(value: object) -> str:
     if value in (None, ""):
         return "n/a"
@@ -795,6 +804,7 @@ def output_registry_command_links_markup(command_items: list[dict[str, object]])
                 f'<span class="rail-command-divider-file-share">{html.escape(format_count_share(format_counts[item_format], section_item_count))}</span>'
                 f'<span class="rail-command-divider-bytes">{html.escape(format_byte_count(format_bytes[item_format]))}</span>'
                 f'<span class="rail-command-divider-range">{html.escape(format_byte_range(format_min_bytes.get(item_format), format_max_bytes.get(item_format)))}</span>'
+                f'<span class="rail-command-divider-spread">{html.escape(format_byte_spread_ratio(format_min_bytes.get(item_format), format_max_bytes.get(item_format)))}</span>'
                 f'<span class="rail-command-divider-median">{html.escape(format_median_byte_count(format_byte_values.get(item_format, [])))}</span>'
                 f'<span class="rail-command-divider-average">{html.escape(format_average_byte_count(format_bytes[item_format], format_counts[item_format]))}</span>'
                 f'<span class="rail-command-divider-share">{html.escape(format_byte_share(format_bytes[item_format], section_total_bytes))}</span>'
@@ -2545,6 +2555,12 @@ body {
   font-size: 0.64rem;
   letter-spacing: 0.08em;
   color: var(--ink-soft);
+}
+
+.rail-command-divider-spread {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  color: var(--accent-muted);
 }
 
 .rail-command-divider-median {
