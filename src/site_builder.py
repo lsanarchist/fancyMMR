@@ -801,11 +801,19 @@ def metric_list(items: list[tuple[str, str]]) -> str:
     )
 
 
-def rail_module(*, kicker: str, title: str, body_html: str, tone: str = "neutral") -> str:
+def rail_module(
+    *,
+    kicker: str,
+    title: str,
+    body_html: str,
+    tone: str = "neutral",
+    story_html: str = "",
+) -> str:
     tone_class = "" if tone == "neutral" else f" rail-module-{tone}"
     return f"""
 <section class="rail-module{tone_class}">
   <p class="rail-kicker">{html.escape(kicker)}</p>
+  {story_html}
   <h2 class="rail-title">{html.escape(title)}</h2>
   {body_html}
 </section>
@@ -2560,6 +2568,387 @@ def build_path_story_rail(
     )
 
 
+def validation_story_profile(status: str) -> tuple[float, str]:
+    validation_ratio = {
+        "passed": 1.0,
+        "passed_with_warnings": 0.72,
+        "failed": 0.32,
+    }.get(status, 0.5)
+    validation_tone = {
+        "passed": "green",
+        "passed_with_warnings": "accent",
+        "failed": "red",
+    }.get(status, "cyan")
+    return validation_ratio, validation_tone
+
+
+def standalone_story_rail(*, kicker: str, headline: str, note: str, meters_html: str) -> str:
+    return (
+        '<div class="annotation-rail-grid">'
+        + chart_annotation_rail(
+            kicker=kicker,
+            headline=headline,
+            note=note,
+            meters_html=meters_html,
+            extra_class="chart-annotation-rail-standalone",
+        )
+        + "</div>"
+    )
+
+
+def overview_revenue_lens_story_rail(metrics: dict[str, object]) -> str:
+    total_visible_revenue = float(metrics["total_visible_revenue_usd"])
+    median_revenue = float(metrics["median_revenue_usd"])
+    sample_size = int(metrics["sample_size"])
+    return standalone_story_rail(
+        kicker="Revenue stack",
+        headline=f"{usd_short(total_visible_revenue)} of visible 30-day revenue is spread across {sample_size:,} published startups.",
+        note="The overview monitor keeps bundle scale visible before the snapshot cards and chart rack take over.",
+        meters_html="".join(
+            [
+                infographic_meter(
+                    "Visible revenue",
+                    usd_short(total_visible_revenue),
+                    1.0,
+                    tone="accent",
+                ),
+                infographic_meter(
+                    "Median startup",
+                    usd_short(median_revenue),
+                    normalized_ratio(median_revenue, total_visible_revenue),
+                    tone="cyan",
+                ),
+                infographic_meter(
+                    "Sample size",
+                    count_label(sample_size, "startup"),
+                    1.0 if sample_size > 0 else 0.0,
+                    tone="green",
+                ),
+            ]
+        ),
+    )
+
+
+def overview_concentration_story_rail(metrics: dict[str, object]) -> str:
+    dominant_category = str(metrics["dominant_category"])
+    top_10_share = float(metrics["top_10_revenue_share"])
+    dominant_category_revenue_share = float(metrics["dominant_category_revenue_share"])
+    return standalone_story_rail(
+        kicker="Top-tail risk",
+        headline=f"{pct(top_10_share)} of visible revenue sits in the top 10 startups while {dominant_category} leads the category mix.",
+        note="The concentration monitor keeps the fastest top-tail read beside the dominant-category cue before readers open the chart stack.",
+        meters_html="".join(
+            [
+                infographic_meter(
+                    "Top 10 share",
+                    pct(top_10_share),
+                    top_10_share,
+                    tone="red",
+                ),
+                infographic_meter(
+                    "Leader share",
+                    pct(dominant_category_revenue_share),
+                    dominant_category_revenue_share,
+                    tone="accent",
+                ),
+                infographic_meter(
+                    "Leader",
+                    dominant_category,
+                    1.0,
+                    tone="cyan",
+                ),
+            ]
+        ),
+    )
+
+
+def overview_warning_posture_story_rail(
+    metrics: dict[str, object],
+    validation_report: dict[str, object],
+) -> str:
+    sample_size = int(metrics["sample_size"])
+    duplicate_name_count = int(validation_report.get("duplicate_name_count", 0))
+    heuristic_gap_count = int(validation_report["null_counts"]["biz_model"]) + int(validation_report["null_counts"]["gtm_model"])
+    validation_ratio, validation_tone = validation_story_profile(str(validation_report["status"]))
+    if duplicate_name_count or heuristic_gap_count:
+        headline = (
+            f"{status_label(str(validation_report['status']))} validation still tracks "
+            f"{duplicate_name_count:,} duplicate startup names in the visible sample."
+        )
+    else:
+        headline = (
+            f"{status_label(str(validation_report['status']))} validation currently has no active warning-only signals in the visible sample."
+        )
+    return standalone_story_rail(
+        kicker="Warning envelope",
+        headline=headline,
+        note="The warning rail stays explicit about reviewable caveats without weakening the hard provenance and threshold gates.",
+        meters_html="".join(
+            [
+                infographic_meter(
+                    "Validation",
+                    status_label(str(validation_report["status"])),
+                    validation_ratio,
+                    tone=validation_tone,
+                ),
+                infographic_meter(
+                    "Duplicate names",
+                    count_label(duplicate_name_count, "startup name"),
+                    normalized_ratio(duplicate_name_count, sample_size or 1),
+                    tone="accent",
+                ),
+                infographic_meter(
+                    "Heuristic gaps",
+                    count_label(heuristic_gap_count, "gap"),
+                    normalized_ratio(heuristic_gap_count, sample_size or 1),
+                    tone="cyan",
+                ),
+            ]
+        ),
+    )
+
+
+def methodology_inclusion_rule_story_rail() -> str:
+    return standalone_story_rail(
+        kicker="Gate contract",
+        headline="The methodology keeps the visible sample tied to the public-page >= $5,000 / 30d inclusion rule.",
+        note="The right rail repeats the threshold, source type, and sample frame before readers move into the prose docs and validation checklist.",
+        meters_html="".join(
+            [
+                infographic_meter(
+                    "Threshold",
+                    ">= $5k",
+                    1.0,
+                    tone="accent",
+                ),
+                infographic_meter(
+                    "Source type",
+                    "public pages",
+                    1.0,
+                    tone="cyan",
+                ),
+                infographic_meter(
+                    "Sample frame",
+                    "visible only",
+                    1.0,
+                    tone="green",
+                ),
+            ]
+        ),
+    )
+
+
+def methodology_validation_posture_story_rail(validation_report: dict[str, object]) -> str:
+    duplicate_name_count = int(validation_report.get("duplicate_name_count", 0))
+    heuristic_gap_count = int(validation_report["null_counts"]["biz_model"]) + int(validation_report["null_counts"]["gtm_model"])
+    validation_ratio, validation_tone = validation_story_profile(str(validation_report["status"]))
+    return standalone_story_rail(
+        kicker="Method warning load",
+        headline=(
+            f"{status_label(str(validation_report['status']))} validation keeps "
+            f"{methodology_warning_snapshot(validation_report)} reviewable in the methodology lane."
+        ),
+        note="Hard provenance and threshold checks still pass; the methodology rail keeps warning-only caveats visible instead of smoothing them away.",
+        meters_html="".join(
+            [
+                infographic_meter(
+                    "Validation",
+                    status_label(str(validation_report["status"])),
+                    validation_ratio,
+                    tone=validation_tone,
+                ),
+                infographic_meter(
+                    "Duplicate names",
+                    count_label(duplicate_name_count, "name"),
+                    normalized_ratio(duplicate_name_count, max(duplicate_name_count, heuristic_gap_count, 1)),
+                    tone="accent",
+                ),
+                infographic_meter(
+                    "Heuristic gaps",
+                    count_label(heuristic_gap_count, "gap"),
+                    normalized_ratio(heuristic_gap_count, max(duplicate_name_count, heuristic_gap_count, 1)),
+                    tone="cyan",
+                ),
+            ]
+        ),
+    )
+
+
+def methodology_publication_caveat_story_rail(output_registry_sections: list[dict[str, object]]) -> str:
+    output_block_count = len(output_registry_sections)
+    return standalone_story_rail(
+        kicker="Scope lock",
+        headline=(
+            f"Not a full export keeps the caveat lane tied to {count_label(output_block_count, 'inspectable output block')} and the repository docs."
+        ),
+        note="The methodology surface keeps scope, docs, and inspectable artifacts close together so the publication stays explicit about what it can and cannot claim.",
+        meters_html="".join(
+            [
+                infographic_meter(
+                    "Output blocks",
+                    count_label(output_block_count, "block"),
+                    1.0 if output_block_count > 0 else 0.0,
+                    tone="accent",
+                ),
+                infographic_meter(
+                    "Doc panes",
+                    count_label(2, "pane"),
+                    normalized_ratio(2, max(output_block_count, 2)),
+                    tone="cyan",
+                ),
+                infographic_meter(
+                    "Claim scope",
+                    "visible sample",
+                    1.0,
+                    tone="green",
+                ),
+            ]
+        ),
+    )
+
+
+def data_publication_source_story_rail(
+    publication_input: dict[str, object],
+    pipeline_manifest: dict[str, object],
+    source_coverage_report: dict[str, object],
+) -> str:
+    row_count = int(pipeline_manifest["input_dataset"]["rows"])
+    source_page_count = int(source_coverage_report["source_page_count"])
+    generated_output_count = len(pipeline_manifest["generated_outputs"])
+    return standalone_story_rail(
+        kicker="Bundle origin",
+        headline=(
+            f"{str(publication_input['source_label'])} currently feeds {row_count:,} published rows across {source_page_count:,} public pages."
+        ),
+        note="The data rail keeps the active publication origin explicit before readers move into downloads, diagnostics, and manifest notes.",
+        meters_html="".join(
+            [
+                infographic_meter(
+                    "Rows",
+                    count_label(row_count, "row"),
+                    1.0 if row_count > 0 else 0.0,
+                    tone="accent",
+                ),
+                infographic_meter(
+                    "Source pages",
+                    count_label(source_page_count, "page"),
+                    normalized_ratio(source_page_count, max(row_count, source_page_count, generated_output_count, 1)),
+                    tone="cyan",
+                ),
+                infographic_meter(
+                    "Generated outputs",
+                    count_label(generated_output_count, "file"),
+                    normalized_ratio(generated_output_count, max(row_count, source_page_count, generated_output_count, 1)),
+                    tone="green",
+                ),
+            ]
+        ),
+    )
+
+
+def data_download_surface_story_rail(
+    publication_bundle_items: list[dict[str, object]],
+    staged_bundle_items: list[dict[str, object]],
+    fetch_failure_items: list[dict[str, object]],
+) -> str:
+    publication_count = len(publication_bundle_items)
+    staged_count = len(staged_bundle_items)
+    fetch_failure_count = len(fetch_failure_items)
+    denominator = max(publication_count, staged_count, fetch_failure_count, 1)
+    return standalone_story_rail(
+        kicker="Artifact spread",
+        headline=(
+            f"{count_label(publication_count, 'publication file')}, "
+            f"{count_label(staged_count, 'staged provenance file')}, and "
+            f"{count_label(fetch_failure_count, 'fetch-failure file')} stay inspectable in the static download surface."
+        ),
+        note="The download rail keeps the promoted bundle, staged provenance, and failure cache visible as separate artifact lanes without a runtime backend.",
+        meters_html="".join(
+            [
+                infographic_meter(
+                    "Publication",
+                    count_label(publication_count, "file"),
+                    normalized_ratio(publication_count, denominator),
+                    tone="accent",
+                ),
+                infographic_meter(
+                    "Staged",
+                    count_label(staged_count, "file"),
+                    normalized_ratio(staged_count, denominator),
+                    tone="cyan",
+                ),
+                infographic_meter(
+                    "Failure cache",
+                    count_label(fetch_failure_count, "file"),
+                    normalized_ratio(fetch_failure_count, denominator),
+                    tone="green",
+                ),
+            ]
+        ),
+    )
+
+
+def data_diagnostics_feed_story_rail(source_pipeline_diagnostics: dict[str, object]) -> str:
+    if not source_pipeline_diagnostics["available"]:
+        return standalone_story_rail(
+            kicker="Diagnostics posture",
+            headline=str(source_pipeline_diagnostics["message"]),
+            note="The data rail still calls out whether staged-source diagnostics are attached to the active publication manifest.",
+            meters_html="".join(
+                [
+                    infographic_meter("Diagnostics", "seed only", 0.0, tone="accent"),
+                    infographic_meter("Validation", "n/a", 0.0, tone="cyan"),
+                    infographic_meter("Fetch failures", "n/a", 0.0, tone="green"),
+                ]
+            ),
+        )
+
+    selected_source_count = int(source_pipeline_diagnostics["selected_source_count"])
+    expected_source_count = int(source_pipeline_diagnostics["expected_source_count"])
+    fetch_failure_source_count = int(source_pipeline_diagnostics["fetch_failure_source_count"])
+    failed_detail_page_count = int(source_pipeline_diagnostics["failed_detail_page_count"])
+    validation_ratio, validation_tone = validation_story_profile(str(source_pipeline_diagnostics["validation_status"]))
+    if fetch_failure_source_count == 0 and failed_detail_page_count == 0:
+        headline = (
+            f"{selected_source_count}/{expected_source_count} staged sources are attached with "
+            f"{status_label(str(source_pipeline_diagnostics['validation_status']))} validation and no active fetch or detail failures."
+        )
+    else:
+        headline = (
+            f"{selected_source_count}/{expected_source_count} staged sources are attached with "
+            f"{status_label(str(source_pipeline_diagnostics['validation_status']))} validation, "
+            f"{count_label(fetch_failure_source_count, 'fetch-failure source')}, and "
+            f"{count_label(failed_detail_page_count, 'detail failure')}."
+        )
+    return standalone_story_rail(
+        kicker="Diagnostics posture",
+        headline=headline,
+        note="The diagnostics rail keeps staged-source coverage and failure posture visible before the deeper provenance tables begin.",
+        meters_html="".join(
+            [
+                infographic_meter(
+                    "Registry coverage",
+                    f"{selected_source_count}/{expected_source_count}",
+                    normalized_ratio(selected_source_count, expected_source_count or 1),
+                    tone="accent",
+                ),
+                infographic_meter(
+                    "Validation",
+                    status_label(str(source_pipeline_diagnostics["validation_status"])),
+                    validation_ratio,
+                    tone=validation_tone,
+                ),
+                infographic_meter(
+                    "Fetch failures",
+                    count_label(fetch_failure_source_count, "source"),
+                    normalized_ratio(fetch_failure_source_count, expected_source_count or 1),
+                    tone="cyan",
+                ),
+            ]
+        ),
+    )
+
+
 def publication_output_registry_story_rails(
     publication_items: list[dict[str, object]],
 ) -> str:
@@ -2865,6 +3254,7 @@ def build_index_page(
             rail_module(
                 kicker="Revenue lens",
                 title=usd_short(metrics["total_visible_revenue_usd"]),
+                story_html=overview_revenue_lens_story_rail(metrics),
                 body_html=(
                     '<p class="rail-copy">Current visible 30-day revenue across the published sample.</p>'
                     + metric_list(
@@ -2879,6 +3269,7 @@ def build_index_page(
             rail_module(
                 kicker="Concentration monitor",
                 title=pct(metrics["top_10_revenue_share"]),
+                story_html=overview_concentration_story_rail(metrics),
                 body_html=(
                     '<p class="rail-copy">Top-10 revenue share is the fastest concentration-risk readout in the visible sample.</p>'
                     + metric_list(
@@ -2892,6 +3283,7 @@ def build_index_page(
             rail_module(
                 kicker="Warning posture",
                 title=status_label(str(validation_report["status"])),
+                story_html=overview_warning_posture_story_rail(metrics, validation_report),
                 body_html=(
                     f'<p class="rail-copy">{html.escape(warning_summary(validation_report))}.</p>'
                 ),
@@ -3073,6 +3465,7 @@ def build_methodology_page(
             rail_module(
                 kicker="Inclusion rule",
                 title=">= $5,000 / 30d",
+                story_html=methodology_inclusion_rule_story_rail(),
                 body_html=(
                     '<p class="rail-copy">The publication remains a visible public sample derived from public pages above the explicit threshold.</p>'
                 ),
@@ -3081,6 +3474,7 @@ def build_methodology_page(
             rail_module(
                 kicker="Validation posture",
                 title=status_label(str(validation_report["status"])),
+                story_html=methodology_validation_posture_story_rail(validation_report),
                 body_html=(
                     f'<p class="rail-copy">{html.escape(warning_summary(validation_report))}.</p>'
                 ),
@@ -3089,6 +3483,7 @@ def build_methodology_page(
             rail_module(
                 kicker="Publication caveat",
                 title="Not a full export",
+                story_html=methodology_publication_caveat_story_rail(output_registry_sections),
                 body_html=(
                     '<p class="rail-copy">Methodology, legal caveats, and provenance stay first-class so the static publication remains explicit about what it can and cannot claim.</p>'
                 ),
@@ -3224,6 +3619,11 @@ def build_data_page(
             rail_module(
                 kicker="Publication source",
                 title=str(publication_input["source_label"]),
+                story_html=data_publication_source_story_rail(
+                    publication_input,
+                    pipeline_manifest,
+                    source_coverage_report,
+                ),
                 body_html=(
                     '<p class="rail-copy">The published dataset remains URL-addressable and fully static for GitHub Pages.</p>'
                     + metric_list(
@@ -3238,6 +3638,11 @@ def build_data_page(
             rail_module(
                 kicker="Download surface",
                 title=f"{len(publication_bundle_items)} publication files",
+                story_html=data_download_surface_story_rail(
+                    publication_bundle_items,
+                    staged_bundle_items,
+                    fetch_failure_items,
+                ),
                 body_html=(
                     '<p class="rail-copy">Publication outputs, staged provenance files, and fetch-failure snapshots are published as static artifacts.</p>'
                     + metric_list(
@@ -3252,6 +3657,7 @@ def build_data_page(
             rail_module(
                 kicker="Diagnostics feed",
                 title=diagnostics_title,
+                story_html=data_diagnostics_feed_story_rail(source_pipeline_diagnostics),
                 body_html=diagnostics_body,
                 tone=diagnostics_tone,
             ),

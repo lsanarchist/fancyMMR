@@ -76,13 +76,28 @@ def extract_hot_output_section(text: str, title: str) -> str:
 
 
 def extract_rail_module(text: str, kicker: str) -> str:
-    pattern = re.compile(
-        rf'<section class="rail-module">\s*<p class="rail-kicker">{re.escape(kicker)}</p>.*?</section>',
-        re.DOTALL,
-    )
-    match = pattern.search(text)
-    assert match, kicker
-    return match.group(0)
+    marker = f'<p class="rail-kicker">{kicker}</p>'
+    marker_index = text.find(marker)
+    assert marker_index != -1, kicker
+    section_start = text.rfind("<section", 0, marker_index)
+    assert section_start != -1, kicker
+
+    depth = 0
+    cursor = section_start
+    while cursor < len(text):
+        next_open = text.find("<section", cursor)
+        next_close = text.find("</section>", cursor)
+        assert next_close != -1, kicker
+        if next_open != -1 and next_open < next_close:
+            depth += 1
+            cursor = next_open + len("<section")
+            continue
+        depth -= 1
+        cursor = next_close + len("</section>")
+        if depth == 0:
+            return text[section_start:cursor]
+
+    raise AssertionError(kicker)
 
 
 def format_byte_count(byte_count: int) -> str:
@@ -675,6 +690,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     operating_mode_section = extract_rail_module(index_html, "Operating mode")
     system_brief_section = extract_rail_module(index_html, "System brief")
     build_path_section = extract_rail_module(index_html, "Build path")
+    revenue_lens_section = extract_rail_module(index_html, "Revenue lens")
+    concentration_monitor_section = extract_rail_module(index_html, "Concentration monitor")
+    warning_posture_section = extract_rail_module(index_html, "Warning posture")
     assert "Route spread" in route_map_section
     assert "3 routes keep overview, methodology, and data one jump away." in route_map_section
     assert ">Overview<" in route_map_section
@@ -713,6 +731,20 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Local panels" in build_path_section
     assert "Cross-page routes" in build_path_section
     assert "Hot-output blocks" in build_path_section
+    assert "Revenue stack" in revenue_lens_section
+    assert "$24.39M of visible 30-day revenue is spread across 249 published startups." in revenue_lens_section
+    assert "Visible revenue" in revenue_lens_section
+    assert "Median startup" in revenue_lens_section
+    assert "Sample size" in revenue_lens_section
+    assert "Top-tail risk" in concentration_monitor_section
+    assert "69.6% of visible revenue sits in the top 10 startups while E-commerce leads the category mix." in concentration_monitor_section
+    assert "Top 10 share" in concentration_monitor_section
+    assert "Leader share" in concentration_monitor_section
+    assert "Leader" in concentration_monitor_section
+    assert "Warning envelope" in warning_posture_section
+    assert "Passed with warnings validation still tracks 9 duplicate startup names in the visible sample." in warning_posture_section
+    assert "Duplicate names" in warning_posture_section
+    assert "Heuristic gaps" in warning_posture_section
     publication_output_section = extract_hot_output_section(index_html, "Publication outputs")
     staged_output_section = extract_hot_output_section(index_html, "Staged provenance")
     assert "Registry shape" in publication_output_section
@@ -849,6 +881,25 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Evidence surface" in methodology_html
     assert "MD.01 Signals" in methodology_html
     assert "These methodology-side infographics reuse the same validation report and hot-output registry metadata" in methodology_html
+    methodology_inclusion_rule_section = extract_rail_module(methodology_html, "Inclusion rule")
+    methodology_validation_posture_section = extract_rail_module(methodology_html, "Validation posture")
+    methodology_publication_caveat_section = extract_rail_module(methodology_html, "Publication caveat")
+    assert "Gate contract" in methodology_inclusion_rule_section
+    assert "The methodology keeps the visible sample tied to the public-page &gt;= $5,000 / 30d inclusion rule." in methodology_inclusion_rule_section
+    assert "Threshold" in methodology_inclusion_rule_section
+    assert "&gt;= $5k" in methodology_inclusion_rule_section
+    assert "Source type" in methodology_inclusion_rule_section
+    assert "Sample frame" in methodology_inclusion_rule_section
+    assert "Method warning load" in methodology_validation_posture_section
+    assert "Passed with warnings validation keeps 9 duplicate names / 0 heuristic gaps reviewable in the methodology lane." in methodology_validation_posture_section
+    assert "Validation" in methodology_validation_posture_section
+    assert "Duplicate names" in methodology_validation_posture_section
+    assert "Heuristic gaps" in methodology_validation_posture_section
+    assert "Scope lock" in methodology_publication_caveat_section
+    assert "Not a full export keeps the caveat lane tied to 3 inspectable output blocks and the repository docs." in methodology_publication_caveat_section
+    assert "Output blocks" in methodology_publication_caveat_section
+    assert "Doc panes" in methodology_publication_caveat_section
+    assert "Claim scope" in methodology_publication_caveat_section
 
     assert "metrics.json" in data_html
     assert f'<meta http-equiv="Content-Security-Policy" content="{ESCAPED_CSP_SNIPPET}">' in data_html
@@ -960,6 +1011,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     data_operating_mode_section = extract_rail_module(data_html, "Operating mode")
     data_system_brief_section = extract_rail_module(data_html, "System brief")
     data_build_path_section = extract_rail_module(data_html, "Build path")
+    publication_source_section = extract_rail_module(data_html, "Publication source")
+    download_surface_section = extract_rail_module(data_html, "Download surface")
+    diagnostics_feed_section = extract_rail_module(data_html, "Diagnostics feed")
     assert "Route spread" in data_route_map_section
     assert "3 routes keep overview, methodology, and data one jump away." in data_route_map_section
     assert ">Data<" in data_route_map_section
@@ -998,6 +1052,21 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Local panels" in data_build_path_section
     assert "Cross-page routes" in data_build_path_section
     assert "Hot-output blocks" in data_build_path_section
+    assert "Bundle origin" in publication_source_section
+    assert "Promoted from staged source-pipeline visible rows currently feeds 249 published rows across 30 public pages." in publication_source_section
+    assert "Rows" in publication_source_section
+    assert "Source pages" in publication_source_section
+    assert "Generated outputs" in publication_source_section
+    assert "Artifact spread" in download_surface_section
+    assert "11 publication files, 6 staged provenance files, and 0 fetch-failure files stay inspectable in the static download surface." in download_surface_section
+    assert "Publication" in download_surface_section
+    assert "Staged" in download_surface_section
+    assert "Failure cache" in download_surface_section
+    assert "Diagnostics posture" in diagnostics_feed_section
+    assert "30/30 staged sources are attached with Passed validation and no active fetch or detail failures." in diagnostics_feed_section
+    assert "Registry coverage" in diagnostics_feed_section
+    assert "Validation" in diagnostics_feed_section
+    assert "Fetch failures" in diagnostics_feed_section
     assert "Registry shape" in data_html
     assert "Signal anchors" in data_html
     assert "keep the publication command surface self-contained at" in data_html
