@@ -656,6 +656,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     item_format_rank = str(item.get("format_rank") or "")
     item_format_share = str(item.get("format_share") or "")
     item_format_total = str(item.get("format_total") or "")
+    item_format_count = str(item.get("format_count") or "")
     byte_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
         if isinstance(item_bytes, int)
@@ -686,6 +687,11 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         if item_format_total
         else ""
     )
+    format_count_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-format-count">{html.escape(item_format_count)}</span>'
+        if item_format_count
+        else ""
+    )
     return (
         f'<a class="rail-command-link output-registry-link" href="{html.escape(target, quote=True)}" '
         f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
@@ -703,6 +709,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         f"{format_rank_badge_html}"
         f"{format_share_badge_html}"
         f"{format_total_badge_html}"
+        f"{format_count_badge_html}"
         "</span>"
         "</a>"
     )
@@ -811,6 +818,7 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
     }
     format_rank_lookup: dict[str, str] = {}
     format_ranked_site_paths: dict[str, list[tuple[str, int]]] = {}
+    format_item_counts: dict[str, int] = {}
     format_total_bytes: dict[str, int] = {}
     for artifact in download_items:
         site_path = str(artifact.get("site_path") or "")
@@ -819,6 +827,7 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
         if not site_path or not isinstance(artifact_bytes, int):
             continue
         format_ranked_site_paths.setdefault(artifact_format, []).append((site_path, artifact_bytes))
+        format_item_counts[artifact_format] = format_item_counts.get(artifact_format, 0) + 1
         format_total_bytes[artifact_format] = format_total_bytes.get(artifact_format, 0) + artifact_bytes
     for artifact_format, ranked_items in format_ranked_site_paths.items():
         format_count = len(ranked_items)
@@ -865,6 +874,9 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
             )
             items[-1]["format_total"] = (
                 f"{artifact_format_label} {format_byte_count(format_total_bytes.get(artifact_format_key, 0))}"
+            )
+            items[-1]["format_count"] = (
+                f"{artifact_format_label} {count_label(format_item_counts.get(artifact_format_key, 0), 'file')}"
             )
     return items
 
@@ -5681,6 +5693,12 @@ body {
   color: var(--green);
   border-color: rgba(131, 212, 134, 0.22);
   background: rgba(131, 212, 134, 0.08);
+}
+
+.output-registry-badge-format-count {
+  color: var(--accent);
+  border-color: rgba(246, 165, 58, 0.22);
+  background: rgba(246, 165, 58, 0.08);
 }
 
 .nav-link:hover,
