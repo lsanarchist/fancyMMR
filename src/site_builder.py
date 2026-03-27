@@ -311,6 +311,20 @@ def download_section_summary_html(items: list[dict[str, object]]) -> str:
     return f'<div class="download-summary">{"".join(badges)}</div>'
 
 
+def download_format_summary_badges_html(items: list[dict[str, object]]) -> str:
+    format_counts: Counter[str] = Counter()
+    for artifact in items:
+        artifact_format = artifact_format_label(artifact)
+        if artifact_format:
+            format_counts[artifact_format] += 1
+    if not format_counts:
+        return ""
+    return "".join(
+        download_badge(f"{count:,} {artifact_format.upper()}", tone="format")
+        for artifact_format, count in sorted(format_counts.items(), key=lambda item: (-item[1], item[0]))
+    )
+
+
 def copy_assets(
     *,
     publication_download_items: list[dict[str, object]],
@@ -653,6 +667,7 @@ def build_output_registry_sections(
                 "aria_label": aria_label,
                 "empty_message": empty_message,
                 "count_label": count_label(len(artifacts), "file"),
+                "format_badges_html": download_format_summary_badges_html(artifacts),
                 "items": global_output_command_items(artifacts),
             }
         )
@@ -682,6 +697,7 @@ def output_registry_sections_markup(output_registry_sections: list[dict[str, obj
         aria_label = str(section.get("aria_label") or title)
         empty_message = str(section.get("empty_message") or "")
         count_text = str(section.get("count_label") or "0 files")
+        format_badges_html = str(section.get("format_badges_html") or "")
         items = [
             item
             for item in section.get("items", [])
@@ -699,7 +715,10 @@ def output_registry_sections_markup(output_registry_sections: list[dict[str, obj
 <div class="rail-command-group">
   <div class="rail-command-group-head">
     <p class="rail-command-group-title">{html.escape(title)}</p>
-    {download_badge(count_text, tone="count")}
+    <div class="rail-command-group-meta">
+      {download_badge(count_text, tone="count")}
+      {format_badges_html}
+    </div>
   </div>
   {body_html}
 </div>
@@ -2351,9 +2370,17 @@ body {
 
 .rail-command-group-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
+  flex-wrap: wrap;
+}
+
+.rail-command-group-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .rail-command-group-title,

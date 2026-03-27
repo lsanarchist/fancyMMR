@@ -107,6 +107,10 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Publication outputs" in index_html
     assert "Staged provenance" in index_html
     assert "Fetch-failure evidence" in index_html
+    assert "6 JSON" in index_html
+    assert "5 CSV" in index_html
+    assert "5 JSON" in index_html
+    assert "1 CSV" in index_html
     assert "Jump palette" in index_html
     assert "GO / Overview" in index_html
     assert "GO / Data" in index_html
@@ -217,6 +221,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".command-input {" in site_css
     assert ".rail-command-group {" in site_css
     assert ".rail-command-group-head {" in site_css
+    assert ".rail-command-group-meta {" in site_css
     assert ".rail-command-group-empty {" in site_css
     assert ".download-summary {" in site_css
     assert ".download-badge {" in site_css
