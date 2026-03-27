@@ -653,6 +653,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     item_bytes = item.get("bytes")
     item_byte_share = str(item.get("byte_share") or "")
     item_byte_rank = str(item.get("byte_rank") or "")
+    item_format_rank = str(item.get("format_rank") or "")
     byte_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
         if isinstance(item_bytes, int)
@@ -666,6 +667,11 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     rank_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-rank">{html.escape(item_byte_rank)}</span>'
         if item_byte_rank
+        else ""
+    )
+    format_rank_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-format-rank">{html.escape(item_format_rank)}</span>'
+        if item_format_rank
         else ""
     )
     return (
@@ -682,6 +688,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         f"{byte_badge_html}"
         f"{share_badge_html}"
         f"{rank_badge_html}"
+        f"{format_rank_badge_html}"
         "</span>"
         "</a>"
     )
@@ -788,6 +795,27 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
             start=1,
         )
     }
+    format_rank_lookup: dict[str, str] = {}
+    format_ranked_site_paths: dict[str, list[tuple[str, int]]] = {}
+    for artifact in download_items:
+        site_path = str(artifact.get("site_path") or "")
+        artifact_format = str(artifact.get("format") or "").strip().lower() or "other"
+        artifact_bytes = artifact.get("bytes")
+        if not site_path or not isinstance(artifact_bytes, int):
+            continue
+        format_ranked_site_paths.setdefault(artifact_format, []).append((site_path, artifact_bytes))
+    for artifact_format, ranked_items in format_ranked_site_paths.items():
+        format_count = len(ranked_items)
+        format_width = max(2, len(str(format_count or 1)))
+        format_rank_lookup.update(
+            {
+                site_path: f"{artifact_format.upper()} {rank:0{format_width}d}/{format_count:0{format_width}d}"
+                for rank, (site_path, _) in enumerate(
+                    sorted(ranked_items, key=lambda pair: (-pair[1], pair[0].lower())),
+                    start=1,
+                )
+            }
+        )
     for artifact in download_items:
         site_path = str(artifact.get("site_path") or "")
         if not site_path:
@@ -813,6 +841,7 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
             items[-1]["bytes"] = artifact_bytes
             items[-1]["byte_share"] = format_byte_share(artifact_bytes, section_total_bytes)
             items[-1]["byte_rank"] = byte_rank_lookup.get(site_path, "")
+            items[-1]["format_rank"] = format_rank_lookup.get(site_path, "")
     return items
 
 
@@ -5610,6 +5639,12 @@ body {
   color: var(--warning);
   border-color: rgba(255, 191, 97, 0.22);
   background: rgba(255, 191, 97, 0.08);
+}
+
+.output-registry-badge-format-rank {
+  color: var(--cyan);
+  border-color: rgba(98, 201, 214, 0.22);
+  background: rgba(98, 201, 214, 0.08);
 }
 
 .nav-link:hover,
