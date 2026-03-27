@@ -908,7 +908,7 @@ def page_shell(
         <div class="command-bar-links">
           {command_bar_links}
         </div>
-        <p class="command-status" aria-live="polite" data-command-status>Ready. {len(local_panel_items):,} local panels and {len(route_registry_items) + len(output_registry_items):,} global commands indexed.</p>
+        <p class="command-status" role="status" aria-live="polite" aria-atomic="true" data-command-status>Ready. {len(local_panel_items):,} local panels and {len(route_registry_items) + len(output_registry_items):,} global commands indexed.</p>
       </section>
       {body_html}
     </main>
@@ -2316,6 +2316,27 @@ body {
   top: 12px;
 }
 
+.skip-link:focus-visible,
+.brand:focus-visible,
+.nav-link:focus-visible,
+.rail-command-link:focus-visible,
+.command-chip:focus-visible,
+.button:focus-visible {
+  outline: none;
+  color: var(--ink);
+  border-color: rgba(98, 201, 214, 0.44);
+  box-shadow:
+    0 0 0 1px rgba(98, 201, 214, 0.34),
+    0 0 0 4px rgba(98, 201, 214, 0.12);
+}
+
+.nav-link:focus-visible,
+.rail-command-link:focus-visible,
+.command-chip:focus-visible,
+.button:focus-visible {
+  background: rgba(98, 201, 214, 0.12);
+}
+
 .command-strip {
   position: sticky;
   top: 0;
@@ -2743,6 +2764,14 @@ body {
   border: 1px solid rgba(246, 165, 58, 0.24);
   border-radius: 12px;
   background: rgba(246, 165, 58, 0.08);
+}
+
+.command-input-wrap:focus-within {
+  border-color: rgba(98, 201, 214, 0.44);
+  background: rgba(98, 201, 214, 0.08);
+  box-shadow:
+    0 0 0 1px rgba(98, 201, 214, 0.28),
+    inset 0 0 0 1px rgba(98, 201, 214, 0.08);
 }
 
 .command-prefix {

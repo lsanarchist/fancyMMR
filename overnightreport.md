@@ -132,6 +132,74 @@
 - This note is again written before the commit/push step so the code change can stay in one clean task-scoped commit
 - Any push or remote-log limitation is reported in the terminal summary for this run
 
+## 2026-03-27 07:23:30 CET (+0100)
+
+- Run timing note: this entry starts after the previous note at `2026-03-27 07:16:40 CET (+0100)` and records the next quality-only pass
+- Intent: improve the shell's keyboard focus clarity and assistive-tech status semantics without changing analytics, dataset generation, or publication logic
+
+### What I looked for this time
+
+- Another delivery-quality gap in the terminal shell that affects real use, not just internal code structure
+- A Pages-safe accessibility improvement that works well with the terminal aesthetic instead of fighting it
+- A change that strengthens keyboard operation and screen-reader feedback without widening the business logic surface
+
+### External research used
+
+- I checked current guidance around visible keyboard focus and keyboard accessibility so the shell would stop relying on incidental browser defaults
+- The main references for this pass were:
+  - MDN on `:focus-visible`
+  - MDN keyboard accessibility guidance
+
+### Main finding from this pass
+
+- The shell already had keyboard navigation features, but several core interactive controls still did not have a deliberate terminal-grade focus treatment
+- More importantly, the command input suppressed the native outline without replacing it with an explicit focus state on the surrounding command surface
+- The live jump-palette status also used `aria-live`, but it did not expose the more explicit `role="status"` and `aria-atomic="true"` semantics
+
+### What I changed
+
+1. Updated [src/site_builder.py](/run/media/doomguy/Новый%20том/fancy/fancyMMR/src/site_builder.py) so the generated shell now includes explicit visible-focus treatment for:
+   - the skip link
+   - the brand/home link
+   - primary nav links
+   - command-deck and route-registry links
+   - command chips
+   - action buttons
+2. Added a `:focus-within` state to the jump-palette input wrapper so the command input now has an intentional focus treatment even though the input itself suppresses the default outline
+3. Upgraded the jump-palette live status markup so it now emits:
+   - `role="status"`
+   - `aria-live="polite"`
+   - `aria-atomic="true"`
+4. Regenerated the static Pages outputs:
+   - [site/index.html](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/index.html)
+   - [site/methodology.html](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/methodology.html)
+   - [site/data.html](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/data.html)
+   - [site/assets/site.css](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/assets/site.css)
+5. Expanded [tests/test_build_site.py](/run/media/doomguy/Новый%20том/fancy/fancyMMR/tests/test_build_site.py) so the focus-visible CSS and explicit status semantics are now part of the site contract
+
+### Why this refactor is safe
+
+- It does not touch fetching, parsing, normalization, validation, aggregation, promotion, or published metrics
+- It only improves the usability and semantic clarity of the existing static operator shell
+- It remains fully GitHub-Pages-safe and deterministic
+
+### Verification
+
+- `python -m py_compile src/site_builder.py tests/test_build_site.py`
+- `python src/build_site.py`
+- `python -m pytest tests/test_build_site.py -q` -> `3 passed`
+- `python -m pytest` -> `46 passed`
+
+### Honest remaining gaps
+
+- This still does not solve the deeper Instantly truth-alignment problem because there is still no accessible live reconciliation surface, DB connector, Railway connector, or MCP resource available in this environment
+- So this pass improves shell delivery quality and accessibility, not external metric reconciliation
+
+### Note about push/log follow-up
+
+- This note is again written before the commit/push step so the code change can stay in one clean task-scoped commit
+- Any push or remote-log limitation is reported in the terminal summary for this run
+
 ## 2026-03-27 07:16:40 CET (+0100)
 
 - Run timing note: this entry starts after the previous note at `2026-03-27 07:09:28 CET (+0100)` and records the next quality-only pass

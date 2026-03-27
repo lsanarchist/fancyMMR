@@ -624,6 +624,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert staged_total_bytes in index_html
     assert fetch_failure_total_bytes in index_html
     assert "Jump palette" in index_html
+    assert 'class="command-status" role="status" aria-live="polite" aria-atomic="true" data-command-status' in index_html
     assert "GO / Overview" in index_html
     assert "GO / Data" in index_html
     assert "GO / Downloads" in index_html
@@ -807,6 +808,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "System brief" in data_html
     assert "Command deck" in data_html
     assert "Jump palette" in data_html
+    assert 'class="command-status" role="status" aria-live="polite" aria-atomic="true" data-command-status' in data_html
     assert "Route registry" in data_html
     assert "Hot outputs" in data_html
     assert "Publication outputs" in data_html
@@ -830,8 +832,15 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".workstation {" in site_css
     assert ".skip-link {" in site_css
     assert ".skip-link:focus {" in site_css
+    assert ".skip-link:focus-visible," in site_css
+    assert ".brand:focus-visible," in site_css
+    assert ".nav-link:focus-visible," in site_css
+    assert ".rail-command-link:focus-visible," in site_css
+    assert ".command-chip:focus-visible," in site_css
+    assert ".button:focus-visible {" in site_css
     assert ".command-strip {" in site_css
     assert ".command-input {" in site_css
+    assert ".command-input-wrap:focus-within {" in site_css
     assert "@media (prefers-reduced-motion: reduce)" in site_css
     assert "scroll-behavior: auto;" in site_css
     assert "transition-duration: 0.01ms !important;" in site_css
