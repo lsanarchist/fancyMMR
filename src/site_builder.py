@@ -73,6 +73,13 @@ def format_average_byte_count(total_bytes: int, item_count: int) -> str:
     return f"avg {format_byte_count(average_bytes)}"
 
 
+def format_byte_share(total_bytes: int, section_total_bytes: int) -> str:
+    if section_total_bytes <= 0:
+        return "0%"
+    share = (100 * total_bytes) / section_total_bytes
+    return f"{share:.0f}%"
+
+
 def format_delay_seconds(value: object) -> str:
     if value in (None, ""):
         return "n/a"
@@ -738,6 +745,7 @@ def output_registry_command_links_markup(command_items: list[dict[str, object]])
         item_bytes = item.get("bytes")
         if isinstance(item_bytes, int):
             format_bytes[item_format] += item_bytes
+    section_total_bytes = sum(format_bytes.values())
     active_format = None
     for item in command_items:
         item_format = str(item.get("format") or "").strip().lower() or "other"
@@ -748,6 +756,7 @@ def output_registry_command_links_markup(command_items: list[dict[str, object]])
                 f'<span class="rail-command-divider-count">{format_counts[item_format]:,}</span>'
                 f'<span class="rail-command-divider-bytes">{html.escape(format_byte_count(format_bytes[item_format]))}</span>'
                 f'<span class="rail-command-divider-average">{html.escape(format_average_byte_count(format_bytes[item_format], format_counts[item_format]))}</span>'
+                f'<span class="rail-command-divider-share">{html.escape(format_byte_share(format_bytes[item_format], section_total_bytes))}</span>'
                 "</div>"
             )
             active_format = item_format
@@ -2489,6 +2498,12 @@ body {
   font-size: 0.64rem;
   letter-spacing: 0.08em;
   color: var(--ink-soft);
+}
+
+.rail-command-divider-share {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  color: var(--accent);
 }
 
 .rail-command-group-title,

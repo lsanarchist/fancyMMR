@@ -233,6 +233,12 @@ body {
   color: var(--ink-soft);
 }
 
+.rail-command-divider-share {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
 .rail-command-group-title,
 .rail-command-group-empty {
   margin: 0;

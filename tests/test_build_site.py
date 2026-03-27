@@ -81,6 +81,13 @@ def format_average_byte_count(total_bytes: int, item_count: int) -> str:
     return f"avg {format_byte_count(average_bytes)}"
 
 
+def format_byte_share(total_bytes: int, section_total_bytes: int) -> str:
+    if section_total_bytes <= 0:
+        return "0%"
+    share = (100 * total_bytes) / section_total_bytes
+    return f"{share:.0f}%"
+
+
 def format_byte_totals(items: list[dict[str, object]]) -> dict[str, str]:
     totals: dict[str, int] = {}
     for artifact in items:
@@ -103,6 +110,21 @@ def format_average_byte_sizes(items: list[dict[str, object]]) -> dict[str, str]:
     return {
         artifact_format: format_average_byte_count(totals.get(artifact_format, 0), count)
         for artifact_format, count in counts.items()
+    }
+
+
+def format_byte_shares(items: list[dict[str, object]]) -> dict[str, str]:
+    totals: dict[str, int] = {}
+    section_total_bytes = 0
+    for artifact in items:
+        artifact_format = str(artifact.get("format") or "").strip().lower() or "other"
+        artifact_bytes = artifact.get("bytes")
+        if isinstance(artifact_bytes, int):
+            totals[artifact_format] = totals.get(artifact_format, 0) + artifact_bytes
+            section_total_bytes += artifact_bytes
+    return {
+        artifact_format: format_byte_share(total_bytes, section_total_bytes)
+        for artifact_format, total_bytes in totals.items()
     }
 
 
@@ -230,16 +252,25 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     publication_format_average_sizes = format_average_byte_sizes(
         manifest_generated_download_items(workspace, pipeline_manifest)
     )
+    publication_format_byte_shares = format_byte_shares(
+        manifest_generated_download_items(workspace, pipeline_manifest)
+    )
     staged_format_byte_totals = format_byte_totals(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"])
     )
     staged_format_average_sizes = format_average_byte_sizes(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"])
     )
+    staged_format_byte_shares = format_byte_shares(
+        list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"])
+    )
     fetch_failure_format_byte_totals = format_byte_totals(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
     )
     fetch_failure_format_average_sizes = format_average_byte_sizes(
+        list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
+    )
+    fetch_failure_format_byte_shares = format_byte_shares(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
     )
 
@@ -285,6 +316,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert publication_format_byte_totals["json"] in publication_output_section
     assert publication_format_average_sizes["csv"] in publication_output_section
     assert publication_format_average_sizes["json"] in publication_output_section
+    assert publication_format_byte_shares["csv"] in publication_output_section
+    assert publication_format_byte_shares["json"] in publication_output_section
     assert 'rail-command-divider-label">CSV<' in staged_output_section
     assert 'rail-command-divider-label">JSON<' in staged_output_section
     assert 'rail-command-divider-count">1<' in staged_output_section
@@ -293,6 +326,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert staged_format_byte_totals["json"] in staged_output_section
     assert staged_format_average_sizes["csv"] in staged_output_section
     assert staged_format_average_sizes["json"] in staged_output_section
+    assert staged_format_byte_shares["csv"] in staged_output_section
+    assert staged_format_byte_shares["json"] in staged_output_section
     assert_text_order(
         publication_output_section,
         [
@@ -429,6 +464,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".rail-command-divider-count {" in site_css
     assert ".rail-command-divider-bytes {" in site_css
     assert ".rail-command-divider-average {" in site_css
+    assert ".rail-command-divider-share {" in site_css
     assert ".rail-command-group-empty {" in site_css
     assert ".download-summary {" in site_css
     assert ".download-badge {" in site_css
@@ -515,6 +551,9 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
     )
     fetch_failure_format_average_sizes = format_average_byte_sizes(
+        list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
+    )
+    fetch_failure_format_byte_shares = format_byte_shares(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
     )
 
@@ -608,6 +647,8 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert fetch_failure_format_byte_totals["json"] in fetch_failure_output_section
     assert fetch_failure_format_average_sizes["html"] in fetch_failure_output_section
     assert fetch_failure_format_average_sizes["json"] in fetch_failure_output_section
+    assert fetch_failure_format_byte_shares["html"] in fetch_failure_output_section
+    assert fetch_failure_format_byte_shares["json"] in fetch_failure_output_section
     assert_text_order(
         fetch_failure_output_section,
         [
