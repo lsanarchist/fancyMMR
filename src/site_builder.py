@@ -325,6 +325,15 @@ def download_format_summary_badges_html(items: list[dict[str, object]]) -> str:
     )
 
 
+def download_total_bytes_badge_html(items: list[dict[str, object]]) -> str:
+    total_bytes = 0
+    for artifact in items:
+        artifact_bytes = artifact.get("bytes")
+        if isinstance(artifact_bytes, int):
+            total_bytes += artifact_bytes
+    return download_badge(format_byte_count(total_bytes), tone="meta")
+
+
 def copy_assets(
     *,
     publication_download_items: list[dict[str, object]],
@@ -668,6 +677,7 @@ def build_output_registry_sections(
                 "empty_message": empty_message,
                 "count_label": count_label(len(artifacts), "file"),
                 "format_badges_html": download_format_summary_badges_html(artifacts),
+                "byte_total_badge_html": download_total_bytes_badge_html(artifacts),
                 "items": global_output_command_items(artifacts),
             }
         )
@@ -698,6 +708,7 @@ def output_registry_sections_markup(output_registry_sections: list[dict[str, obj
         empty_message = str(section.get("empty_message") or "")
         count_text = str(section.get("count_label") or "0 files")
         format_badges_html = str(section.get("format_badges_html") or "")
+        byte_total_badge_html = str(section.get("byte_total_badge_html") or "")
         items = [
             item
             for item in section.get("items", [])
@@ -718,6 +729,7 @@ def output_registry_sections_markup(output_registry_sections: list[dict[str, obj
     <div class="rail-command-group-meta">
       {download_badge(count_text, tone="count")}
       {format_badges_html}
+      {byte_total_badge_html}
     </div>
   </div>
   {body_html}

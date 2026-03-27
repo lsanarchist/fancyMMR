@@ -52,6 +52,52 @@ def site_hashes(workspace: Path) -> dict[str, str]:
     }
 
 
+def format_byte_count(byte_count: int) -> str:
+    if byte_count == 1:
+        return "1 byte"
+    return f"{byte_count:,} bytes"
+
+
+def manifest_generated_download_total_bytes(workspace: Path, pipeline_manifest: dict[str, object]) -> int:
+    total_bytes = 0
+    seen_paths: set[str] = set()
+    for artifact in pipeline_manifest.get("generated_outputs", []):
+        if not isinstance(artifact, dict):
+            continue
+        path = str(artifact.get("path") or "")
+        if not path.startswith("data/"):
+            continue
+        if Path(path).suffix.lower() not in {".json", ".csv"}:
+            continue
+        artifact_path = workspace / path
+        if path in seen_paths or not artifact_path.exists():
+            continue
+        total_bytes += int(artifact.get("bytes") or artifact_path.stat().st_size)
+        seen_paths.add(path)
+
+    manifest_path = workspace / "data" / "pipeline_manifest.json"
+    if "data/pipeline_manifest.json" not in seen_paths and manifest_path.exists():
+        total_bytes += manifest_path.stat().st_size
+    return total_bytes
+
+
+def source_pipeline_artifact_total_bytes(
+    pipeline_manifest: dict[str, object],
+    artifact_key: str,
+) -> int:
+    source_pipeline_diagnostics = pipeline_manifest.get("source_pipeline_diagnostics", {})
+    if not isinstance(source_pipeline_diagnostics, dict):
+        return 0
+    total_bytes = 0
+    for artifact in source_pipeline_diagnostics.get(artifact_key, []):
+        if not isinstance(artifact, dict):
+            continue
+        artifact_bytes = artifact.get("bytes")
+        if isinstance(artifact_bytes, int):
+            total_bytes += artifact_bytes
+    return total_bytes
+
+
 def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None:
     workspace = prepare_workspace(tmp_path)
 
@@ -90,6 +136,13 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     site_css = (site_root / "assets" / "site.css").read_text(encoding="utf-8")
     site_js = (site_root / "assets" / "site.js").read_text(encoding="utf-8")
     pipeline_manifest = json.loads((site_root / "data" / "pipeline_manifest.json").read_text(encoding="utf-8"))
+    publication_total_bytes = format_byte_count(manifest_generated_download_total_bytes(workspace, pipeline_manifest))
+    staged_total_bytes = format_byte_count(
+        source_pipeline_artifact_total_bytes(pipeline_manifest, "downloadable_staged_artifacts")
+    )
+    fetch_failure_total_bytes = format_byte_count(
+        source_pipeline_artifact_total_bytes(pipeline_manifest, "downloadable_fetch_failure_artifacts")
+    )
 
     assert "visible public sample" in index_html.lower()
     assert 'href="methodology.html"' in index_html
@@ -111,6 +164,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "5 CSV" in index_html
     assert "5 JSON" in index_html
     assert "1 CSV" in index_html
+    assert publication_total_bytes in index_html
+    assert staged_total_bytes in index_html
+    assert fetch_failure_total_bytes in index_html
     assert "Jump palette" in index_html
     assert "GO / Overview" in index_html
     assert "GO / Data" in index_html
@@ -214,7 +270,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "5 JSON" in data_html
     assert "1 CSV" in data_html
     assert "0 files" in data_html
-    assert "0 bytes" in data_html
+    assert publication_total_bytes in data_html
+    assert staged_total_bytes in data_html
+    assert fetch_failure_total_bytes in data_html
     assert "--bg: #05070a" in site_css
     assert ".workstation {" in site_css
     assert ".command-strip {" in site_css
@@ -301,6 +359,9 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     site_root = workspace / "site"
     data_html = (site_root / "data.html").read_text(encoding="utf-8")
     pipeline_manifest = json.loads((site_root / "data" / "pipeline_manifest.json").read_text(encoding="utf-8"))
+    fetch_failure_total_bytes = format_byte_count(
+        source_pipeline_artifact_total_bytes(pipeline_manifest, "downloadable_fetch_failure_artifacts")
+    )
 
     assert (site_root / "data" / "fetch_failures" / "category--ai.json").exists()
     assert (site_root / "data" / "fetch_failures" / "category--ai.html").exists()
@@ -382,6 +443,7 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "3 files" in data_html
     assert "2 JSON" in data_html
     assert "1 HTML" in data_html
+    assert fetch_failure_total_bytes in data_html
     for artifact in pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"]:
         assert artifact["site_path"] in data_html
         assert artifact["sha256"] in data_html
