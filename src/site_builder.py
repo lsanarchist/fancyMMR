@@ -805,10 +805,11 @@ def build_data_page(
         fetch_failure_sources = source_pipeline_diagnostics.get("fetch_failure_sources", [])
         if fetch_failure_sources:
             diagnostics_fetch_failure_section = render_table(
-                ["Source page", "Status", "Error", "HTML snapshot", "Message"],
+                ["Source page", "Recorded at", "Status", "Error", "HTML snapshot", "Message"],
                 [
                     [
                         f'<a href="{html.escape(row["source_url"], quote=True)}">{html.escape(row["source_url"])}</a>',
+                        html.escape(str(row.get("recorded_at") or "n/a")),
                         html.escape(str(row.get("status_code") if row.get("status_code") is not None else "n/a")),
                         html.escape(str(row.get("error_type") or "unknown")),
                         html.escape("yes" if row.get("has_html_snapshot") else "no"),
@@ -820,6 +821,19 @@ def build_data_page(
         else:
             diagnostics_fetch_failure_section = (
                 '<p class="section-note">No staged source fetch failures are currently recorded for the active manifest.</p>'
+            )
+        fetch_failure_earliest_recorded_at = source_pipeline_diagnostics.get("fetch_failure_earliest_recorded_at")
+        fetch_failure_latest_recorded_at = source_pipeline_diagnostics.get("fetch_failure_latest_recorded_at")
+        if fetch_failure_sources and fetch_failure_earliest_recorded_at and fetch_failure_latest_recorded_at:
+            diagnostics_fetch_failure_timing_section = (
+                "<h3>Fetch-failure timing</h3>"
+                f'<p class="section-note">Earliest recorded fetch failure: <strong>{html.escape(str(fetch_failure_earliest_recorded_at))}</strong>. '
+                f'Latest recorded fetch failure: <strong>{html.escape(str(fetch_failure_latest_recorded_at))}</strong>.</p>'
+            )
+        else:
+            diagnostics_fetch_failure_timing_section = (
+                "<h3>Fetch-failure timing</h3>"
+                '<p class="section-note">No staged fetch-failure timing is currently recorded for the active manifest.</p>'
             )
         fetch_failure_error_type_counts = source_pipeline_diagnostics.get("fetch_failure_error_type_counts", {}) or {}
         fetch_failure_status_code_counts = source_pipeline_diagnostics.get("fetch_failure_status_code_counts", {}) or {}
@@ -900,6 +914,7 @@ def build_data_page(
             + diagnostics_table
             + diagnostics_failure_section
             + diagnostics_fetch_failure_section
+            + diagnostics_fetch_failure_timing_section
             + diagnostics_fetch_failure_breakdown_section
             + diagnostics_coverage_section
             + (

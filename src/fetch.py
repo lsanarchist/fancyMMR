@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import hashlib
 import json
 from dataclasses import dataclass
@@ -66,6 +67,10 @@ def _build_headers(policy: FetchPolicy, *, accept: str) -> dict[str, str]:
 
 def _sha256_bytes(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
+
+
+def _utc_now_isoformat() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 def _relative_to_root(path: Path, paths: FetchPaths) -> str:
@@ -136,6 +141,7 @@ def save_failure_snapshot(
     response_body: bytes | None = None,
     response_status: int | None = None,
     robots: dict[str, object] | None = None,
+    recorded_at: str | None = None,
 ) -> dict[str, object]:
     _ensure_fetch_dirs(paths)
     html_path = _failure_html_path(paths, source)
@@ -150,6 +156,7 @@ def save_failure_snapshot(
         "url": source.url,
         "parser_strategy": source.parser_strategy,
         "source_group": source.source_group,
+        "recorded_at": recorded_at or _utc_now_isoformat(),
         "error_type": error.__class__.__name__,
         "message": str(error),
         "status_code": response_status,

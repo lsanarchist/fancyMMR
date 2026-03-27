@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from hashlib import file_digest
 import json
 from pathlib import Path
@@ -250,6 +251,30 @@ def _count_values(
     return dict(sorted(counts.items()))
 
 
+def _parse_timestamp(value: object) -> datetime | None:
+    if value in (None, ""):
+        return None
+    try:
+        return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+
+
+def _timestamp_bounds(
+    rows: list[dict[str, object]],
+    key: str,
+) -> tuple[str | None, str | None]:
+    parsed_rows = [
+        (parsed_timestamp, str(row.get(key)))
+        for row in rows
+        if (parsed_timestamp := _parse_timestamp(row.get(key))) is not None
+    ]
+    if not parsed_rows:
+        return None, None
+    parsed_rows.sort(key=lambda item: item[0])
+    return parsed_rows[0][1], parsed_rows[-1][1]
+
+
 def _artifact_download_record(
     *,
     relative_path: str,
@@ -352,6 +377,7 @@ def _load_fetch_failure_sources(
                 "parser_strategy": snapshot.get("parser_strategy") or source_metadata.get("parser_strategy"),
                 "source_group": snapshot.get("source_group") or source_metadata.get("source_group"),
                 "category_label": source_metadata.get("category_label"),
+                "recorded_at": snapshot.get("recorded_at"),
                 "error_type": str(snapshot.get("error_type") or ""),
                 "message": str(snapshot.get("message") or ""),
                 "status_code": snapshot.get("status_code"),
@@ -435,6 +461,8 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "failed_detail_page_count": None,
         "fetch_failure_source_count": None,
         "fetch_failure_error_type_counts": None,
+        "fetch_failure_earliest_recorded_at": None,
+        "fetch_failure_latest_recorded_at": None,
         "fetch_failure_status_code_counts": None,
         "detail_parse_failure_source_count": None,
         "detail_parse_status_counts": None,
@@ -507,6 +535,10 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
     }
     fetch_failure_sources = _load_fetch_failure_sources(selected_sources_by_id)
     downloadable_fetch_failure_artifacts = _build_downloadable_fetch_failure_artifacts(fetch_failure_sources)
+    fetch_failure_earliest_recorded_at, fetch_failure_latest_recorded_at = _timestamp_bounds(
+        fetch_failure_sources,
+        "recorded_at",
+    )
     source_pages = []
     for source_output in run_manifest.get("per_source_outputs", []):
         source_id = str(source_output["source_id"])
@@ -588,6 +620,8 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
                 "error_type",
                 none_label="unknown",
             ),
+            "fetch_failure_earliest_recorded_at": fetch_failure_earliest_recorded_at,
+            "fetch_failure_latest_recorded_at": fetch_failure_latest_recorded_at,
             "fetch_failure_status_code_counts": _count_values(
                 fetch_failure_sources,
                 "status_code",
@@ -720,6 +754,12 @@ def write_pipeline_manifest(
             "failed_detail_page_count": source_pipeline_diagnostics_report["failed_detail_page_count"],
             "fetch_failure_source_count": source_pipeline_diagnostics_report["fetch_failure_source_count"],
             "fetch_failure_error_type_counts": source_pipeline_diagnostics_report["fetch_failure_error_type_counts"],
+            "fetch_failure_earliest_recorded_at": source_pipeline_diagnostics_report[
+                "fetch_failure_earliest_recorded_at"
+            ],
+            "fetch_failure_latest_recorded_at": source_pipeline_diagnostics_report[
+                "fetch_failure_latest_recorded_at"
+            ],
             "fetch_failure_status_code_counts": source_pipeline_diagnostics_report["fetch_failure_status_code_counts"],
             "detail_parse_failure_source_count": source_pipeline_diagnostics_report["detail_parse_failure_source_count"],
             "detail_parse_status_counts": source_pipeline_diagnostics_report["detail_parse_status_counts"],

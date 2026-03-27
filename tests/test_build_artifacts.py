@@ -126,6 +126,8 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert source_pipeline_diagnostics["failed_detail_page_count"] is None
     assert source_pipeline_diagnostics["fetch_failure_source_count"] is None
     assert source_pipeline_diagnostics["fetch_failure_error_type_counts"] is None
+    assert source_pipeline_diagnostics["fetch_failure_earliest_recorded_at"] is None
+    assert source_pipeline_diagnostics["fetch_failure_latest_recorded_at"] is None
     assert source_pipeline_diagnostics["fetch_failure_status_code_counts"] is None
     assert source_pipeline_diagnostics["detail_parse_failure_source_count"] is None
     assert source_pipeline_diagnostics["detail_parse_status_counts"] is None
@@ -163,6 +165,8 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert pipeline_manifest["source_pipeline_diagnostics"]["available"] is False
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_count"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_error_type_counts"] is None
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_earliest_recorded_at"] is None
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_latest_recorded_at"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"] == []
 
@@ -205,6 +209,8 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert diagnostics["failed_detail_page_count"] == 0
     assert diagnostics["fetch_failure_source_count"] == 0
     assert diagnostics["fetch_failure_error_type_counts"] == {}
+    assert diagnostics["fetch_failure_earliest_recorded_at"] is None
+    assert diagnostics["fetch_failure_latest_recorded_at"] is None
     assert diagnostics["fetch_failure_status_code_counts"] == {}
     assert diagnostics["detail_parse_failure_source_count"] == 0
     assert diagnostics["detail_parse_status_counts"]["not_requested"] == 852
@@ -240,6 +246,8 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert pipeline_manifest["source_pipeline_diagnostics"]["failed_detail_page_count"] == 0
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_count"] == 0
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_error_type_counts"] == {}
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_earliest_recorded_at"] is None
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_latest_recorded_at"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] == {}
     assert pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"] == []
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_failure_source_count"] == 0
@@ -274,6 +282,7 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                 "url": "https://trustmrr.com/category/ai",
                 "parser_strategy": "trustmrr_category_listing",
                 "source_group": "category",
+                "recorded_at": "2026-03-27T00:00:00Z",
                 "error_type": "HTTPError",
                 "message": "HTTP Error 500: server exploded",
                 "status_code": 500,
@@ -294,6 +303,7 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
     assert diagnostics["fetch_failure_sources"] == [
         {
             "category_label": "AI",
+            "recorded_at": "2026-03-27T00:00:00Z",
             "error_type": "HTTPError",
             "has_html_snapshot": True,
             "html_snapshot_path": "data/fetch_failures/category--ai.html",
@@ -307,8 +317,12 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
     ]
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_count"] == 1
     assert diagnostics["fetch_failure_error_type_counts"] == {"HTTPError": 1}
+    assert diagnostics["fetch_failure_earliest_recorded_at"] == "2026-03-27T00:00:00Z"
+    assert diagnostics["fetch_failure_latest_recorded_at"] == "2026-03-27T00:00:00Z"
     assert diagnostics["fetch_failure_status_code_counts"] == {"500": 1}
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_error_type_counts"] == {"HTTPError": 1}
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_earliest_recorded_at"] == "2026-03-27T00:00:00Z"
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_latest_recorded_at"] == "2026-03-27T00:00:00Z"
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] == {"500": 1}
     assert [
         artifact["path"] for artifact in diagnostics["downloadable_fetch_failure_artifacts"]

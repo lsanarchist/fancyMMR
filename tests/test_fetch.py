@@ -159,6 +159,7 @@ def test_fetch_source_saves_html_snapshot_on_http_error(tmp_path: Path) -> None:
     assert failure_meta.exists()
     assert failure_html.exists()
     snapshot = json.loads(failure_meta.read_text(encoding="utf-8"))
+    assert snapshot["recorded_at"].endswith("Z")
     assert snapshot["status_code"] == 500
     assert snapshot["html_snapshot_path"] == "data/fetch_failures/category--ai.html"
     assert "server exploded" in snapshot["message"]
@@ -181,9 +182,16 @@ def test_save_failure_snapshot_without_html_body_writes_metadata(tmp_path: Path)
         source_group="special-category",
     )
 
-    snapshot = save_failure_snapshot(source, error=RuntimeError("boom"), paths=paths, robots={"allowed": False})
+    snapshot = save_failure_snapshot(
+        source,
+        error=RuntimeError("boom"),
+        paths=paths,
+        robots={"allowed": False},
+        recorded_at="2026-03-27T00:00:00Z",
+    )
 
     assert snapshot["html_snapshot_path"] is None
+    assert snapshot["recorded_at"] == "2026-03-27T00:00:00Z"
     failure_meta = tmp_path / "data" / "fetch_failures" / "special-category--openclaw.json"
     assert failure_meta.exists()
 
