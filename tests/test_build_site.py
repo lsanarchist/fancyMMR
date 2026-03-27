@@ -139,10 +139,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "No staged fetch-failure parser-strategy context is currently recorded for the active manifest." in data_html
     assert "No staged fetch-failure severity context is currently recorded for the active manifest." in data_html
     assert "No staged fetch-failure retryability context is currently recorded for the active manifest." in data_html
-    assert (
-        "No staged fetch-failure next-action recommendations are currently recorded for the active manifest."
-        in data_html
-    )
+    assert "No staged fetch-failure next-action recommendations or source lists are currently recorded for the active manifest." in data_html
     assert "No staged fetch-failure snapshot-availability context is currently recorded for the active manifest." in data_html
     assert "No staged fetch-failure delay context is currently recorded for the active manifest." in data_html
     assert "No staged fetch-failure robots context is currently recorded for the active manifest." in data_html
@@ -232,6 +229,8 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "Fetch-failure severity" in data_html
     assert "Fetch-failure retryability" in data_html
     assert "Fetch-failure next actions" in data_html
+    assert "Affected source labels" in data_html
+    assert "Affected source pages" in data_html
     assert "Fetch-failure snapshot availability" in data_html
     assert "Fetch-failure delay context" in data_html
     assert "Fetch-failure robots context" in data_html
@@ -254,6 +253,8 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "retryable" in data_html
     assert "respect_robots_policy" in data_html
     assert "retry_after_backoff" in data_html
+    assert data_html.count("https://trustmrr.com/category/ai") >= 2
+    assert data_html.count("https://trustmrr.com/category/sales") >= 2
     assert ">available<" in data_html
     assert ">missing<" in data_html
     assert "disallowed" in data_html

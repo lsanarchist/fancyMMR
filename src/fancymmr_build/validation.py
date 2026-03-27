@@ -573,6 +573,41 @@ def _build_downloadable_fetch_failure_artifacts(
     return artifacts
 
 
+def _group_fetch_failure_sources_by_next_action(
+    fetch_failure_sources: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    grouped_sources: dict[str, list[dict[str, str]]] = {}
+    for failure_source in fetch_failure_sources:
+        failure_next_action = str(failure_source.get("failure_next_action") or "unknown")
+        source_id = str(failure_source.get("source_id") or "")
+        grouped_sources.setdefault(failure_next_action, []).append(
+            {
+                "source_id": source_id,
+                "source_label": str(failure_source.get("source_label") or source_id or "unknown"),
+                "source_url": str(failure_source.get("source_url") or ""),
+            }
+        )
+
+    grouped_rows: list[dict[str, object]] = []
+    for failure_next_action in sorted(grouped_sources):
+        sources = sorted(
+            grouped_sources[failure_next_action],
+            key=lambda source: (
+                source["source_label"],
+                source["source_url"],
+                source["source_id"],
+            ),
+        )
+        grouped_rows.append(
+            {
+                "failure_next_action": failure_next_action,
+                "source_count": len(sources),
+                "sources": sources,
+            }
+        )
+    return grouped_rows
+
+
 def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[str, object]:
     publication_input = read_publication_input()
     report_paths = {
@@ -638,6 +673,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "failing_error_check_ids": [],
         "downloadable_fetch_failure_artifacts": [],
         "fetch_failure_sources": [],
+        "fetch_failure_next_action_source_lists": [],
         "detail_parse_failure_sources": [],
         "downloadable_staged_artifacts": [],
         "source_pages": [],
@@ -692,6 +728,9 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         str(source["source_id"]): source for source in detail_field_coverage.get("sources", [])
     }
     fetch_failure_sources = _load_fetch_failure_sources(selected_sources_by_id)
+    fetch_failure_next_action_source_lists = _group_fetch_failure_sources_by_next_action(
+        fetch_failure_sources
+    )
     downloadable_fetch_failure_artifacts = _build_downloadable_fetch_failure_artifacts(fetch_failure_sources)
     fetch_failure_earliest_recorded_at, fetch_failure_latest_recorded_at = _timestamp_bounds(
         fetch_failure_sources,
@@ -876,6 +915,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
             ],
             "downloadable_fetch_failure_artifacts": downloadable_fetch_failure_artifacts,
             "fetch_failure_sources": fetch_failure_sources,
+            "fetch_failure_next_action_source_lists": fetch_failure_next_action_source_lists,
             "detail_parse_failure_sources": detail_parse_failure_sources,
             "downloadable_staged_artifacts": downloadable_staged_artifacts,
             "source_pages": source_pages,
@@ -1014,6 +1054,9 @@ def write_pipeline_manifest(
                 "fetch_failure_next_action_counts"
             ],
             "fetch_failure_status_code_counts": source_pipeline_diagnostics_report["fetch_failure_status_code_counts"],
+            "fetch_failure_next_action_source_lists": source_pipeline_diagnostics_report[
+                "fetch_failure_next_action_source_lists"
+            ],
             "detail_parse_failure_source_count": source_pipeline_diagnostics_report["detail_parse_failure_source_count"],
             "detail_parse_status_counts": source_pipeline_diagnostics_report["detail_parse_status_counts"],
             "detail_field_population_counts": source_pipeline_diagnostics_report["detail_field_population_counts"],
