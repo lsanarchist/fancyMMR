@@ -92,6 +92,7 @@
   "fetch_failure_max_effective_delay_seconds": null,
   "fetch_failure_min_effective_delay_seconds": null,
   "fetch_failure_parser_strategy_counts": {},
+  "fetch_failure_retryability_counts": {},
   "fetch_failure_robots_policy_counts": {},
   "fetch_failure_robots_status_code_counts": {},
   "fetch_failure_severity_counts": {},

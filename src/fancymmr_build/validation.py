@@ -349,6 +349,24 @@ def _fetch_failure_severity_label(
     return "unknown"
 
 
+def _fetch_failure_retryability_label(
+    *,
+    failure_severity: object,
+    status_code: object,
+) -> str:
+    if failure_severity == "policy_blocked":
+        return "do_not_retry"
+
+    parsed_status_code = _status_code_int(status_code)
+    if parsed_status_code == 429:
+        return "retryable"
+
+    if failure_severity in {"server_error", "transport_error"}:
+        return "retryable"
+
+    return "manual_review"
+
+
 def _artifact_download_record(
     *,
     relative_path: str,
@@ -459,6 +477,11 @@ def _load_fetch_failure_sources(
         has_html_snapshot = bool(snapshot.get("html_snapshot_path"))
         error_type = str(snapshot.get("error_type") or "")
         status_code = snapshot.get("status_code")
+        failure_severity = _fetch_failure_severity_label(
+            robots_policy=robots_policy,
+            status_code=status_code,
+            error_type=error_type,
+        )
         failure_sources.append(
             {
                 "source_id": source_id,
@@ -475,10 +498,10 @@ def _load_fetch_failure_sources(
                 "robots_status_code": robots_status_code,
                 "robots_url": robots_url,
                 "robots_effective_delay_seconds": robots_effective_delay_seconds,
-                "failure_severity": _fetch_failure_severity_label(
-                    robots_policy=robots_policy,
+                "failure_severity": failure_severity,
+                "failure_retryability": _fetch_failure_retryability_label(
+                    failure_severity=failure_severity,
                     status_code=status_code,
-                    error_type=error_type,
                 ),
                 "has_html_snapshot": has_html_snapshot,
                 "html_snapshot_availability": _snapshot_availability_label(has_html_snapshot),
@@ -573,6 +596,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "fetch_failure_parser_strategy_counts": None,
         "fetch_failure_html_snapshot_availability_counts": None,
         "fetch_failure_severity_counts": None,
+        "fetch_failure_retryability_counts": None,
         "fetch_failure_status_code_counts": None,
         "detail_parse_failure_source_count": None,
         "detail_parse_status_counts": None,
@@ -781,6 +805,11 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
                 "failure_severity",
                 none_label="unknown",
             ),
+            "fetch_failure_retryability_counts": _count_values(
+                fetch_failure_sources,
+                "failure_retryability",
+                none_label="unknown",
+            ),
             "fetch_failure_status_code_counts": _count_values(
                 fetch_failure_sources,
                 "status_code",
@@ -948,6 +977,9 @@ def write_pipeline_manifest(
             ],
             "fetch_failure_severity_counts": source_pipeline_diagnostics_report[
                 "fetch_failure_severity_counts"
+            ],
+            "fetch_failure_retryability_counts": source_pipeline_diagnostics_report[
+                "fetch_failure_retryability_counts"
             ],
             "fetch_failure_status_code_counts": source_pipeline_diagnostics_report["fetch_failure_status_code_counts"],
             "detail_parse_failure_source_count": source_pipeline_diagnostics_report["detail_parse_failure_source_count"],

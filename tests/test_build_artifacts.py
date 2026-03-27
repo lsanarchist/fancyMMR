@@ -138,6 +138,7 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert source_pipeline_diagnostics["fetch_failure_parser_strategy_counts"] is None
     assert source_pipeline_diagnostics["fetch_failure_html_snapshot_availability_counts"] is None
     assert source_pipeline_diagnostics["fetch_failure_severity_counts"] is None
+    assert source_pipeline_diagnostics["fetch_failure_retryability_counts"] is None
     assert source_pipeline_diagnostics["fetch_failure_status_code_counts"] is None
     assert source_pipeline_diagnostics["detail_parse_failure_source_count"] is None
     assert source_pipeline_diagnostics["detail_parse_status_counts"] is None
@@ -187,6 +188,7 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_parser_strategy_counts"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_html_snapshot_availability_counts"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_severity_counts"] is None
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_retryability_counts"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"] == []
 
@@ -241,6 +243,7 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert diagnostics["fetch_failure_parser_strategy_counts"] == {}
     assert diagnostics["fetch_failure_html_snapshot_availability_counts"] == {}
     assert diagnostics["fetch_failure_severity_counts"] == {}
+    assert diagnostics["fetch_failure_retryability_counts"] == {}
     assert diagnostics["fetch_failure_status_code_counts"] == {}
     assert diagnostics["detail_parse_failure_source_count"] == 0
     assert diagnostics["detail_parse_status_counts"]["not_requested"] == 852
@@ -288,6 +291,7 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_parser_strategy_counts"] == {}
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_html_snapshot_availability_counts"] == {}
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_severity_counts"] == {}
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_retryability_counts"] == {}
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] == {}
     assert pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"] == []
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_failure_source_count"] == 0
@@ -375,6 +379,7 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
             "category_label": "AI",
             "recorded_at": "2026-03-27T00:00:00Z",
             "error_type": "HTTPError",
+            "failure_retryability": "retryable",
             "failure_severity": "server_error",
             "has_html_snapshot": True,
             "html_snapshot_availability": "available",
@@ -395,6 +400,7 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
             "category_label": "Sales",
             "recorded_at": "2026-03-27T00:05:00Z",
             "error_type": "FetchError",
+            "failure_retryability": "do_not_retry",
             "failure_severity": "policy_blocked",
             "has_html_snapshot": False,
             "html_snapshot_availability": "missing",
@@ -426,6 +432,7 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
     assert diagnostics["fetch_failure_parser_strategy_counts"] == {"trustmrr_category_listing": 2}
     assert diagnostics["fetch_failure_html_snapshot_availability_counts"] == {"available": 1, "missing": 1}
     assert diagnostics["fetch_failure_severity_counts"] == {"policy_blocked": 1, "server_error": 1}
+    assert diagnostics["fetch_failure_retryability_counts"] == {"do_not_retry": 1, "retryable": 1}
     assert diagnostics["fetch_failure_status_code_counts"] == {"500": 1, "n/a": 1}
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_error_type_counts"] == {
         "FetchError": 1,
@@ -459,6 +466,10 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_severity_counts"] == {
         "policy_blocked": 1,
         "server_error": 1,
+    }
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_retryability_counts"] == {
+        "do_not_retry": 1,
+        "retryable": 1,
     }
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] == {
         "500": 1,
