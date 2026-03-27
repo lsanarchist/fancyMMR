@@ -821,6 +821,37 @@ def build_data_page(
             diagnostics_fetch_failure_section = (
                 '<p class="section-note">No staged source fetch failures are currently recorded for the active manifest.</p>'
             )
+        fetch_failure_error_type_counts = source_pipeline_diagnostics.get("fetch_failure_error_type_counts", {}) or {}
+        fetch_failure_status_code_counts = source_pipeline_diagnostics.get("fetch_failure_status_code_counts", {}) or {}
+        if fetch_failure_sources:
+            diagnostics_fetch_failure_breakdown_section = (
+                "<h3>Fetch-failure causes</h3>"
+                + render_table(
+                    ["Error type", "Affected sources"],
+                    [
+                        [
+                            html.escape(str(error_type)),
+                            html.escape(f"{int(count):,}"),
+                        ]
+                        for error_type, count in fetch_failure_error_type_counts.items()
+                    ],
+                )
+                + render_table(
+                    ["Status code", "Affected sources"],
+                    [
+                        [
+                            html.escape(str(status_code)),
+                            html.escape(f"{int(count):,}"),
+                        ]
+                        for status_code, count in fetch_failure_status_code_counts.items()
+                    ],
+                )
+            )
+        else:
+            diagnostics_fetch_failure_breakdown_section = (
+                "<h3>Fetch-failure causes</h3>"
+                '<p class="section-note">No staged fetch-failure causes are currently recorded for the active manifest.</p>'
+            )
         coverage_rows = [
             row
             for row in sorted(
@@ -869,6 +900,7 @@ def build_data_page(
             + diagnostics_table
             + diagnostics_failure_section
             + diagnostics_fetch_failure_section
+            + diagnostics_fetch_failure_breakdown_section
             + diagnostics_coverage_section
             + (
                 f'<p class="section-note">Staged validation: <strong>{html.escape(status_label(str(source_pipeline_diagnostics["validation_status"])))}</strong>. '

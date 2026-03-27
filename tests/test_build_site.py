@@ -118,11 +118,13 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Source-pipeline diagnostics" in data_html
     assert "Detail-page staging" in data_html
     assert "Fetch failures" in data_html
+    assert "Fetch-failure causes" in data_html
     assert "Detail parse failures" in data_html
     assert "Detail-field coverage" in data_html
     assert "staged provenance" in data_html
     assert "No staged fetch-failure snapshot downloads are currently attached to the active manifest." in data_html
     assert "No staged source fetch failures are currently recorded for the active manifest." in data_html
+    assert "No staged fetch-failure causes are currently recorded for the active manifest." in data_html
     assert "No source pages in the active manifest currently report staged detail parse failures." in data_html
     assert "No staged detail rows in the active manifest currently populate the shared detail fields." in data_html
     assert "Staged run manifest" in data_html
@@ -170,6 +172,9 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert (site_root / "data" / "fetch_failures" / "category--ai.html").exists()
     assert "Fetch failure metadata - AI" in data_html
     assert "Fetch failure HTML snapshot - AI" in data_html
+    assert "Fetch-failure causes" in data_html
+    assert "HTTPError" in data_html
+    assert ">500<" in data_html
     assert "data/fetch_failures/category--ai.json" in data_html
     assert "data/fetch_failures/category--ai.html" in data_html
     for artifact in pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"]:

@@ -125,6 +125,8 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert source_pipeline_diagnostics["detail_page_target_count"] is None
     assert source_pipeline_diagnostics["failed_detail_page_count"] is None
     assert source_pipeline_diagnostics["fetch_failure_source_count"] is None
+    assert source_pipeline_diagnostics["fetch_failure_error_type_counts"] is None
+    assert source_pipeline_diagnostics["fetch_failure_status_code_counts"] is None
     assert source_pipeline_diagnostics["detail_parse_failure_source_count"] is None
     assert source_pipeline_diagnostics["detail_parse_status_counts"] is None
     assert source_pipeline_diagnostics["detail_field_population_counts"] is None
@@ -160,6 +162,8 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert pipeline_manifest["validation"]["source_pipeline_diagnostics_report_path"] == "data/source_pipeline_diagnostics.json"
     assert pipeline_manifest["source_pipeline_diagnostics"]["available"] is False
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_count"] is None
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_error_type_counts"] is None
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"] == []
 
 
@@ -200,6 +204,8 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert diagnostics["parsed_detail_page_count"] == 0
     assert diagnostics["failed_detail_page_count"] == 0
     assert diagnostics["fetch_failure_source_count"] == 0
+    assert diagnostics["fetch_failure_error_type_counts"] == {}
+    assert diagnostics["fetch_failure_status_code_counts"] == {}
     assert diagnostics["detail_parse_failure_source_count"] == 0
     assert diagnostics["detail_parse_status_counts"]["not_requested"] == 852
     assert diagnostics["detail_parse_status_counts"]["parsed"] == 0
@@ -233,6 +239,8 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert pipeline_manifest["source_pipeline_diagnostics"]["path"] == "data/source_pipeline_diagnostics.json"
     assert pipeline_manifest["source_pipeline_diagnostics"]["failed_detail_page_count"] == 0
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_count"] == 0
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_error_type_counts"] == {}
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] == {}
     assert pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"] == []
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_failure_source_count"] == 0
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_status_counts"]["not_requested"] == 852
@@ -298,6 +306,10 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
         }
     ]
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_count"] == 1
+    assert diagnostics["fetch_failure_error_type_counts"] == {"HTTPError": 1}
+    assert diagnostics["fetch_failure_status_code_counts"] == {"500": 1}
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_error_type_counts"] == {"HTTPError": 1}
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] == {"500": 1}
     assert [
         artifact["path"] for artifact in diagnostics["downloadable_fetch_failure_artifacts"]
     ] == [

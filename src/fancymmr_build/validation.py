@@ -236,6 +236,20 @@ def _int_dict(value: dict[str, object] | None) -> dict[str, int]:
     return {str(key): int(count) for key, count in (value or {}).items()}
 
 
+def _count_values(
+    rows: list[dict[str, object]],
+    key: str,
+    *,
+    none_label: str,
+) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        value = row.get(key)
+        count_key = none_label if value is None else str(value)
+        counts[count_key] = counts.get(count_key, 0) + 1
+    return dict(sorted(counts.items()))
+
+
 def _artifact_download_record(
     *,
     relative_path: str,
@@ -420,6 +434,8 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "parsed_detail_page_count": None,
         "failed_detail_page_count": None,
         "fetch_failure_source_count": None,
+        "fetch_failure_error_type_counts": None,
+        "fetch_failure_status_code_counts": None,
         "detail_parse_failure_source_count": None,
         "detail_parse_status_counts": None,
         "detail_field_population_counts": None,
@@ -567,6 +583,16 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
             "parsed_detail_page_count": int(run_manifest.get("parsed_detail_page_count") or 0),
             "failed_detail_page_count": int(run_manifest.get("failed_detail_page_count") or 0),
             "fetch_failure_source_count": len(fetch_failure_sources),
+            "fetch_failure_error_type_counts": _count_values(
+                fetch_failure_sources,
+                "error_type",
+                none_label="unknown",
+            ),
+            "fetch_failure_status_code_counts": _count_values(
+                fetch_failure_sources,
+                "status_code",
+                none_label="n/a",
+            ),
             "detail_parse_failure_source_count": len(detail_parse_failure_sources),
             "detail_parse_status_counts": _int_dict(
                 detail_field_coverage.get("aggregate", {}).get("parse_status_counts")
@@ -693,6 +719,8 @@ def write_pipeline_manifest(
             "parsed_detail_page_count": source_pipeline_diagnostics_report["parsed_detail_page_count"],
             "failed_detail_page_count": source_pipeline_diagnostics_report["failed_detail_page_count"],
             "fetch_failure_source_count": source_pipeline_diagnostics_report["fetch_failure_source_count"],
+            "fetch_failure_error_type_counts": source_pipeline_diagnostics_report["fetch_failure_error_type_counts"],
+            "fetch_failure_status_code_counts": source_pipeline_diagnostics_report["fetch_failure_status_code_counts"],
             "detail_parse_failure_source_count": source_pipeline_diagnostics_report["detail_parse_failure_source_count"],
             "detail_parse_status_counts": source_pipeline_diagnostics_report["detail_parse_status_counts"],
             "detail_field_population_counts": source_pipeline_diagnostics_report["detail_field_population_counts"],
