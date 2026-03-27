@@ -132,6 +132,63 @@
 - This note is again written before the commit/push step so the code change can stay in one clean task-scoped commit
 - Any push or remote-log limitation is reported in the terminal summary for this run
 
+## 2026-03-27 07:27:50 CET (+0100)
+
+- Run timing note: this entry starts after the previous note at `2026-03-27 07:23:30 CET (+0100)` and records the next quality-only pass
+- Intent: improve client-side resilience in the static terminal shell without changing analytics logic, data contracts, or the GitHub Pages deployment model
+
+### What I looked for this time
+
+- A real delivery-risk issue that could break the shell in some browsers or privacy contexts even though the data pipeline itself is fine
+- A change that improves reliability and security posture without touching any hardcore business logic
+- A Pages-safe resilience improvement that still keeps the terminal shell lightweight and deterministic
+
+### External research used
+
+- I checked current browser guidance around Web Storage behavior and keyboard accessibility to avoid relying on client APIs that may be blocked in some environments
+- The main references for this pass were:
+  - MDN on the Web Storage API / `localStorage`
+  - MDN keyboard accessibility guidance
+
+### Main finding from this pass
+
+- The shell script still read and wrote `window.localStorage` directly for the "last focused panel" convenience feature
+- In some privacy-restricted browsers, embedded webviews, or locked-down environments, storage access can throw instead of quietly returning a value
+- That means a non-critical convenience feature could potentially cause a client-side error path in the operator shell
+
+### What I changed
+
+1. Updated [src/site_builder.py](/run/media/doomguy/Новый%20том/fancy/fancyMMR/src/site_builder.py) so the generated shell script now wraps storage access in guarded helpers:
+   - `readStoredTarget()`
+   - `writeStoredTarget(...)`
+2. The shell now catches storage access failures and degrades cleanly instead of assuming `localStorage` is always available
+3. Regenerated the shipped static asset:
+   - [site/assets/site.js](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/assets/site.js)
+4. Expanded [tests/test_build_site.py](/run/media/doomguy/Новый%20том/fancy/fancyMMR/tests/test_build_site.py) so the guarded storage contract is now part of the site verification surface
+
+### Why this refactor is safe
+
+- It does not alter fetching, parsing, normalization, validation, aggregation, promotion, or published metrics
+- It only hardens a client-side convenience feature in the static operator shell
+- It preserves current behavior when storage works, while reducing the chance of a client-side failure in stricter browser environments
+
+### Verification
+
+- `python -m py_compile src/site_builder.py tests/test_build_site.py`
+- `python src/build_site.py`
+- `python -m pytest tests/test_build_site.py -q` -> `3 passed`
+- `python -m pytest` -> `46 passed`
+
+### Honest remaining gaps
+
+- This still does not solve the deeper Instantly truth-alignment problem because there is still no accessible DB connector, Railway connector, or MCP resource in this environment
+- So this pass improves shell resilience and quality of delivery, not external source-of-truth reconciliation
+
+### Note about push/log follow-up
+
+- This note is again written before the commit/push step so the code change can stay in one clean task-scoped commit
+- Any push or remote-log limitation is reported in the terminal summary for this run
+
 ## 2026-03-27 07:23:30 CET (+0100)
 
 - Run timing note: this entry starts after the previous note at `2026-03-27 07:16:40 CET (+0100)` and records the next quality-only pass

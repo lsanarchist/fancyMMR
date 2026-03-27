@@ -867,7 +867,13 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".download-badge {" in site_css
     assert ".download-badge-format {" in site_css
     assert ".section-card.is-focused" in site_css or ".hero.is-focused" in site_css
-    assert "window.localStorage.setItem" in site_js
+    assert "const readStoredTarget = () => {" in site_js
+    assert "const writeStoredTarget = (target) => {" in site_js
+    assert "window.localStorage.getItem(storageKey)" in site_js
+    assert "window.localStorage.setItem(storageKey, target)" in site_js
+    assert "Some browsers and privacy contexts block storage access entirely." in site_js
+    assert "const storedTarget = readStoredTarget();" in site_js
+    assert "writeStoredTarget(target);" in site_js
     assert 'window.matchMedia("(prefers-reduced-motion: reduce)")' in site_js
     assert 'const scrollBehavior = () => (reducedMotionQuery && reducedMotionQuery.matches ? "auto" : "smooth");' in site_js
     assert "scrollPanelIntoView" in site_js

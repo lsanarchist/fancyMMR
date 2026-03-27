@@ -86,6 +86,22 @@
     panel?.scrollIntoView({ behavior: scrollBehavior(), block: "start" });
   };
 
+  const readStoredTarget = () => {
+    try {
+      return window.localStorage.getItem(storageKey);
+    } catch (error) {
+      return "";
+    }
+  };
+
+  const writeStoredTarget = (target) => {
+    try {
+      window.localStorage.setItem(storageKey, target);
+    } catch (error) {
+      // Some browsers and privacy contexts block storage access entirely.
+    }
+  };
+
   const normalizedCommandQuery = (rawValue) => {
     const raw = rawValue.trim().toLowerCase();
     if (!raw) {
@@ -121,7 +137,7 @@
     syncInputValue(target);
     const activePanel = panelMap.get(target);
     if (activePanel) {
-      window.localStorage.setItem(storageKey, target);
+      writeStoredTarget(target);
       const index = panels.findIndex((panel) => panel.target === target);
       setStatus(`Focused ${activePanel.label}. Panel ${index + 1} of ${panelCount}.`);
     } else {
@@ -250,7 +266,7 @@
   });
 
   const initialTarget = currentTarget();
-  const storedTarget = window.localStorage.getItem(storageKey);
+  const storedTarget = readStoredTarget();
   syncInputValue(initialTarget);
   if (!window.location.hash && storedTarget && panelMap.has(storedTarget)) {
     setStatus(`${readyMessage()} Last panel: ${panelMap.get(storedTarget).label}.`);
