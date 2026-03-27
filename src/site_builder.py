@@ -727,6 +727,10 @@ def build_data_page(
     <p>{html.escape(str(source_pipeline_diagnostics['parsed_detail_page_count']))} parsed, {html.escape(str(source_pipeline_diagnostics['failed_detail_page_count']))} failed, {html.escape(str(source_pipeline_diagnostics['fetched_detail_page_count']))} fetched across {html.escape(str(source_pipeline_diagnostics['detail_page_target_count']))} target detail pages.</p>
   </article>
   <article class="callout-card">
+    <h3>Fetch failures</h3>
+    <p>{html.escape(str(source_pipeline_diagnostics['fetch_failure_source_count']))} source pages currently have staged fetch-failure snapshots.</p>
+  </article>
+  <article class="callout-card">
     <h3>Detail-field coverage</h3>
     <p>{html.escape(detail_field_population_summary(source_pipeline_diagnostics))}</p>
   </article>
@@ -763,6 +767,25 @@ def build_data_page(
         else:
             diagnostics_failure_section = (
                 '<p class="section-note">No source pages in the active manifest currently report staged detail parse failures.</p>'
+            )
+        fetch_failure_sources = source_pipeline_diagnostics.get("fetch_failure_sources", [])
+        if fetch_failure_sources:
+            diagnostics_fetch_failure_section = render_table(
+                ["Source page", "Status", "Error", "HTML snapshot", "Message"],
+                [
+                    [
+                        f'<a href="{html.escape(row["source_url"], quote=True)}">{html.escape(row["source_url"])}</a>',
+                        html.escape(str(row.get("status_code") if row.get("status_code") is not None else "n/a")),
+                        html.escape(str(row.get("error_type") or "unknown")),
+                        html.escape("yes" if row.get("has_html_snapshot") else "no"),
+                        html.escape(str(row.get("message") or "")),
+                    ]
+                    for row in fetch_failure_sources[:10]
+                ],
+            )
+        else:
+            diagnostics_fetch_failure_section = (
+                '<p class="section-note">No staged source fetch failures are currently recorded for the active manifest.</p>'
             )
         coverage_rows = [
             row
@@ -811,11 +834,13 @@ def build_data_page(
             diagnostics_cards
             + diagnostics_table
             + diagnostics_failure_section
+            + diagnostics_fetch_failure_section
             + diagnostics_coverage_section
             + (
                 f'<p class="section-note">Staged validation: <strong>{html.escape(status_label(str(source_pipeline_diagnostics["validation_status"])))}</strong>. '
                 f'Run-manifest validation: <strong>{html.escape(status_label(str(source_pipeline_diagnostics["run_manifest_validation_status"])))}</strong>. '
                 f'Suspicious duplicate groups: <strong>{html.escape(str(source_pipeline_diagnostics["suspicious_duplicate_group_count"]))}</strong>. '
+                f'Fetch failures: <strong>{html.escape(str(source_pipeline_diagnostics["fetch_failure_source_count"]))}</strong> source pages. '
                 f'Detail parse failures: <strong>{html.escape(str(source_pipeline_diagnostics["failed_detail_page_count"]))}</strong> across '
                 f'<strong>{html.escape(str(source_pipeline_diagnostics["detail_parse_failure_source_count"]))}</strong> source pages.</p>'
             ),

@@ -43,9 +43,9 @@
       "sha256": "1063d12d8aa30809c2c9a8f0d95caa0a3cf04474b784e3729143c03963063515"
     },
     {
-      "bytes": 38950,
+      "bytes": 39016,
       "path": "data/source_pipeline_diagnostics.json",
-      "sha256": "d4dbdef33810d0211f77f88d2fcd300e4204c9b2711c2127b0332539d6e79e55"
+      "sha256": "885417ade824537345c3e31cabcb67873b39e2f1b7d61dcd3d2ec1d3b52ec341"
     },
     {
       "bytes": 275582,
@@ -237,6 +237,7 @@
     ],
     "expected_source_count": 30,
     "failed_detail_page_count": 0,
+    "fetch_failure_source_count": 0,
     "parsed_detail_page_count": 0,
     "path": "data/source_pipeline_diagnostics.json",
     "selected_source_count": 30,

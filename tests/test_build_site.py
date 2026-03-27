@@ -106,9 +106,11 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "source_pipeline/processed/detail_field_coverage.json" in data_html
     assert "Source-pipeline diagnostics" in data_html
     assert "Detail-page staging" in data_html
+    assert "Fetch failures" in data_html
     assert "Detail parse failures" in data_html
     assert "Detail-field coverage" in data_html
     assert "staged provenance" in data_html
+    assert "No staged source fetch failures are currently recorded for the active manifest." in data_html
     assert "No source pages in the active manifest currently report staged detail parse failures." in data_html
     assert "No staged detail rows in the active manifest currently populate the shared detail fields." in data_html
     assert "Staged run manifest" in data_html

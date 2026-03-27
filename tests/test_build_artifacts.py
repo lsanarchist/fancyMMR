@@ -124,9 +124,11 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert source_pipeline_diagnostics["publication_dataset_kind"] == "seed_visible_sample"
     assert source_pipeline_diagnostics["detail_page_target_count"] is None
     assert source_pipeline_diagnostics["failed_detail_page_count"] is None
+    assert source_pipeline_diagnostics["fetch_failure_source_count"] is None
     assert source_pipeline_diagnostics["detail_parse_failure_source_count"] is None
     assert source_pipeline_diagnostics["detail_parse_status_counts"] is None
     assert source_pipeline_diagnostics["detail_field_population_counts"] is None
+    assert source_pipeline_diagnostics["fetch_failure_sources"] == []
     assert source_pipeline_diagnostics["detail_parse_failure_sources"] == []
     assert source_pipeline_diagnostics["downloadable_staged_artifacts"] == []
     assert validation_report["status"] in {"passed", "passed_with_warnings"}
@@ -156,6 +158,7 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert any(artifact["path"] == "README.md" for artifact in pipeline_manifest["generated_outputs"])
     assert pipeline_manifest["validation"]["source_pipeline_diagnostics_report_path"] == "data/source_pipeline_diagnostics.json"
     assert pipeline_manifest["source_pipeline_diagnostics"]["available"] is False
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_count"] is None
 
 
 def test_refactored_module_surfaces_match_expected_metrics() -> None:
@@ -194,6 +197,7 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert diagnostics["detail_page_target_count"] == 852
     assert diagnostics["parsed_detail_page_count"] == 0
     assert diagnostics["failed_detail_page_count"] == 0
+    assert diagnostics["fetch_failure_source_count"] == 0
     assert diagnostics["detail_parse_failure_source_count"] == 0
     assert diagnostics["detail_parse_status_counts"]["not_requested"] == 852
     assert diagnostics["detail_parse_status_counts"]["parsed"] == 0
@@ -216,6 +220,7 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
         assert artifact["bytes"] == artifact_path.stat().st_size
         assert artifact["sha256"] == hashlib.sha256(artifact_path.read_bytes()).hexdigest()
     assert diagnostics["fully_mapped_visible_row_count"] == 249
+    assert diagnostics["fetch_failure_sources"] == []
     assert diagnostics["source_pages"]
     assert diagnostics["source_pages"][0]["parsed_card_count"] >= diagnostics["source_pages"][-1]["parsed_card_count"]
     assert "failed_detail_page_count" in diagnostics["source_pages"][0]
@@ -224,6 +229,7 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert pipeline_manifest["source_pipeline_diagnostics"]["available"] is True
     assert pipeline_manifest["source_pipeline_diagnostics"]["path"] == "data/source_pipeline_diagnostics.json"
     assert pipeline_manifest["source_pipeline_diagnostics"]["failed_detail_page_count"] == 0
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_count"] == 0
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_failure_source_count"] == 0
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_status_counts"]["not_requested"] == 852
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_field_population_counts"]["problem_solved"] == 0
@@ -242,6 +248,50 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
         pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"]
         == diagnostics["downloadable_staged_artifacts"]
     )
+
+
+def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_manifest(tmp_path: Path) -> None:
+    workspace = prepare_workspace(tmp_path)
+    failure_dir = workspace / "data" / "fetch_failures"
+    failure_dir.mkdir(parents=True, exist_ok=True)
+    (failure_dir / "category--ai.json").write_text(
+        json.dumps(
+            {
+                "source_id": "category--ai",
+                "url": "https://trustmrr.com/category/ai",
+                "parser_strategy": "trustmrr_category_listing",
+                "source_group": "category",
+                "error_type": "HTTPError",
+                "message": "HTTP Error 500: server exploded",
+                "status_code": 500,
+                "html_snapshot_path": "data/fetch_failures/category--ai.html",
+            },
+            indent=2,
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+
+    run_build(workspace)
+
+    diagnostics = json.loads((workspace / "data" / "source_pipeline_diagnostics.json").read_text(encoding="utf-8"))
+    pipeline_manifest = json.loads((workspace / "data" / "pipeline_manifest.json").read_text(encoding="utf-8"))
+
+    assert diagnostics["fetch_failure_source_count"] == 1
+    assert diagnostics["fetch_failure_sources"] == [
+        {
+            "category_label": "AI",
+            "error_type": "HTTPError",
+            "has_html_snapshot": True,
+            "message": "HTTP Error 500: server exploded",
+            "parser_strategy": "trustmrr_category_listing",
+            "source_group": "category",
+            "source_id": "category--ai",
+            "source_url": "https://trustmrr.com/category/ai",
+            "status_code": 500,
+        }
+    ]
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_count"] == 1
 
 
 def test_validation_report_fails_for_missing_columns_and_threshold_violations() -> None:

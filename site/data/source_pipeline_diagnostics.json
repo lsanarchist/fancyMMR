@@ -83,6 +83,8 @@
   "failed_detail_page_count": 0,
   "failing_error_check_ids": [],
   "failing_warning_check_ids": [],
+  "fetch_failure_source_count": 0,
+  "fetch_failure_sources": [],
   "fetched_detail_page_count": 0,
   "fully_mapped_visible_row_count": 249,
   "message": "Diagnostics loaded from the staged source-pipeline reports referenced by the active publication manifest.",

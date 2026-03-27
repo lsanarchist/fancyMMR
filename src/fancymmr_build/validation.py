@@ -298,6 +298,40 @@ def _build_downloadable_staged_artifacts(
     return artifacts
 
 
+def _load_fetch_failure_sources(
+    selected_sources_by_id: dict[str, dict[str, object]],
+) -> list[dict[str, object]]:
+    failure_snapshot_dir = BUILD_PATHS.root / "data" / "fetch_failures"
+    if not failure_snapshot_dir.exists():
+        return []
+
+    failure_sources: list[dict[str, object]] = []
+    for meta_path in sorted(failure_snapshot_dir.glob("*.json")):
+        snapshot = json.loads(meta_path.read_text(encoding="utf-8"))
+        if not isinstance(snapshot, dict):
+            continue
+
+        source_id = str(snapshot.get("source_id") or meta_path.stem)
+        if source_id not in selected_sources_by_id:
+            continue
+
+        source_metadata = selected_sources_by_id.get(source_id, {})
+        failure_sources.append(
+            {
+                "source_id": source_id,
+                "source_url": str(snapshot.get("url") or source_metadata.get("source_url") or ""),
+                "parser_strategy": snapshot.get("parser_strategy") or source_metadata.get("parser_strategy"),
+                "source_group": snapshot.get("source_group") or source_metadata.get("source_group"),
+                "category_label": source_metadata.get("category_label"),
+                "error_type": str(snapshot.get("error_type") or ""),
+                "message": str(snapshot.get("message") or ""),
+                "status_code": snapshot.get("status_code"),
+                "has_html_snapshot": bool(snapshot.get("html_snapshot_path")),
+            }
+        )
+    return failure_sources
+
+
 def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[str, object]:
     publication_input = read_publication_input()
     report_paths = {
@@ -330,6 +364,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "fetched_detail_page_count": None,
         "parsed_detail_page_count": None,
         "failed_detail_page_count": None,
+        "fetch_failure_source_count": None,
         "detail_parse_failure_source_count": None,
         "detail_parse_status_counts": None,
         "detail_field_population_counts": None,
@@ -344,6 +379,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "missing_gtm_model_count": None,
         "failing_warning_check_ids": [],
         "failing_error_check_ids": [],
+        "fetch_failure_sources": [],
         "detail_parse_failure_sources": [],
         "downloadable_staged_artifacts": [],
         "source_pages": [],
@@ -397,6 +433,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
     coverage_sources_by_id = {
         str(source["source_id"]): source for source in detail_field_coverage.get("sources", [])
     }
+    fetch_failure_sources = _load_fetch_failure_sources(selected_sources_by_id)
     source_pages = []
     for source_output in run_manifest.get("per_source_outputs", []):
         source_id = str(source_output["source_id"])
@@ -472,6 +509,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
             "fetched_detail_page_count": int(run_manifest.get("fetched_detail_page_count") or 0),
             "parsed_detail_page_count": int(run_manifest.get("parsed_detail_page_count") or 0),
             "failed_detail_page_count": int(run_manifest.get("failed_detail_page_count") or 0),
+            "fetch_failure_source_count": len(fetch_failure_sources),
             "detail_parse_failure_source_count": len(detail_parse_failure_sources),
             "detail_parse_status_counts": _int_dict(
                 detail_field_coverage.get("aggregate", {}).get("parse_status_counts")
@@ -502,6 +540,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
                 for check in validation_report["checks"]
                 if check["severity"] == "error" and not check["passed"]
             ],
+            "fetch_failure_sources": fetch_failure_sources,
             "detail_parse_failure_sources": detail_parse_failure_sources,
             "downloadable_staged_artifacts": downloadable_staged_artifacts,
             "source_pages": source_pages,
@@ -595,6 +634,7 @@ def write_pipeline_manifest(
             "expected_source_count": source_pipeline_diagnostics_report["expected_source_count"],
             "parsed_detail_page_count": source_pipeline_diagnostics_report["parsed_detail_page_count"],
             "failed_detail_page_count": source_pipeline_diagnostics_report["failed_detail_page_count"],
+            "fetch_failure_source_count": source_pipeline_diagnostics_report["fetch_failure_source_count"],
             "detail_parse_failure_source_count": source_pipeline_diagnostics_report["detail_parse_failure_source_count"],
             "detail_parse_status_counts": source_pipeline_diagnostics_report["detail_parse_status_counts"],
             "detail_field_population_counts": source_pipeline_diagnostics_report["detail_field_population_counts"],
