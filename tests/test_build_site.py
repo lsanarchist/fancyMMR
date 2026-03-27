@@ -97,7 +97,17 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "9 duplicate startup names" in index_html
     assert "TrustMRR visible-sample terminal" in index_html
     assert "Command deck" in index_html
+    assert "Route registry" in index_html
+    assert "Hot outputs" in index_html
     assert "Jump palette" in index_html
+    assert "GO / Overview" in index_html
+    assert "GO / Data" in index_html
+    assert "GO / Downloads" in index_html
+    assert "GET metrics.json" in index_html
+    assert 'data-command-kind="route"' in index_html
+    assert 'data-command-kind="asset"' in index_html
+    assert 'data-command-query="/data #downloads"' in index_html
+    assert 'data-command-query="metrics.json"' in index_html
     assert 'src="assets/site.js"' in index_html
     assert "Ctrl+K" in index_html
     assert "data-command-input" in index_html
@@ -165,6 +175,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "System brief" in data_html
     assert "Command deck" in data_html
     assert "Jump palette" in data_html
+    assert "Route registry" in data_html
+    assert "Hot outputs" in data_html
     assert "--bg: #05070a" in site_css
     assert ".workstation {" in site_css
     assert ".command-strip {" in site_css
@@ -173,6 +185,10 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "window.localStorage.setItem" in site_js
     assert 'event.key === "/"' in site_js
     assert 'event.key === "[" || event.key === "]"' in site_js
+    assert 'command.kind === "panel"' in site_js
+    assert "new URL(command.target, window.location.href)" in site_js
+    assert "window.location.href = absoluteUrl.toString();" in site_js
+    assert "matchedCommands" in site_js
     assert "scrollIntoView" in site_js
     for artifact in pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"]:
         assert artifact["site_path"] in data_html

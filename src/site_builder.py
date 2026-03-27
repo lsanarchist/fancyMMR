@@ -320,16 +320,149 @@ def shell_tokens(*, active: str, status: str) -> str:
     )
 
 
-def command_links_markup(command_links: list[tuple[str, str]], *, link_class: str) -> str:
+def route_key(slug: str) -> str:
+    return {
+        "index": "/index",
+        "methodology": "/methodology",
+        "data": "/data",
+    }.get(slug, f"/{slug}")
+
+
+def route_href(slug: str) -> str:
+    return {
+        "index": "index.html",
+        "methodology": "methodology.html",
+        "data": "data.html",
+    }.get(slug, f"{slug}.html")
+
+
+def command_item(
+    *,
+    label: str,
+    target: str,
+    kind: str,
+    query: str,
+    terms: str,
+) -> dict[str, str]:
+    return {
+        "label": label,
+        "target": target,
+        "kind": kind,
+        "query": query,
+        "terms": terms,
+    }
+
+
+def panel_command_items(*, active: str, command_links: list[tuple[str, str]]) -> list[dict[str, str]]:
+    page_route = route_key(active)
+    items: list[dict[str, str]] = []
+    for label, target in command_links:
+        query = page_route if target == "#top" else f"{page_route} {target}"
+        items.append(
+            command_item(
+                label=label,
+                target=target,
+                kind="panel",
+                query=query,
+                terms=f"{label} {target} panel section {active}",
+            )
+        )
+    return items
+
+
+def global_route_command_items() -> list[dict[str, str]]:
+    return [
+        command_item(
+            label="GO / Overview",
+            target=route_href("index"),
+            kind="route",
+            query=route_key("index"),
+            terms="overview home index route summary",
+        ),
+        command_item(
+            label="GO / Methodology",
+            target=route_href("methodology"),
+            kind="route",
+            query=route_key("methodology"),
+            terms="methodology caveats validation notes route",
+        ),
+        command_item(
+            label="GO / Data",
+            target=route_href("data"),
+            kind="route",
+            query=route_key("data"),
+            terms="data downloads diagnostics route provenance",
+        ),
+        command_item(
+            label="GO / Downloads",
+            target="data.html#downloads",
+            kind="route",
+            query="/data #downloads",
+            terms="downloads artifacts files json bundle",
+        ),
+        command_item(
+            label="GO / Diagnostics",
+            target="data.html#source-pipeline-diagnostics",
+            kind="route",
+            query="/data #source-pipeline-diagnostics",
+            terms="diagnostics provenance source pipeline validation monitor",
+        ),
+    ]
+
+
+def global_output_command_items() -> list[dict[str, str]]:
+    return [
+        command_item(
+            label="GET metrics.json",
+            target="data/metrics.json",
+            kind="asset",
+            query="metrics.json",
+            terms="metrics download revenue concentration sample json",
+        ),
+        command_item(
+            label="GET publication_input.json",
+            target="data/publication_input.json",
+            kind="asset",
+            query="publication_input.json",
+            terms="publication input manifest dataset json download",
+        ),
+        command_item(
+            label="GET validation_report.json",
+            target="data/validation_report.json",
+            kind="asset",
+            query="validation_report.json",
+            terms="validation report checks json download",
+        ),
+        command_item(
+            label="GET source_pipeline_diagnostics.json",
+            target="data/source_pipeline_diagnostics.json",
+            kind="asset",
+            query="source_pipeline_diagnostics.json",
+            terms="source pipeline diagnostics provenance json download",
+        ),
+        command_item(
+            label="GET pipeline_manifest.json",
+            target="data/pipeline_manifest.json",
+            kind="asset",
+            query="pipeline_manifest.json",
+            terms="pipeline manifest build provenance json download",
+        ),
+    ]
+
+
+def command_links_markup(command_items: list[dict[str, str]], *, link_class: str) -> str:
     return "".join(
         (
             f'<a class="{html.escape(link_class, quote=True)}" '
-            f'href="{html.escape(href, quote=True)}" '
-            f'data-command-label="{html.escape(label, quote=True)}" '
-            f'data-command-target="{html.escape(href, quote=True)}">'
-            f"{html.escape(label)}</a>"
+            f'href="{html.escape(item["target"], quote=True)}" '
+            f'data-command-label="{html.escape(item["label"], quote=True)}" '
+            f'data-command-target="{html.escape(item["target"], quote=True)}" '
+            f'data-command-kind="{html.escape(item["kind"], quote=True)}" '
+            f'data-command-query="{html.escape(item["query"], quote=True)}" '
+            f'data-command-terms="{html.escape(item["terms"], quote=True)}">'
+            f'{html.escape(item["label"])}</a>'
         )
-        for label, href in command_links
+        for item in command_items
     )
 
 
@@ -370,6 +503,9 @@ def page_shell(
     monitor_html: str,
     body_html: str,
 ) -> str:
+    local_panel_items = panel_command_items(active=active, command_links=command_links)
+    route_registry_items = global_route_command_items()
+    output_registry_items = global_output_command_items()
     nav_items = [
         ("index", "Overview", "index.html"),
         ("methodology", "Methodology", "methodology.html"),
@@ -381,8 +517,10 @@ def page_shell(
         )
         for slug, label, href in nav_items
     )
-    command_bar_links = command_links_markup(command_links, link_class="command-chip")
-    command_deck_links = command_links_markup(command_links, link_class="rail-command-link")
+    command_bar_links = command_links_markup(local_panel_items, link_class="command-chip")
+    command_deck_links = command_links_markup(local_panel_items, link_class="rail-command-link")
+    route_registry_links = command_links_markup(route_registry_items, link_class="rail-command-link")
+    output_registry_links = command_links_markup(output_registry_items, link_class="rail-command-link")
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -421,12 +559,24 @@ def page_shell(
         </nav>
       </section>
       <section class="rail-module">
+        <p class="rail-kicker">Route registry</p>
+        <nav class="rail-command-links" aria-label="Cross-page routes">
+          {route_registry_links}
+        </nav>
+      </section>
+      <section class="rail-module">
+        <p class="rail-kicker">Hot outputs</p>
+        <nav class="rail-command-links" aria-label="High-value downloads">
+          {output_registry_links}
+        </nav>
+      </section>
+      <section class="rail-module">
         <p class="rail-kicker">Operating mode</p>
         <p class="rail-copy">Visible public sample only. Static GitHub Pages publication. No runtime server, no hidden backend, no platform-wide claim.</p>
       </section>
     </aside>
     <main class="workspace">
-      <section class="workspace-command" data-command-surface data-page-route="/{html.escape(active, quote=True)}">
+      <section class="workspace-command" data-command-surface data-page-route="{html.escape(route_key(active), quote=True)}">
         <div class="command-entry">
           <label class="command-prompt-label" for="jump-palette">Jump palette</label>
           <div class="command-input-wrap">
@@ -436,20 +586,20 @@ def page_shell(
               class="command-input"
               type="text"
               name="jump_palette"
-              value="/{html.escape(active, quote=True)}"
-              placeholder="/{html.escape(active, quote=True)} #panel"
+              value="{html.escape(route_key(active), quote=True)}"
+              placeholder="{html.escape(route_key(active), quote=True)} #panel"
               autocapitalize="off"
               autocomplete="off"
               spellcheck="false"
               data-command-input
             >
           </div>
-          <p class="command-help">Press <code>/</code> or <code>Ctrl+K</code> to focus. Press <code>Enter</code> to jump. Use <code>[</code> and <code>]</code> to cycle panels.</p>
+          <p class="command-help">Press <code>/</code> or <code>Ctrl+K</code> to focus. Press <code>Enter</code> to jump. Use <code>[</code> and <code>]</code> to cycle local panels. Try <code>/data</code>, <code>/data #downloads</code>, or <code>metrics.json</code>.</p>
         </div>
         <div class="command-bar-links">
           {command_bar_links}
         </div>
-        <p class="command-status" aria-live="polite" data-command-status>Ready. {len(command_links):,} panels indexed for this route.</p>
+        <p class="command-status" aria-live="polite" data-command-status>Ready. {len(local_panel_items):,} local panels and {len(route_registry_items) + len(output_registry_items):,} global commands indexed.</p>
       </section>
       {body_html}
     </main>
@@ -2679,34 +2829,44 @@ def build_script() -> str:
 
   const route = surface.getAttribute("data-page-route") || window.location.pathname || "/";
   const storageKey = `fancymmr:last-panel:${route}`;
-  const linkNodes = Array.from(document.querySelectorAll("[data-command-target]"));
-  const panelMap = new Map();
+  const commandNodes = Array.from(document.querySelectorAll("[data-command-target]"));
+  const commandMap = new Map();
 
-  for (const node of linkNodes) {
+  for (const node of commandNodes) {
     const target = node.getAttribute("data-command-target") || "";
     const label = node.getAttribute("data-command-label") || node.textContent || target;
+    const kind = node.getAttribute("data-command-kind") || (target.startsWith("#") ? "panel" : "route");
+    const queryValue = (node.getAttribute("data-command-query") || target).trim();
+    const extraTerms = node.getAttribute("data-command-terms") || "";
     if (!target) {
       continue;
     }
-    if (!panelMap.has(target)) {
-      const panel = document.querySelector(target);
-      const titleNode = panel ? panel.querySelector("h1, h2, h3") : null;
+    const key = `${kind}::${target}`;
+    if (!commandMap.has(key)) {
+      const panel = kind === "panel" && target.startsWith("#") ? document.querySelector(target) : null;
+      const titleNode = panel instanceof HTMLElement ? panel.querySelector("h1, h2, h3") : null;
       const title = (titleNode && titleNode.textContent ? titleNode.textContent : label).trim();
-      panelMap.set(target, {
+      commandMap.set(key, {
+        key,
+        kind,
         target,
         label: label.trim(),
+        queryValue,
         title,
         panel,
         elements: [],
-        terms: `${label} ${target} ${title}`.toLowerCase(),
+        terms: `${label} ${queryValue} ${target} ${title} ${extraTerms} ${kind}`.toLowerCase(),
       });
     }
-    panelMap.get(target).elements.push(node);
+    commandMap.get(key).elements.push(node);
   }
 
-  const panels = Array.from(panelMap.values());
+  const commands = Array.from(commandMap.values());
+  const panels = commands.filter((command) => command.kind === "panel");
+  const panelMap = new Map(panels.map((panel) => [panel.target, panel]));
   const panelCount = panels.length;
-  let lastMatches = panels;
+  const globalCommandCount = commands.length - panelCount;
+  let lastMatches = panels.length ? panels : commands;
 
   const isEditableTarget = (eventTarget) => {
     if (!(eventTarget instanceof HTMLElement)) {
@@ -2719,6 +2879,12 @@ def build_script() -> str:
       eventTarget.tagName === "SELECT" ||
       eventTarget.isContentEditable
     );
+  };
+
+  const readyMessage = () => {
+    const panelLabel = `${panelCount} local panel${panelCount === 1 ? "" : "s"}`;
+    const globalLabel = `${globalCommandCount} global command${globalCommandCount === 1 ? "" : "s"}`;
+    return `Ready. ${panelLabel} and ${globalLabel} indexed.`;
   };
 
   const currentTarget = () => {
@@ -2769,24 +2935,24 @@ def build_script() -> str:
       const index = panels.findIndex((panel) => panel.target === target);
       setStatus(`Focused ${activePanel.label}. Panel ${index + 1} of ${panelCount}.`);
     } else {
-      setStatus(`Ready. ${panelCount} panels indexed for this route.`);
+      setStatus(readyMessage());
     }
   };
 
-  const matchedPanels = (query) => {
+  const matchedCommands = (query) => {
     const normalized = normalizedCommandQuery(query);
     if (!normalized) {
-      return panels;
+      return panels.length ? panels : commands;
     }
-    return panels.filter((panel) => panel.terms.includes(normalized));
+    return commands.filter((command) => command.terms.includes(normalized));
   };
 
   const renderMatches = (matches, query) => {
-    lastMatches = matches;
+    lastMatches = matches.length ? matches : (panels.length ? panels : commands);
     const normalized = normalizedCommandQuery(query);
     if (!normalized) {
-      for (const panel of panels) {
-        for (const element of panel.elements) {
+      for (const command of commands) {
+        for (const element of command.elements) {
           element.classList.remove("is-muted");
         }
       }
@@ -2794,30 +2960,51 @@ def build_script() -> str:
       return;
     }
 
-    for (const panel of panels) {
-      const isMatch = matches.includes(panel);
-      for (const element of panel.elements) {
+    for (const command of commands) {
+      const isMatch = matches.includes(command);
+      for (const element of command.elements) {
         element.classList.toggle("is-muted", !isMatch);
       }
     }
 
     if (matches.length) {
-      setStatus(`${matches.length} panel match${matches.length === 1 ? "" : "es"} for "${normalized}". Press Enter to jump.`);
+      setStatus(`${matches.length} command match${matches.length === 1 ? "" : "es"} for "${normalized}". Press Enter to jump.`);
     } else {
-      setStatus(`No panel matches for "${normalized}".`);
+      setStatus(`No command matches for "${normalized}".`);
     }
   };
 
-  const navigateTo = (panel) => {
-    if (!panel) {
+  const navigateTo = (command) => {
+    if (!command) {
       return;
     }
-    if (window.location.hash === panel.target) {
-      highlightPanel(panel.target);
-      panel.panel?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (command.kind === "panel") {
+      if (window.location.hash === command.target) {
+        highlightPanel(command.target);
+        command.panel?.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      window.location.hash = command.target;
       return;
     }
-    window.location.hash = panel.target;
+
+    const absoluteUrl = new URL(command.target, window.location.href);
+    if (
+      absoluteUrl.origin === window.location.origin
+      && absoluteUrl.pathname === window.location.pathname
+      && absoluteUrl.hash
+      && panelMap.has(absoluteUrl.hash)
+    ) {
+      if (window.location.hash === absoluteUrl.hash) {
+        highlightPanel(absoluteUrl.hash);
+        panelMap.get(absoluteUrl.hash)?.panel?.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.location.hash = absoluteUrl.hash;
+      }
+      return;
+    }
+
+    window.location.href = absoluteUrl.toString();
   };
 
   const cyclePanels = (direction) => {
@@ -2834,25 +3021,25 @@ def build_script() -> str:
   };
 
   input.addEventListener("input", () => {
-    renderMatches(matchedPanels(input.value), input.value);
+    renderMatches(matchedCommands(input.value), input.value);
   });
 
   input.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      navigateTo(lastMatches[0] || panelMap.get(currentTarget()));
+      navigateTo(lastMatches[0] || panelMap.get(currentTarget()) || commands[0]);
       return;
     }
     if (event.key === "Escape") {
       input.blur();
-      input.value = "";
-      renderMatches(panels, "");
+      input.value = route;
+      renderMatches(panels.length ? panels : commands, "");
     }
   });
 
   window.addEventListener("hashchange", () => {
     highlightPanel(currentTarget());
-    renderMatches(matchedPanels(input.value), input.value);
+    renderMatches(matchedCommands(input.value), input.value);
   });
 
   document.addEventListener("keydown", (event) => {
@@ -2876,9 +3063,9 @@ def build_script() -> str:
   const storedTarget = window.localStorage.getItem(storageKey);
   syncInputValue(initialTarget);
   if (!window.location.hash && storedTarget && panelMap.has(storedTarget)) {
-    setStatus(`Ready. ${panelCount} panels indexed for this route. Last panel: ${panelMap.get(storedTarget).label}.`);
+    setStatus(`${readyMessage()} Last panel: ${panelMap.get(storedTarget).label}.`);
   } else {
-    setStatus(`Ready. ${panelCount} panels indexed for this route.`);
+    setStatus(readyMessage());
   }
   highlightPanel(initialTarget);
 })();
