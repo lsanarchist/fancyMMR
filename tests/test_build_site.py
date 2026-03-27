@@ -140,6 +140,12 @@ def format_smallest_file_share(min_bytes: int | None, total_bytes: int) -> str:
     return f"min {share:.0f}%"
 
 
+def format_byte_delta(min_bytes: int | None, max_bytes: int | None) -> str:
+    if min_bytes is None or max_bytes is None:
+        return "delta n/a"
+    return f"delta {format_byte_count(abs(max_bytes - min_bytes))}"
+
+
 def format_byte_totals(items: list[dict[str, object]]) -> dict[str, str]:
     totals: dict[str, int] = {}
     for artifact in items:
@@ -277,6 +283,24 @@ def format_smallest_file_shares(items: list[dict[str, object]]) -> dict[str, str
     }
 
 
+def format_byte_deltas(items: list[dict[str, object]]) -> dict[str, str]:
+    minimums: dict[str, int] = {}
+    maximums: dict[str, int] = {}
+    for artifact in items:
+        artifact_format = str(artifact.get("format") or "").strip().lower() or "other"
+        artifact_bytes = artifact.get("bytes")
+        if not isinstance(artifact_bytes, int):
+            continue
+        if artifact_format not in minimums or artifact_bytes < minimums[artifact_format]:
+            minimums[artifact_format] = artifact_bytes
+        if artifact_format not in maximums or artifact_bytes > maximums[artifact_format]:
+            maximums[artifact_format] = artifact_bytes
+    return {
+        artifact_format: format_byte_delta(minimums.get(artifact_format), maximums.get(artifact_format))
+        for artifact_format in minimums
+    }
+
+
 def manifest_generated_download_total_bytes(workspace: Path, pipeline_manifest: dict[str, object]) -> int:
     total_bytes = 0
     seen_paths: set[str] = set()
@@ -404,6 +428,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     publication_format_spread_ratios = format_byte_spread_ratios(
         manifest_generated_download_items(workspace, pipeline_manifest)
     )
+    publication_format_byte_deltas = format_byte_deltas(
+        manifest_generated_download_items(workspace, pipeline_manifest)
+    )
     publication_format_top_file_shares = format_top_file_shares(
         manifest_generated_download_items(workspace, pipeline_manifest)
     )
@@ -431,6 +458,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     staged_format_spread_ratios = format_byte_spread_ratios(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"])
     )
+    staged_format_byte_deltas = format_byte_deltas(
+        list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"])
+    )
     staged_format_top_file_shares = format_top_file_shares(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"])
     )
@@ -456,6 +486,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
     )
     fetch_failure_format_spread_ratios = format_byte_spread_ratios(
+        list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
+    )
+    fetch_failure_format_byte_deltas = format_byte_deltas(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
     )
     fetch_failure_format_top_file_shares = format_top_file_shares(
@@ -518,6 +551,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert publication_format_byte_ranges["json"] in publication_output_section
     assert publication_format_spread_ratios["csv"] in publication_output_section
     assert publication_format_spread_ratios["json"] in publication_output_section
+    assert publication_format_byte_deltas["csv"] in publication_output_section
+    assert publication_format_byte_deltas["json"] in publication_output_section
     assert publication_format_top_file_shares["csv"] in publication_output_section
     assert publication_format_top_file_shares["json"] in publication_output_section
     assert publication_format_smallest_file_shares["csv"] in publication_output_section
@@ -540,6 +575,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert staged_format_byte_ranges["json"] in staged_output_section
     assert staged_format_spread_ratios["csv"] in staged_output_section
     assert staged_format_spread_ratios["json"] in staged_output_section
+    assert staged_format_byte_deltas["csv"] in staged_output_section
+    assert staged_format_byte_deltas["json"] in staged_output_section
     assert staged_format_top_file_shares["csv"] in staged_output_section
     assert staged_format_top_file_shares["json"] in staged_output_section
     assert staged_format_smallest_file_shares["csv"] in staged_output_section
@@ -690,6 +727,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".rail-command-divider-bytes {" in site_css
     assert ".rail-command-divider-range {" in site_css
     assert ".rail-command-divider-spread {" in site_css
+    assert ".rail-command-divider-delta {" in site_css
     assert ".rail-command-divider-top-share {" in site_css
     assert ".rail-command-divider-smallest-share {" in site_css
     assert ".rail-command-divider-median {" in site_css
@@ -784,6 +822,9 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
     )
     fetch_failure_format_spread_ratios = format_byte_spread_ratios(
+        list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
+    )
+    fetch_failure_format_byte_deltas = format_byte_deltas(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
     )
     fetch_failure_format_top_file_shares = format_top_file_shares(
@@ -897,6 +938,8 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert fetch_failure_format_byte_ranges["json"] in fetch_failure_output_section
     assert fetch_failure_format_spread_ratios["html"] in fetch_failure_output_section
     assert fetch_failure_format_spread_ratios["json"] in fetch_failure_output_section
+    assert fetch_failure_format_byte_deltas["html"] in fetch_failure_output_section
+    assert fetch_failure_format_byte_deltas["json"] in fetch_failure_output_section
     assert fetch_failure_format_top_file_shares["html"] in fetch_failure_output_section
     assert fetch_failure_format_top_file_shares["json"] in fetch_failure_output_section
     assert fetch_failure_format_smallest_file_shares["html"] in fetch_failure_output_section

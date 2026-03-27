@@ -132,6 +132,12 @@ def format_smallest_file_share(min_bytes: int | None, total_bytes: int) -> str:
     return f"min {share:.0f}%"
 
 
+def format_byte_delta(min_bytes: int | None, max_bytes: int | None) -> str:
+    if min_bytes is None or max_bytes is None:
+        return "delta n/a"
+    return f"delta {format_byte_count(abs(max_bytes - min_bytes))}"
+
+
 def format_delay_seconds(value: object) -> str:
     if value in (None, ""):
         return "n/a"
@@ -819,6 +825,7 @@ def output_registry_command_links_markup(command_items: list[dict[str, object]])
                 f'<span class="rail-command-divider-bytes">{html.escape(format_byte_count(format_bytes[item_format]))}</span>'
                 f'<span class="rail-command-divider-range">{html.escape(format_byte_range(format_min_bytes.get(item_format), format_max_bytes.get(item_format)))}</span>'
                 f'<span class="rail-command-divider-spread">{html.escape(format_byte_spread_ratio(format_min_bytes.get(item_format), format_max_bytes.get(item_format)))}</span>'
+                f'<span class="rail-command-divider-delta">{html.escape(format_byte_delta(format_min_bytes.get(item_format), format_max_bytes.get(item_format)))}</span>'
                 f'<span class="rail-command-divider-top-share">{html.escape(format_top_file_share(format_max_bytes.get(item_format), format_bytes[item_format]))}</span>'
                 f'<span class="rail-command-divider-smallest-share">{html.escape(format_smallest_file_share(format_min_bytes.get(item_format), format_bytes[item_format]))}</span>'
                 f'<span class="rail-command-divider-median">{html.escape(format_median_byte_count(format_byte_values.get(item_format, [])))}</span>'
@@ -2577,6 +2584,12 @@ body {
   font-size: 0.64rem;
   letter-spacing: 0.08em;
   color: var(--accent-muted);
+}
+
+.rail-command-divider-delta {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-dim);
 }
 
 .rail-command-divider-top-share {
