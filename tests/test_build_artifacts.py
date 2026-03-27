@@ -464,6 +464,9 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                     "failure_context_summary": (
                         "2026-03-27T00:05:00Z · HTTP n/a · FetchError · policy_blocked · do_not_retry"
                     ),
+                    "artifact_count": 1,
+                    "artifact_formats": ["json"],
+                    "artifact_summary": "1 artifact · JSON",
                     "artifact_links": [
                         {
                             "format": "json",
@@ -491,6 +494,9 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                     "failure_context_summary": (
                         "2026-03-27T00:00:00Z · HTTP 500 · HTTPError · server_error · retryable"
                     ),
+                    "artifact_count": 2,
+                    "artifact_formats": ["html", "json"],
+                    "artifact_summary": "2 artifacts · HTML, JSON",
                     "artifact_links": [
                         {
                             "format": "json",
@@ -568,6 +574,9 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                     "failure_context_summary": (
                         "2026-03-27T00:05:00Z · HTTP n/a · FetchError · policy_blocked · do_not_retry"
                     ),
+                    "artifact_count": 1,
+                    "artifact_formats": ["json"],
+                    "artifact_summary": "1 artifact · JSON",
                     "artifact_links": [
                         {
                             "format": "json",
@@ -595,6 +604,9 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                     "failure_context_summary": (
                         "2026-03-27T00:00:00Z · HTTP 500 · HTTPError · server_error · retryable"
                     ),
+                    "artifact_count": 2,
+                    "artifact_formats": ["html", "json"],
+                    "artifact_summary": "2 artifacts · HTML, JSON",
                     "artifact_links": [
                         {
                             "format": "json",

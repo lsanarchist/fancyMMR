@@ -581,6 +581,21 @@ def _build_downloadable_fetch_failure_artifacts(
     return artifacts
 
 
+def _summarize_fetch_failure_artifact_links(
+    artifact_links: list[dict[str, object]],
+) -> dict[str, object]:
+    artifact_count = len(artifact_links)
+    artifact_formats = sorted({str(artifact.get("format") or "").lower() for artifact in artifact_links if str(artifact.get("format") or "")})
+    artifact_summary_parts = [f"{artifact_count} artifact" + ("" if artifact_count == 1 else "s")]
+    if artifact_formats:
+        artifact_summary_parts.append(", ".join(artifact_format.upper() for artifact_format in artifact_formats))
+    return {
+        "artifact_count": artifact_count,
+        "artifact_formats": artifact_formats,
+        "artifact_summary": " · ".join(artifact_summary_parts),
+    }
+
+
 def _group_fetch_failure_sources_by_next_action(
     fetch_failure_sources: list[dict[str, object]],
 ) -> list[dict[str, object]]:
@@ -606,6 +621,7 @@ def _group_fetch_failure_sources_by_next_action(
             }
             for artifact in _build_fetch_failure_artifacts_for_source(failure_source)
         ]
+        artifact_summary = _summarize_fetch_failure_artifact_links(artifact_links)
         grouped_sources.setdefault(failure_next_action, []).append(
             {
                 "source_id": source_id,
@@ -618,6 +634,9 @@ def _group_fetch_failure_sources_by_next_action(
                 "failure_retryability": failure_retryability,
                 "failure_context_summary": " · ".join(failure_context_parts),
                 "artifact_links": artifact_links,
+                "artifact_count": int(artifact_summary["artifact_count"]),
+                "artifact_formats": artifact_summary["artifact_formats"],
+                "artifact_summary": str(artifact_summary["artifact_summary"]),
             }
         )
 
