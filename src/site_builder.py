@@ -650,6 +650,12 @@ def route_registry_markup(route_registry_items: list[dict[str, object]]) -> str:
 def output_registry_link_markup(item: dict[str, object]) -> str:
     target = str(item.get("target") or "")
     item_format = str(item.get("format") or Path(target).suffix.lstrip(".").lower() or "other").upper()
+    item_bytes = item.get("bytes")
+    byte_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
+        if isinstance(item_bytes, int)
+        else ""
+    )
     return (
         f'<a class="rail-command-link output-registry-link" href="{html.escape(target, quote=True)}" '
         f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
@@ -661,6 +667,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         '<span class="output-registry-meta">'
         f'<span class="output-registry-badge output-registry-badge-target">{html.escape(target)}</span>'
         f'<span class="output-registry-badge output-registry-badge-format">{html.escape(item_format)}</span>'
+        f"{byte_badge_html}"
         "</span>"
         "</a>"
     )
@@ -5544,6 +5551,12 @@ body {
   color: var(--accent);
   border-color: rgba(246, 165, 58, 0.22);
   background: rgba(246, 165, 58, 0.08);
+}
+
+.output-registry-badge-bytes {
+  color: var(--green);
+  border-color: rgba(131, 212, 134, 0.22);
+  background: rgba(131, 212, 134, 0.08);
 }
 
 .nav-link:hover,

@@ -304,6 +304,16 @@ def format_byte_totals(items: list[dict[str, object]]) -> dict[str, str]:
     return {artifact_format: format_byte_count(total_bytes) for artifact_format, total_bytes in totals.items()}
 
 
+def byte_sizes_by_site_path(items: list[dict[str, object]]) -> dict[str, str]:
+    return {
+        str(artifact["site_path"]): format_byte_count(int(artifact["bytes"]))
+        for artifact in items
+        if isinstance(artifact, dict)
+        and isinstance(artifact.get("site_path"), str)
+        and isinstance(artifact.get("bytes"), int)
+    }
+
+
 def format_average_byte_sizes(items: list[dict[str, object]]) -> dict[str, str]:
     totals: dict[str, int] = {}
     counts: dict[str, int] = {}
@@ -532,6 +542,7 @@ def manifest_generated_download_items(workspace: Path, pipeline_manifest: dict[s
             continue
         items.append(
             {
+                "site_path": path,
                 "format": Path(path).suffix.lstrip(".").lower(),
                 "bytes": int(artifact.get("bytes") or artifact_path.stat().st_size),
             }
@@ -542,6 +553,7 @@ def manifest_generated_download_items(workspace: Path, pipeline_manifest: dict[s
     if "data/pipeline_manifest.json" not in seen_paths and manifest_path.exists():
         items.append(
             {
+                "site_path": "data/pipeline_manifest.json",
                 "format": "json",
                 "bytes": manifest_path.stat().st_size,
             }
@@ -614,6 +626,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     publication_format_byte_totals = format_byte_totals(
         manifest_generated_download_items(workspace, pipeline_manifest)
     )
+    publication_link_byte_sizes = byte_sizes_by_site_path(
+        manifest_generated_download_items(workspace, pipeline_manifest)
+    )
     publication_format_byte_ranges = format_byte_ranges(
         manifest_generated_download_items(workspace, pipeline_manifest)
     )
@@ -650,6 +665,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     staged_format_byte_totals = format_byte_totals(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"])
     )
+    staged_link_byte_sizes = byte_sizes_by_site_path(
+        list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"])
+    )
     staged_format_byte_ranges = format_byte_ranges(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"])
     )
@@ -684,6 +702,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"])
     )
     fetch_failure_format_byte_totals = format_byte_totals(
+        list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
+    )
+    fetch_failure_link_byte_sizes = byte_sizes_by_site_path(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
     )
     fetch_failure_format_byte_ranges = format_byte_ranges(
@@ -969,6 +990,14 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert 'class="output-registry-badge output-registry-badge-format">JSON<' in publication_output_section
     assert 'class="output-registry-badge output-registry-badge-target">data/business_model_summary.csv<' in publication_output_section
     assert 'class="output-registry-badge output-registry-badge-format">CSV<' in publication_output_section
+    assert (
+        f'class="output-registry-badge output-registry-badge-bytes">'
+        f'{publication_link_byte_sizes["data/metrics.json"]}<'
+    ) in publication_output_section
+    assert (
+        f'class="output-registry-badge output-registry-badge-bytes">'
+        f'{publication_link_byte_sizes["data/business_model_summary.csv"]}<'
+    ) in publication_output_section
     assert "Provenance pack" in staged_output_section
     assert "Staging posture" in staged_output_section
     assert staged_total_bytes in staged_output_section
@@ -985,6 +1014,14 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert 'class="output-registry-badge output-registry-badge-target">data/source_pipeline/snapshots/run_manifest.json<' in staged_output_section
     assert 'class="output-registry-badge output-registry-badge-format">CSV<' in staged_output_section
     assert 'class="output-registry-badge output-registry-badge-format">JSON<' in staged_output_section
+    assert (
+        f'class="output-registry-badge output-registry-badge-bytes">'
+        f'{staged_link_byte_sizes["data/source_pipeline/processed/detail_page_rows.csv"]}<'
+    ) in staged_output_section
+    assert (
+        f'class="output-registry-badge output-registry-badge-bytes">'
+        f'{staged_link_byte_sizes["data/source_pipeline/snapshots/run_manifest.json"]}<'
+    ) in staged_output_section
     assert 'rail-command-divider-label">CSV<' in publication_output_section
     assert 'rail-command-divider-label">JSON<' in publication_output_section
     assert 'rail-command-divider-count">5<' in publication_output_section
@@ -1487,6 +1524,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".output-registry-badge {" in site_css
     assert ".output-registry-badge-target {" in site_css
     assert ".output-registry-badge-format {" in site_css
+    assert ".output-registry-badge-bytes {" in site_css
     assert ".command-input {" in site_css
     assert ".command-input-wrap:focus-within {" in site_css
     assert ".infographic-grid {" in site_css
@@ -1619,6 +1657,9 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
         source_pipeline_artifact_total_bytes(pipeline_manifest, "downloadable_fetch_failure_artifacts")
     )
     fetch_failure_format_byte_totals = format_byte_totals(
+        list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
+    )
+    fetch_failure_link_byte_sizes = byte_sizes_by_site_path(
         list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
     )
     fetch_failure_format_byte_ranges = format_byte_ranges(
@@ -1761,6 +1802,18 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert 'class="output-registry-badge output-registry-badge-target">data/fetch_failures/category--sales.json<' in fetch_failure_output_section
     assert 'class="output-registry-badge output-registry-badge-format">HTML<' in fetch_failure_output_section
     assert 'class="output-registry-badge output-registry-badge-format">JSON<' in fetch_failure_output_section
+    assert (
+        f'class="output-registry-badge output-registry-badge-bytes">'
+        f'{fetch_failure_link_byte_sizes["data/fetch_failures/category--ai.html"]}<'
+    ) in fetch_failure_output_section
+    assert (
+        f'class="output-registry-badge output-registry-badge-bytes">'
+        f'{fetch_failure_link_byte_sizes["data/fetch_failures/category--ai.json"]}<'
+    ) in fetch_failure_output_section
+    assert (
+        f'class="output-registry-badge output-registry-badge-bytes">'
+        f'{fetch_failure_link_byte_sizes["data/fetch_failures/category--sales.json"]}<'
+    ) in fetch_failure_output_section
     assert 'rail-command-divider-label">HTML<' in fetch_failure_output_section
     assert 'rail-command-divider-label">JSON<' in fetch_failure_output_section
     assert 'rail-command-divider-count">1<' in fetch_failure_output_section
