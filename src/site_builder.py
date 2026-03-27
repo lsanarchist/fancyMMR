@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 import shutil
 
-from site_output_registry import output_registry_command_links_markup
+from site_output_registry import format_byte_share, output_registry_command_links_markup
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -651,9 +651,15 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     target = str(item.get("target") or "")
     item_format = str(item.get("format") or Path(target).suffix.lstrip(".").lower() or "other").upper()
     item_bytes = item.get("bytes")
+    item_byte_share = str(item.get("byte_share") or "")
     byte_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
         if isinstance(item_bytes, int)
+        else ""
+    )
+    share_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-share">{html.escape(item_byte_share)}</span>'
+        if item_byte_share
         else ""
     )
     return (
@@ -668,6 +674,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         f'<span class="output-registry-badge output-registry-badge-target">{html.escape(target)}</span>'
         f'<span class="output-registry-badge output-registry-badge-format">{html.escape(item_format)}</span>'
         f"{byte_badge_html}"
+        f"{share_badge_html}"
         "</span>"
         "</a>"
     )
@@ -749,6 +756,11 @@ def global_route_command_items() -> list[dict[str, str]]:
 
 def global_output_command_items(download_items: list[dict[str, object]]) -> list[dict[str, object]]:
     items: list[dict[str, object]] = []
+    section_total_bytes = sum(
+        int(artifact.get("bytes"))
+        for artifact in download_items
+        if isinstance(artifact.get("bytes"), int)
+    )
     for artifact in download_items:
         site_path = str(artifact.get("site_path") or "")
         if not site_path:
@@ -772,6 +784,7 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
         artifact_bytes = artifact.get("bytes")
         if isinstance(artifact_bytes, int):
             items[-1]["bytes"] = artifact_bytes
+            items[-1]["byte_share"] = format_byte_share(artifact_bytes, section_total_bytes)
     return items
 
 
@@ -5557,6 +5570,12 @@ body {
   color: var(--green);
   border-color: rgba(131, 212, 134, 0.22);
   background: rgba(131, 212, 134, 0.08);
+}
+
+.output-registry-badge-share {
+  color: var(--ink-soft);
+  border-color: rgba(244, 234, 215, 0.18);
+  background: rgba(244, 234, 215, 0.06);
 }
 
 .nav-link:hover,

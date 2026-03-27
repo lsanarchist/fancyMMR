@@ -605,6 +605,12 @@ body {
   background: rgba(131, 212, 134, 0.08);
 }
 
+.output-registry-badge-share {
+  color: var(--ink-soft);
+  border-color: rgba(244, 234, 215, 0.18);
+  background: rgba(244, 234, 215, 0.06);
+}
+
 .nav-link:hover,
 .nav-link.is-active,
 .rail-command-link:hover,
