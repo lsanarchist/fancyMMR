@@ -251,6 +251,12 @@ body {
   color: var(--ink-dim);
 }
 
+.rail-command-divider-gap {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  color: var(--accent-muted);
+}
+
 .rail-command-divider-top-share {
   font-size: 0.64rem;
   letter-spacing: 0.08em;
