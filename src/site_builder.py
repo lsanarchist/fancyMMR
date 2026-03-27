@@ -65,6 +65,15 @@ def format_byte_count(byte_count: int) -> str:
     return f"{byte_count:,} bytes"
 
 
+def format_delay_seconds(value: object) -> str:
+    if value in (None, ""):
+        return "n/a"
+    try:
+        return f"{float(value):.1f}s"
+    except (TypeError, ValueError):
+        return html.escape(str(value))
+
+
 def clean_site_dir() -> None:
     if SITE_DIR.exists():
         shutil.rmtree(SITE_DIR)
@@ -805,7 +814,7 @@ def build_data_page(
         fetch_failure_sources = source_pipeline_diagnostics.get("fetch_failure_sources", [])
         if fetch_failure_sources:
             diagnostics_fetch_failure_section = render_table(
-                ["Source page", "Recorded at", "Robots", "robots.txt", "Status", "Error", "HTML snapshot", "Message"],
+                ["Source page", "Recorded at", "Robots", "robots.txt", "Delay", "Status", "Error", "HTML snapshot", "Message"],
                 [
                     [
                         f'<a href="{html.escape(row["source_url"], quote=True)}">{html.escape(row["source_url"])}</a>',
@@ -814,6 +823,7 @@ def build_data_page(
                         html.escape(
                             str(row.get("robots_status_code") if row.get("robots_status_code") is not None else "n/a")
                         ),
+                        html.escape(format_delay_seconds(row.get("robots_effective_delay_seconds"))),
                         html.escape(str(row.get("status_code") if row.get("status_code") is not None else "n/a")),
                         html.escape(str(row.get("error_type") or "unknown")),
                         html.escape("yes" if row.get("has_html_snapshot") else "no"),
@@ -843,6 +853,48 @@ def build_data_page(
         fetch_failure_robots_status_code_counts = (
             source_pipeline_diagnostics.get("fetch_failure_robots_status_code_counts", {}) or {}
         )
+        fetch_failure_effective_delay_seconds_counts = (
+            source_pipeline_diagnostics.get("fetch_failure_effective_delay_seconds_counts", {}) or {}
+        )
+        fetch_failure_min_effective_delay_seconds = source_pipeline_diagnostics.get(
+            "fetch_failure_min_effective_delay_seconds"
+        )
+        fetch_failure_max_effective_delay_seconds = source_pipeline_diagnostics.get(
+            "fetch_failure_max_effective_delay_seconds"
+        )
+        if fetch_failure_sources:
+            delay_note = ""
+            if (
+                fetch_failure_min_effective_delay_seconds is not None
+                and fetch_failure_max_effective_delay_seconds is not None
+            ):
+                delay_note = (
+                    f'<p class="section-note">Shortest recorded effective delay: '
+                    f'<strong>{html.escape(format_delay_seconds(fetch_failure_min_effective_delay_seconds))}</strong>. '
+                    f'Longest recorded effective delay: '
+                    f'<strong>{html.escape(format_delay_seconds(fetch_failure_max_effective_delay_seconds))}</strong>.</p>'
+                )
+            diagnostics_fetch_failure_delay_section = (
+                "<h3>Fetch-failure delay context</h3>"
+                + delay_note
+                + render_table(
+                    ["Effective delay", "Affected sources"],
+                    [
+                        [
+                            html.escape(
+                                "n/a" if str(delay_seconds) == "n/a" else format_delay_seconds(delay_seconds)
+                            ),
+                            html.escape(f"{int(count):,}"),
+                        ]
+                        for delay_seconds, count in fetch_failure_effective_delay_seconds_counts.items()
+                    ],
+                )
+            )
+        else:
+            diagnostics_fetch_failure_delay_section = (
+                "<h3>Fetch-failure delay context</h3>"
+                '<p class="section-note">No staged fetch-failure delay context is currently recorded for the active manifest.</p>'
+            )
         if fetch_failure_sources:
             diagnostics_fetch_failure_robots_section = (
                 "<h3>Fetch-failure robots context</h3>"
@@ -952,6 +1004,7 @@ def build_data_page(
             + diagnostics_failure_section
             + diagnostics_fetch_failure_section
             + diagnostics_fetch_failure_timing_section
+            + diagnostics_fetch_failure_delay_section
             + diagnostics_fetch_failure_robots_section
             + diagnostics_fetch_failure_breakdown_section
             + diagnostics_coverage_section

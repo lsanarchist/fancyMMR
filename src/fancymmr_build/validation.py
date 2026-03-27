@@ -275,6 +275,24 @@ def _timestamp_bounds(
     return parsed_rows[0][1], parsed_rows[-1][1]
 
 
+def _float_bounds(
+    rows: list[dict[str, object]],
+    key: str,
+) -> tuple[float | None, float | None]:
+    values: list[float] = []
+    for row in rows:
+        value = row.get(key)
+        if value in (None, ""):
+            continue
+        try:
+            values.append(float(value))
+        except (TypeError, ValueError):
+            continue
+    if not values:
+        return None, None
+    return min(values), max(values)
+
+
 def _robots_policy_label(value: object) -> str | None:
     if isinstance(value, bool):
         return "allowed" if value else "disallowed"
@@ -488,6 +506,9 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "fetch_failure_latest_recorded_at": None,
         "fetch_failure_robots_policy_counts": None,
         "fetch_failure_robots_status_code_counts": None,
+        "fetch_failure_effective_delay_seconds_counts": None,
+        "fetch_failure_min_effective_delay_seconds": None,
+        "fetch_failure_max_effective_delay_seconds": None,
         "fetch_failure_status_code_counts": None,
         "detail_parse_failure_source_count": None,
         "detail_parse_status_counts": None,
@@ -563,6 +584,13 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
     fetch_failure_earliest_recorded_at, fetch_failure_latest_recorded_at = _timestamp_bounds(
         fetch_failure_sources,
         "recorded_at",
+    )
+    (
+        fetch_failure_min_effective_delay_seconds,
+        fetch_failure_max_effective_delay_seconds,
+    ) = _float_bounds(
+        fetch_failure_sources,
+        "robots_effective_delay_seconds",
     )
     source_pages = []
     for source_output in run_manifest.get("per_source_outputs", []):
@@ -657,6 +685,13 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
                 "robots_status_code",
                 none_label="n/a",
             ),
+            "fetch_failure_effective_delay_seconds_counts": _count_values(
+                fetch_failure_sources,
+                "robots_effective_delay_seconds",
+                none_label="n/a",
+            ),
+            "fetch_failure_min_effective_delay_seconds": fetch_failure_min_effective_delay_seconds,
+            "fetch_failure_max_effective_delay_seconds": fetch_failure_max_effective_delay_seconds,
             "fetch_failure_status_code_counts": _count_values(
                 fetch_failure_sources,
                 "status_code",
@@ -800,6 +835,15 @@ def write_pipeline_manifest(
             ],
             "fetch_failure_robots_status_code_counts": source_pipeline_diagnostics_report[
                 "fetch_failure_robots_status_code_counts"
+            ],
+            "fetch_failure_effective_delay_seconds_counts": source_pipeline_diagnostics_report[
+                "fetch_failure_effective_delay_seconds_counts"
+            ],
+            "fetch_failure_min_effective_delay_seconds": source_pipeline_diagnostics_report[
+                "fetch_failure_min_effective_delay_seconds"
+            ],
+            "fetch_failure_max_effective_delay_seconds": source_pipeline_diagnostics_report[
+                "fetch_failure_max_effective_delay_seconds"
             ],
             "fetch_failure_status_code_counts": source_pipeline_diagnostics_report["fetch_failure_status_code_counts"],
             "detail_parse_failure_source_count": source_pipeline_diagnostics_report["detail_parse_failure_source_count"],
