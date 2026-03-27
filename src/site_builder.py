@@ -605,6 +605,28 @@ def primary_nav_markup(nav_items: list[tuple[str, str, str]], *, active: str) ->
     )
 
 
+def command_deck_markup(local_panel_items: list[dict[str, object]]) -> str:
+    item_count = len(local_panel_items)
+    order_width = max(2, len(str(item_count or 1)))
+    return "".join(
+        (
+            f'<a class="rail-command-link command-deck-link" href="{html.escape(str(item["target"]), quote=True)}" '
+            f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
+            f'data-command-target="{html.escape(str(item["target"]), quote=True)}" '
+            f'data-command-kind="{html.escape(str(item["kind"]), quote=True)}" '
+            f'data-command-query="{html.escape(str(item["query"]), quote=True)}" '
+            f'data-command-terms="{html.escape(str(item["terms"]), quote=True)}">'
+            f'<span class="command-deck-label">{html.escape(str(item["label"]))}</span>'
+            '<span class="command-deck-meta">'
+            f'<span class="command-deck-badge command-deck-badge-order">{index:0{order_width}d}/{item_count:0{order_width}d}</span>'
+            f'<span class="command-deck-badge command-deck-badge-anchor">{html.escape(str(item["target"]))}</span>'
+            "</span>"
+            "</a>"
+        )
+        for index, item in enumerate(local_panel_items, start=1)
+    )
+
+
 def command_item(
     *,
     label: str,
@@ -895,7 +917,7 @@ def page_shell(
     ]
     navigation = primary_nav_markup(nav_items, active=active)
     command_bar_links = command_links_markup(local_panel_items, link_class="command-chip")
-    command_deck_links = command_links_markup(local_panel_items, link_class="rail-command-link")
+    command_deck_links = command_deck_markup(local_panel_items)
     route_registry_links = command_links_markup(route_registry_items, link_class="rail-command-link")
     route_map_story_html = route_map_story_rail(nav_items, active=active)
     operating_mode_story_html = operating_mode_story_rail(
@@ -5351,6 +5373,49 @@ body {
 }
 
 .nav-link-badge.is-standby {
+  color: var(--cyan);
+  border-color: rgba(98, 201, 214, 0.22);
+  background: rgba(98, 201, 214, 0.08);
+}
+
+.command-deck-link {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.command-deck-label {
+  color: var(--ink);
+}
+
+.command-deck-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.command-deck-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(5, 7, 10, 0.2);
+  color: var(--ink-dim);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+}
+
+.command-deck-badge-order {
+  color: var(--accent);
+  border-color: rgba(246, 165, 58, 0.22);
+  background: rgba(246, 165, 58, 0.08);
+}
+
+.command-deck-badge-anchor {
   color: var(--cyan);
   border-color: rgba(98, 201, 214, 0.22);
   background: rgba(98, 201, 214, 0.08);

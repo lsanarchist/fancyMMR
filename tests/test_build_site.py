@@ -175,6 +175,16 @@ def extract_primary_nav(text: str) -> str:
     return match.group(1)
 
 
+def extract_page_panels_nav(text: str) -> str:
+    pattern = re.compile(
+        r'<nav class="rail-command-links" aria-label="Page panels">(.*?)</nav>',
+        re.DOTALL,
+    )
+    match = pattern.search(text)
+    assert match, "page-panels-nav"
+    return match.group(1)
+
+
 def format_byte_count(byte_count: int) -> str:
     if byte_count == 1:
         return "1 byte"
@@ -771,6 +781,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     overview_hero_aside = extract_hero_aside(index_html, "Current build snapshot")
     index_brand = extract_brand(index_html)
     index_primary_nav = extract_primary_nav(index_html)
+    index_page_panels_nav = extract_page_panels_nav(index_html)
     index_ticker_strip = extract_ticker_strip(index_html)
     index_footer = extract_site_footer(index_html)
     index_workspace_command = extract_workspace_command(index_html)
@@ -855,6 +866,19 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "nav-link-badge nav-link-badge-route" in index_primary_nav
     assert "nav-link-badge is-active" in index_primary_nav
     assert "nav-link-badge is-standby" in index_primary_nav
+    assert "OV.00 Top" in index_page_panels_nav
+    assert "OV.01 Snapshot" in index_page_panels_nav
+    assert "OV.04 Leaders" in index_page_panels_nav
+    assert "command-deck-link" in index_page_panels_nav
+    assert "command-deck-label" in index_page_panels_nav
+    assert "command-deck-meta" in index_page_panels_nav
+    assert "command-deck-badge command-deck-badge-order" in index_page_panels_nav
+    assert "command-deck-badge command-deck-badge-anchor" in index_page_panels_nav
+    assert "01/05" in index_page_panels_nav
+    assert "05/05" in index_page_panels_nav
+    assert "#top" in index_page_panels_nav
+    assert "#snapshot" in index_page_panels_nav
+    assert "#category-leaders" in index_page_panels_nav
     assert "surface" in index_ticker_strip
     assert "static pages" in index_ticker_strip
     assert "validation" in index_ticker_strip
@@ -1041,6 +1065,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     methodology_hero_aside = extract_hero_aside(methodology_html, "Warning-only signals")
     methodology_brand = extract_brand(methodology_html)
     methodology_primary_nav = extract_primary_nav(methodology_html)
+    methodology_page_panels_nav = extract_page_panels_nav(methodology_html)
     methodology_ticker_strip = extract_ticker_strip(methodology_html)
     methodology_footer = extract_site_footer(methodology_html)
     methodology_workspace_command = extract_workspace_command(methodology_html)
@@ -1082,6 +1107,14 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "nav-link-badge is-active" in methodology_primary_nav
     assert "nav-link-badge is-standby" in methodology_primary_nav
     assert 'href="methodology.html" aria-current="page"' in methodology_primary_nav
+    assert "MD.00 Top" in methodology_page_panels_nav
+    assert "MD.04 Validation" in methodology_page_panels_nav
+    assert "01/05" in methodology_page_panels_nav
+    assert "05/05" in methodology_page_panels_nav
+    assert "#top" in methodology_page_panels_nav
+    assert "#validation-checks" in methodology_page_panels_nav
+    assert "command-deck-badge command-deck-badge-order" in methodology_page_panels_nav
+    assert "command-deck-badge command-deck-badge-anchor" in methodology_page_panels_nav
     assert "route" in methodology_ticker_strip
     assert "methodology" in methodology_ticker_strip
     assert "local panels" in methodology_ticker_strip
@@ -1218,6 +1251,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     data_hero_aside = extract_hero_aside(data_html, "Manifest summary")
     data_brand = extract_brand(data_html)
     data_primary_nav = extract_primary_nav(data_html)
+    data_page_panels_nav = extract_page_panels_nav(data_html)
     data_ticker_strip = extract_ticker_strip(data_html)
     data_footer = extract_site_footer(data_html)
     data_workspace_command = extract_workspace_command(data_html)
@@ -1296,6 +1330,14 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "nav-link-badge is-active" in data_primary_nav
     assert "nav-link-badge is-standby" in data_primary_nav
     assert 'href="data.html" aria-current="page"' in data_primary_nav
+    assert "DT.00 Top" in data_page_panels_nav
+    assert "DT.09 Manifest" in data_page_panels_nav
+    assert "01/10" in data_page_panels_nav
+    assert "10/10" in data_page_panels_nav
+    assert "#top" in data_page_panels_nav
+    assert "#manifest-notes" in data_page_panels_nav
+    assert "command-deck-badge command-deck-badge-order" in data_page_panels_nav
+    assert "command-deck-badge command-deck-badge-anchor" in data_page_panels_nav
     assert "route" in data_ticker_strip
     assert "data" in data_ticker_strip
     assert "local panels" in data_ticker_strip
@@ -1365,6 +1407,12 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".nav-link-badge {" in site_css
     assert ".nav-link-badge-route {" in site_css
     assert ".nav-link-badge.is-standby {" in site_css
+    assert ".command-deck-link {" in site_css
+    assert ".command-deck-label {" in site_css
+    assert ".command-deck-meta {" in site_css
+    assert ".command-deck-badge {" in site_css
+    assert ".command-deck-badge-order {" in site_css
+    assert ".command-deck-badge-anchor {" in site_css
     assert ".command-input {" in site_css
     assert ".command-input-wrap:focus-within {" in site_css
     assert ".infographic-grid {" in site_css
