@@ -833,6 +833,7 @@ h3 {
 }
 
 .stat-grid,
+.infographic-grid,
 .card-grid,
 .chart-grid,
 .two-up {
@@ -842,6 +843,11 @@ h3 {
 
 .stat-grid {
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.infographic-grid {
+  margin-top: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
 .card-grid,
@@ -854,6 +860,7 @@ h3 {
 }
 
 .stat-card,
+.infographic-card,
 .callout-card,
 .download-card,
 .chart-card,
@@ -867,9 +874,107 @@ h3 {
 }
 
 .stat-card,
+.infographic-card,
 .callout-card,
 .download-card {
   padding: 18px;
+}
+
+.infographic-card {
+  display: grid;
+  gap: 12px;
+  border-color: rgba(98, 201, 214, 0.18);
+  background:
+    radial-gradient(circle at top right, rgba(246, 165, 58, 0.16), transparent 38%),
+    linear-gradient(180deg, rgba(23, 29, 38, 0.94), rgba(11, 15, 19, 0.98));
+}
+
+.infographic-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.infographic-kicker {
+  margin: 0;
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.68rem;
+}
+
+.infographic-value {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: clamp(1.3rem, 1.9vw, 2rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-align: right;
+}
+
+.infographic-note {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.infographic-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.infographic-meter {
+  display: grid;
+  gap: 6px;
+}
+
+.infographic-meter-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.infographic-meter-head strong {
+  color: var(--ink);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.infographic-track {
+  position: relative;
+  height: 9px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(244, 234, 215, 0.08);
+  border: 1px solid rgba(244, 234, 215, 0.08);
+}
+
+.infographic-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(246, 165, 58, 0.84), rgba(246, 165, 58, 0.28));
+}
+
+.infographic-fill.tone-accent {
+  background: linear-gradient(90deg, rgba(246, 165, 58, 0.94), rgba(246, 165, 58, 0.34));
+}
+
+.infographic-fill.tone-cyan {
+  background: linear-gradient(90deg, rgba(98, 201, 214, 0.94), rgba(98, 201, 214, 0.32));
+}
+
+.infographic-fill.tone-green {
+  background: linear-gradient(90deg, rgba(92, 214, 141, 0.94), rgba(92, 214, 141, 0.32));
+}
+
+.infographic-fill.tone-red {
+  background: linear-gradient(90deg, rgba(255, 104, 104, 0.94), rgba(255, 104, 104, 0.34));
 }
 
 .chart-card img {

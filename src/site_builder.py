@@ -992,6 +992,149 @@ def stat_card(label: str, value: str, note: str) -> str:
 """
 
 
+def normalized_ratio(value: float, maximum: float) -> float:
+    if maximum <= 0:
+        return 0.0
+    return max(0.0, min(1.0, float(value) / maximum))
+
+
+def infographic_meter(label: str, value: str, ratio: float, *, tone: str = "accent") -> str:
+    clamped_ratio = max(0.0, min(1.0, float(ratio)))
+    width = 0.0 if clamped_ratio <= 0 else max(8.0, clamped_ratio * 100)
+    return f"""
+<div class="infographic-meter">
+  <div class="infographic-meter-head">
+    <span>{html.escape(label)}</span>
+    <strong>{html.escape(value)}</strong>
+  </div>
+  <div class="infographic-track" aria-hidden="true">
+    <span class="infographic-fill tone-{html.escape(tone, quote=True)}" style="width: {width:.1f}%"></span>
+  </div>
+</div>
+"""
+
+
+def infographic_card(
+    *,
+    title: str,
+    kicker: str,
+    value: str,
+    note: str,
+    meters_html: str,
+) -> str:
+    return f"""
+<article class="infographic-card">
+  <div class="infographic-head">
+    <p class="infographic-kicker">{html.escape(kicker)}</p>
+    <p class="infographic-value">{html.escape(value)}</p>
+  </div>
+  <h3>{html.escape(title)}</h3>
+  <p class="infographic-note">{html.escape(note)}</p>
+  <div class="infographic-stack">
+    {meters_html}
+  </div>
+</article>
+"""
+
+
+def overview_infographic_cards(metrics: dict[str, object], category_rows: list[dict[str, str]]) -> str:
+    dominant_category = str(metrics["dominant_category"])
+    dominant_category_row = next(
+        (row for row in category_rows if str(row.get("category")) == dominant_category),
+        category_rows[0] if category_rows else None,
+    )
+    dominant_category_revenue_share = float(metrics["dominant_category_revenue_share"])
+    dominant_category_startup_share = float(metrics["dominant_category_startup_share"])
+    dominant_category_index = (
+        float(dominant_category_row["performance_index"]) if dominant_category_row is not None else 0.0
+    )
+    p90_revenue = float(metrics["p90_revenue_usd"])
+    top_category_rows = category_rows[:3]
+
+    cards = [
+        infographic_card(
+            title="Concentration ladder",
+            kicker="Revenue capture",
+            value=pct(metrics["top_10_revenue_share"]),
+            note="The first visible read is still how quickly the top tail swallows the sample.",
+            meters_html="".join(
+                [
+                    infographic_meter("Top 1", pct(metrics["top_1_revenue_share"]), float(metrics["top_1_revenue_share"]), tone="red"),
+                    infographic_meter("Top 5", pct(metrics["top_5_revenue_share"]), float(metrics["top_5_revenue_share"]), tone="accent"),
+                    infographic_meter("Top 10", pct(metrics["top_10_revenue_share"]), float(metrics["top_10_revenue_share"]), tone="cyan"),
+                    infographic_meter("Top 20", pct(metrics["top_20_revenue_share"]), float(metrics["top_20_revenue_share"]), tone="green"),
+                ]
+            ),
+        ),
+        infographic_card(
+            title="Category over-index",
+            kicker="Leader gap",
+            value=dominant_category,
+            note=f"{dominant_category_index:.1f}x performance index for the current leader in the visible sample.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Revenue share",
+                        pct(dominant_category_revenue_share),
+                        dominant_category_revenue_share,
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Startup share",
+                        pct(dominant_category_startup_share),
+                        dominant_category_startup_share,
+                        tone="cyan",
+                    ),
+                ]
+            ),
+        ),
+        infographic_card(
+            title="Revenue checkpoints",
+            kicker="Distribution cut",
+            value=usd_short(p90_revenue),
+            note="Median and percentile checkpoints stay visible without opening a chart first.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Median",
+                        usd_short(metrics["median_revenue_usd"]),
+                        normalized_ratio(float(metrics["median_revenue_usd"]), p90_revenue),
+                        tone="green",
+                    ),
+                    infographic_meter(
+                        "P75",
+                        usd_short(metrics["p75_revenue_usd"]),
+                        normalized_ratio(float(metrics["p75_revenue_usd"]), p90_revenue),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "P90",
+                        usd_short(metrics["p90_revenue_usd"]),
+                        normalized_ratio(float(metrics["p90_revenue_usd"]), p90_revenue),
+                        tone="accent",
+                    ),
+                ]
+            ),
+        ),
+        infographic_card(
+            title="Top category lanes",
+            kicker="Revenue mix",
+            value=f"{len(top_category_rows)} leaders",
+            note="The leading categories are visible immediately instead of hiding behind the chart rack.",
+            meters_html="".join(
+                infographic_meter(
+                    str(row["category"]),
+                    pct(float(row["revenue_share"])),
+                    float(row["revenue_share"]),
+                    tone=tone,
+                )
+                for row, tone in zip(top_category_rows, ["accent", "cyan", "green"])
+            ),
+        ),
+    ]
+    return "".join(cards)
+
+
 def section(
     title: str,
     intro: str,
@@ -1190,6 +1333,7 @@ def build_index_page(
             ),
         ]
     )
+    infographics = overview_infographic_cards(metrics, category_rows)
 
     chart_cards = "".join(
         f"""
@@ -1225,7 +1369,11 @@ def build_index_page(
         section(
             "Snapshot",
             "Top-line metrics and the current validation posture for the visible sample.",
-            f'<div class="stat-grid">{stats}</div>',
+            (
+                f'<div class="stat-grid">{stats}</div>'
+                f'<div class="infographic-grid">{infographics}</div>'
+                '<p class="section-note">These quick-read infographics reuse the same static metrics and category summaries that drive the tracked charts, so the visual brief stays deterministic and shareable.</p>'
+            ),
             section_id="snapshot",
             panel_code="OV.01",
             panel_tag="summary pane",
@@ -3089,6 +3237,7 @@ h3 {
 }
 
 .stat-grid,
+.infographic-grid,
 .card-grid,
 .chart-grid,
 .two-up {
@@ -3098,6 +3247,11 @@ h3 {
 
 .stat-grid {
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.infographic-grid {
+  margin-top: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
 .card-grid,
@@ -3110,6 +3264,7 @@ h3 {
 }
 
 .stat-card,
+.infographic-card,
 .callout-card,
 .download-card,
 .chart-card,
@@ -3123,9 +3278,107 @@ h3 {
 }
 
 .stat-card,
+.infographic-card,
 .callout-card,
 .download-card {
   padding: 18px;
+}
+
+.infographic-card {
+  display: grid;
+  gap: 12px;
+  border-color: rgba(98, 201, 214, 0.18);
+  background:
+    radial-gradient(circle at top right, rgba(246, 165, 58, 0.16), transparent 38%),
+    linear-gradient(180deg, rgba(23, 29, 38, 0.94), rgba(11, 15, 19, 0.98));
+}
+
+.infographic-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.infographic-kicker {
+  margin: 0;
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.68rem;
+}
+
+.infographic-value {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: clamp(1.3rem, 1.9vw, 2rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-align: right;
+}
+
+.infographic-note {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.infographic-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.infographic-meter {
+  display: grid;
+  gap: 6px;
+}
+
+.infographic-meter-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.infographic-meter-head strong {
+  color: var(--ink);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.infographic-track {
+  position: relative;
+  height: 9px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(244, 234, 215, 0.08);
+  border: 1px solid rgba(244, 234, 215, 0.08);
+}
+
+.infographic-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(246, 165, 58, 0.84), rgba(246, 165, 58, 0.28));
+}
+
+.infographic-fill.tone-accent {
+  background: linear-gradient(90deg, rgba(246, 165, 58, 0.94), rgba(246, 165, 58, 0.34));
+}
+
+.infographic-fill.tone-cyan {
+  background: linear-gradient(90deg, rgba(98, 201, 214, 0.94), rgba(98, 201, 214, 0.32));
+}
+
+.infographic-fill.tone-green {
+  background: linear-gradient(90deg, rgba(92, 214, 141, 0.94), rgba(92, 214, 141, 0.32));
+}
+
+.infographic-fill.tone-red {
+  background: linear-gradient(90deg, rgba(255, 104, 104, 0.94), rgba(255, 104, 104, 0.34));
 }
 
 .chart-card img {

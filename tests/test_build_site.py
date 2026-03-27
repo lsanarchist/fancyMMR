@@ -623,6 +623,11 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert publication_total_bytes in index_html
     assert staged_total_bytes in index_html
     assert fetch_failure_total_bytes in index_html
+    assert "Concentration ladder" in index_html
+    assert "Category over-index" in index_html
+    assert "Revenue checkpoints" in index_html
+    assert "Top category lanes" in index_html
+    assert "These quick-read infographics reuse the same static metrics and category summaries" in index_html
     assert "Jump palette" in index_html
     assert 'aria-describedby="jump-palette-help jump-palette-shortcuts"' in index_html
     assert 'aria-keyshortcuts="/ Control+K"' in index_html
@@ -857,6 +862,12 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".command-strip {" in site_css
     assert ".command-input {" in site_css
     assert ".command-input-wrap:focus-within {" in site_css
+    assert ".infographic-grid {" in site_css
+    assert ".infographic-card {" in site_css
+    assert ".infographic-head {" in site_css
+    assert ".infographic-meter {" in site_css
+    assert ".infographic-track {" in site_css
+    assert ".infographic-fill.tone-red {" in site_css
     assert ".command-shortcuts {" in site_css
     assert ".shortcut-chip {" in site_css
     assert ".shortcut-keys {" in site_css
