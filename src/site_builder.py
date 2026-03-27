@@ -588,6 +588,23 @@ def route_href(slug: str) -> str:
     }.get(slug, f"{slug}.html")
 
 
+def primary_nav_markup(nav_items: list[tuple[str, str, str]], *, active: str) -> str:
+    return "".join(
+        (
+            f'<a class="nav-link{" is-active" if slug == active else ""}" href="{html.escape(href, quote=True)}"'
+            f'{" aria-current=\"page\"" if slug == active else ""}>'
+            f'<span class="nav-link-label">{html.escape(label)}</span>'
+            '<span class="nav-link-meta">'
+            f'<span class="nav-link-badge nav-link-badge-route">{html.escape(route_key(slug))}</span>'
+            f'<span class="nav-link-badge {"is-active" if slug == active else "is-standby"}">'
+            f'{"active" if slug == active else "standby"}</span>'
+            "</span>"
+            "</a>"
+        )
+        for slug, label, href in nav_items
+    )
+
+
 def command_item(
     *,
     label: str,
@@ -876,12 +893,7 @@ def page_shell(
         ("methodology", "Methodology", "methodology.html"),
         ("data", "Data", "data.html"),
     ]
-    navigation = "".join(
-        (
-            f'<a class="nav-link{" is-active" if slug == active else ""}" href="{href}"{" aria-current=\"page\"" if slug == active else ""}>{label}</a>'
-        )
-        for slug, label, href in nav_items
-    )
+    navigation = primary_nav_markup(nav_items, active=active)
     command_bar_links = command_links_markup(local_panel_items, link_class="command-chip")
     command_deck_links = command_links_markup(local_panel_items, link_class="rail-command-link")
     route_registry_links = command_links_markup(route_registry_items, link_class="rail-command-link")
@@ -5293,6 +5305,55 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-size: 0.78rem;
+}
+
+.nav-link {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.nav-link-label {
+  color: var(--ink);
+}
+
+.nav-link-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.nav-link-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(5, 7, 10, 0.2);
+  color: var(--ink-dim);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+}
+
+.nav-link-badge-route {
+  color: var(--accent);
+  border-color: rgba(98, 201, 214, 0.22);
+  background: rgba(98, 201, 214, 0.08);
+}
+
+.nav-link-badge.is-active {
+  color: var(--ink);
+  border-color: var(--line-strong);
+  background: rgba(246, 165, 58, 0.18);
+}
+
+.nav-link-badge.is-standby {
+  color: var(--cyan);
+  border-color: rgba(98, 201, 214, 0.22);
+  background: rgba(98, 201, 214, 0.08);
 }
 
 .nav-link:hover,

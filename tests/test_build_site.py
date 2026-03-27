@@ -165,6 +165,16 @@ def extract_brand(text: str) -> str:
     return match.group(1)
 
 
+def extract_primary_nav(text: str) -> str:
+    pattern = re.compile(
+        r'<nav class="nav-links" aria-label="Primary">(.*?)</nav>',
+        re.DOTALL,
+    )
+    match = pattern.search(text)
+    assert match, "primary-nav"
+    return match.group(1)
+
+
 def format_byte_count(byte_count: int) -> str:
     if byte_count == 1:
         return "1 byte"
@@ -760,6 +770,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     warning_posture_section = extract_rail_module(index_html, "Warning posture")
     overview_hero_aside = extract_hero_aside(index_html, "Current build snapshot")
     index_brand = extract_brand(index_html)
+    index_primary_nav = extract_primary_nav(index_html)
     index_ticker_strip = extract_ticker_strip(index_html)
     index_footer = extract_site_footer(index_html)
     index_workspace_command = extract_workspace_command(index_html)
@@ -831,6 +842,19 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Passed with warnings" in index_brand
     assert "Route" in index_brand
     assert "/index active" in index_brand
+    assert "Overview" in index_primary_nav
+    assert "/index" in index_primary_nav
+    assert "active" in index_primary_nav
+    assert "Methodology" in index_primary_nav
+    assert "/methodology" in index_primary_nav
+    assert "standby" in index_primary_nav
+    assert "Data" in index_primary_nav
+    assert "/data" in index_primary_nav
+    assert 'class="nav-link is-active"' in index_primary_nav
+    assert 'class="nav-link"' in index_primary_nav
+    assert "nav-link-badge nav-link-badge-route" in index_primary_nav
+    assert "nav-link-badge is-active" in index_primary_nav
+    assert "nav-link-badge is-standby" in index_primary_nav
     assert "surface" in index_ticker_strip
     assert "static pages" in index_ticker_strip
     assert "validation" in index_ticker_strip
@@ -1016,6 +1040,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     methodology_publication_caveat_section = extract_rail_module(methodology_html, "Publication caveat")
     methodology_hero_aside = extract_hero_aside(methodology_html, "Warning-only signals")
     methodology_brand = extract_brand(methodology_html)
+    methodology_primary_nav = extract_primary_nav(methodology_html)
     methodology_ticker_strip = extract_ticker_strip(methodology_html)
     methodology_footer = extract_site_footer(methodology_html)
     methodology_workspace_command = extract_workspace_command(methodology_html)
@@ -1048,6 +1073,15 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Passed with warnings" in methodology_brand
     assert "Route" in methodology_brand
     assert "/methodology active" in methodology_brand
+    assert "Overview" in methodology_primary_nav
+    assert "/index" in methodology_primary_nav
+    assert "Methodology" in methodology_primary_nav
+    assert "/methodology" in methodology_primary_nav
+    assert "Data" in methodology_primary_nav
+    assert "/data" in methodology_primary_nav
+    assert "nav-link-badge is-active" in methodology_primary_nav
+    assert "nav-link-badge is-standby" in methodology_primary_nav
+    assert 'href="methodology.html" aria-current="page"' in methodology_primary_nav
     assert "route" in methodology_ticker_strip
     assert "methodology" in methodology_ticker_strip
     assert "local panels" in methodology_ticker_strip
@@ -1183,6 +1217,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     diagnostics_feed_section = extract_rail_module(data_html, "Diagnostics feed")
     data_hero_aside = extract_hero_aside(data_html, "Manifest summary")
     data_brand = extract_brand(data_html)
+    data_primary_nav = extract_primary_nav(data_html)
     data_ticker_strip = extract_ticker_strip(data_html)
     data_footer = extract_site_footer(data_html)
     data_workspace_command = extract_workspace_command(data_html)
@@ -1252,6 +1287,15 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Passed with warnings" in data_brand
     assert "Route" in data_brand
     assert "/data active" in data_brand
+    assert "Overview" in data_primary_nav
+    assert "/index" in data_primary_nav
+    assert "Methodology" in data_primary_nav
+    assert "/methodology" in data_primary_nav
+    assert "Data" in data_primary_nav
+    assert "/data" in data_primary_nav
+    assert "nav-link-badge is-active" in data_primary_nav
+    assert "nav-link-badge is-standby" in data_primary_nav
+    assert 'href="data.html" aria-current="page"' in data_primary_nav
     assert "route" in data_ticker_strip
     assert "data" in data_ticker_strip
     assert "local panels" in data_ticker_strip
@@ -1316,6 +1360,11 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".brand-badge {" in site_css
     assert ".brand-badge strong {" in site_css
     assert ".brand-badge-accent {" in site_css
+    assert ".nav-link-label {" in site_css
+    assert ".nav-link-meta {" in site_css
+    assert ".nav-link-badge {" in site_css
+    assert ".nav-link-badge-route {" in site_css
+    assert ".nav-link-badge.is-standby {" in site_css
     assert ".command-input {" in site_css
     assert ".command-input-wrap:focus-within {" in site_css
     assert ".infographic-grid {" in site_css
