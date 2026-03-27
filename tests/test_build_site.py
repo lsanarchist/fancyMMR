@@ -661,6 +661,28 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "GET source_pipeline/processed/detail_page_rows.csv" in index_html
     publication_output_section = extract_hot_output_section(index_html, "Publication outputs")
     staged_output_section = extract_hot_output_section(index_html, "Staged provenance")
+    assert "Registry shape" in publication_output_section
+    assert "Signal anchors" in publication_output_section
+    assert "keep the publication command surface self-contained at" in publication_output_section
+    assert publication_total_bytes in publication_output_section
+    assert "Diagnostics, coverage, and manifest JSON dominate the publication registry byte weight." in publication_output_section
+    assert "JSON files" in publication_output_section
+    assert "CSV files" in publication_output_section
+    assert "Total bytes" in publication_output_section
+    assert "Source-pipeline diagnostics" in publication_output_section
+    assert "Source coverage report" in publication_output_section
+    assert "Pipeline manifest" in publication_output_section
+    assert "Provenance pack" in staged_output_section
+    assert "Staging posture" in staged_output_section
+    assert staged_total_bytes in staged_output_section
+    assert "of staged provenance one jump away." in staged_output_section
+    assert "852 target detail pages remain opt-in, with 852 still not requested in the promoted run." in staged_output_section
+    assert "JSON files" in staged_output_section
+    assert "CSV files" in staged_output_section
+    assert "Not requested" in staged_output_section
+    assert "Fetched" in staged_output_section
+    assert "Parsed" in staged_output_section
+    assert "Staged detail rows" in staged_output_section
     assert 'rail-command-divider-label">CSV<' in publication_output_section
     assert 'rail-command-divider-label">JSON<' in publication_output_section
     assert 'rail-command-divider-count">5<' in publication_output_section
@@ -878,8 +900,14 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Publication outputs" in data_html
     assert "Staged provenance" in data_html
     assert "Fetch-failure evidence" in data_html
+    assert "Registry shape" in data_html
+    assert "Signal anchors" in data_html
+    assert "keep the publication command surface self-contained at" in data_html
+    assert "Diagnostics, coverage, and manifest JSON dominate the publication registry byte weight." in data_html
     assert "Registry cache" in data_html
     assert "Action posture" in data_html
+    assert "of staged provenance one jump away." in data_html
+    assert "852 target detail pages remain opt-in, with 852 still not requested in the promoted run." in data_html
     assert "No staged fetch-failure files are indexed in the command surface." in data_html
     assert "No retryable, blocked, or do-not-retry posture is attached to the active manifest." in data_html
     assert "No fetch-failure evidence is currently attached to the active manifest." in data_html

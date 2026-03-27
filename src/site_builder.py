@@ -693,14 +693,14 @@ def build_output_registry_sections(
             "Publication outputs",
             "No publication outputs are currently indexed in the static command surface.",
             publication_artifacts,
-            "",
+            publication_output_registry_story_rails(publication_artifacts),
         ),
         (
             "Staged provenance",
             "Staged provenance",
             "No staged provenance downloads are currently attached to the active manifest.",
             staged_artifacts,
-            "",
+            staged_output_registry_story_rails(staged_artifacts, source_pipeline_diagnostics),
         ),
         (
             "Fetch-failure evidence",
@@ -2261,6 +2261,170 @@ def fetch_failure_output_registry_story_rails(
                         count_label(robots_blocked_count, "source page"),
                         normalized_ratio(robots_blocked_count, fetch_failure_source_count or 1),
                         tone="cyan",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+    ]
+    return f'<div class="annotation-rail-grid">{"".join(rails)}</div>'
+
+
+def publication_output_registry_story_rails(
+    publication_items: list[dict[str, object]],
+) -> str:
+    stats = artifact_collection_stats(publication_items)
+    total_bytes = int(stats["total_bytes"])
+    format_counts: Counter[str] = stats["format_counts"]  # type: ignore[assignment]
+    ranked_items: list[dict[str, object]] = stats["ranked_items"]  # type: ignore[assignment]
+    item_count = int(stats["item_count"])
+    json_count = format_counts.get("json", 0)
+    csv_count = format_counts.get("csv", 0)
+    top_items = ranked_items[:3]
+
+    if item_count == 0:
+        registry_headline = "No publication files are indexed in the command surface."
+        anchor_headline = "No publication anchors are currently attached to the active bundle."
+    else:
+        registry_headline = (
+            f"{count_label(item_count, 'file')} keep the publication command surface self-contained "
+            f"at {format_byte_count(total_bytes)}."
+        )
+        anchor_headline = (
+            "Diagnostics, coverage, and manifest JSON dominate the publication registry byte weight."
+        )
+
+    rails = [
+        chart_annotation_rail(
+            kicker="Registry shape",
+            headline=registry_headline,
+            note="The shared shell keeps summary tables and machine-readable manifests one jump away on every route.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "JSON files",
+                        count_label(json_count, "file"),
+                        normalized_ratio(json_count, item_count or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "CSV files",
+                        count_label(csv_count, "file"),
+                        normalized_ratio(csv_count, item_count or 1),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Total bytes",
+                        format_byte_count(total_bytes),
+                        1.0 if total_bytes > 0 else 0.0,
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+        chart_annotation_rail(
+            kicker="Signal anchors",
+            headline=anchor_headline,
+            note="The heaviest publication files are provenance-heavy JSON artifacts, so the command rail surfaces inspectable context before readers open the tables.",
+            meters_html="".join(
+                infographic_meter(
+                    publication_download_card_metadata(str(artifact.get("site_path") or ""))[0],
+                    format_byte_count(int(artifact.get("bytes", 0))) if isinstance(artifact.get("bytes"), int) else "0 bytes",
+                    normalized_ratio(int(artifact.get("bytes", 0)) if isinstance(artifact.get("bytes"), int) else 0, total_bytes or 1),
+                    tone=tone,
+                )
+                for artifact, tone in zip(top_items, ["red", "accent", "cyan"])
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+    ]
+    return f'<div class="annotation-rail-grid">{"".join(rails)}</div>'
+
+
+def staged_output_registry_story_rails(
+    staged_items: list[dict[str, object]],
+    source_pipeline_diagnostics: dict[str, object],
+) -> str:
+    stats = artifact_collection_stats(staged_items)
+    total_bytes = int(stats["total_bytes"])
+    format_counts: Counter[str] = stats["format_counts"]  # type: ignore[assignment]
+    ranked_items: list[dict[str, object]] = stats["ranked_items"]  # type: ignore[assignment]
+    item_count = int(stats["item_count"])
+    json_count = format_counts.get("json", 0)
+    csv_count = format_counts.get("csv", 0)
+    top_items = ranked_items[:3]
+    detail_page_target_count = int(source_pipeline_diagnostics.get("detail_page_target_count") or 0)
+    detail_parse_status_counts = source_pipeline_diagnostics.get("detail_parse_status_counts", {}) or {}
+    not_requested_detail_count = int(detail_parse_status_counts.get("not_requested") or 0)
+    fetched_detail_page_count = int(source_pipeline_diagnostics.get("fetched_detail_page_count") or 0)
+    parsed_detail_page_count = int(source_pipeline_diagnostics.get("parsed_detail_page_count") or 0)
+
+    if item_count == 0:
+        registry_headline = "No staged provenance files are indexed in the command surface."
+        posture_headline = "No staged detail-page posture is attached to the active manifest."
+    else:
+        registry_headline = (
+            f"{count_label(item_count, 'file')} keep {format_byte_count(total_bytes)} of staged provenance "
+            "one jump away."
+        )
+        posture_headline = (
+            f"{detail_page_target_count:,} target detail pages remain opt-in, with {not_requested_detail_count:,} "
+            "still not requested in the promoted run."
+        )
+
+    rails = [
+        chart_annotation_rail(
+            kicker="Provenance pack",
+            headline=registry_headline,
+            note="The shared shell keeps staged evidence visibly separate from the promoted dataset contract while remaining directly downloadable.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "JSON files",
+                        count_label(json_count, "file"),
+                        normalized_ratio(json_count, item_count or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "CSV files",
+                        count_label(csv_count, "file"),
+                        normalized_ratio(csv_count, item_count or 1),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        str(top_items[0].get("label") or "Largest file") if top_items else "Largest file",
+                        format_byte_count(int(top_items[0].get("bytes", 0))) if top_items and isinstance(top_items[0].get("bytes"), int) else "0 bytes",
+                        normalized_ratio(int(top_items[0].get("bytes", 0)) if top_items and isinstance(top_items[0].get("bytes"), int) else 0, total_bytes or 1),
+                        tone="red",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+        chart_annotation_rail(
+            kicker="Staging posture",
+            headline=posture_headline,
+            note="The command rail keeps opt-in crawl posture visible before readers jump into the staged run manifest and detail exports.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Not requested",
+                        count_label(not_requested_detail_count, "page"),
+                        normalized_ratio(not_requested_detail_count, detail_page_target_count or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Fetched",
+                        count_label(fetched_detail_page_count, "page"),
+                        normalized_ratio(fetched_detail_page_count, detail_page_target_count or 1),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Parsed",
+                        count_label(parsed_detail_page_count, "page"),
+                        normalized_ratio(parsed_detail_page_count, detail_page_target_count or 1),
+                        tone="green",
                     ),
                 ]
             ),
