@@ -221,6 +221,12 @@ body {
   color: var(--ink-soft);
 }
 
+.rail-command-divider-file-share {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
 .rail-command-divider-bytes {
   font-size: 0.64rem;
   letter-spacing: 0.08em;

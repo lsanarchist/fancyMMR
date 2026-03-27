@@ -80,6 +80,13 @@ def format_byte_share(total_bytes: int, section_total_bytes: int) -> str:
     return f"{share:.0f}%"
 
 
+def format_count_share(item_count: int, section_item_count: int) -> str:
+    if section_item_count <= 0:
+        return "0%"
+    share = (100 * item_count) / section_item_count
+    return f"{share:.0f}%"
+
+
 def format_delay_seconds(value: object) -> str:
     if value in (None, ""):
         return "n/a"
@@ -739,6 +746,7 @@ def output_registry_command_links_markup(command_items: list[dict[str, object]])
         str(item.get("format") or "").strip().lower() or "other"
         for item in command_items
     )
+    section_item_count = sum(format_counts.values())
     format_bytes: Counter[str] = Counter()
     for item in command_items:
         item_format = str(item.get("format") or "").strip().lower() or "other"
@@ -754,6 +762,7 @@ def output_registry_command_links_markup(command_items: list[dict[str, object]])
                 '<div class="rail-command-divider">'
                 f'<span class="rail-command-divider-label">{html.escape(item_format.upper())}</span>'
                 f'<span class="rail-command-divider-count">{format_counts[item_format]:,}</span>'
+                f'<span class="rail-command-divider-file-share">{html.escape(format_count_share(format_counts[item_format], section_item_count))}</span>'
                 f'<span class="rail-command-divider-bytes">{html.escape(format_byte_count(format_bytes[item_format]))}</span>'
                 f'<span class="rail-command-divider-average">{html.escape(format_average_byte_count(format_bytes[item_format], format_counts[item_format]))}</span>'
                 f'<span class="rail-command-divider-share">{html.escape(format_byte_share(format_bytes[item_format], section_total_bytes))}</span>'
@@ -2485,6 +2494,12 @@ body {
   font-size: 0.64rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.rail-command-divider-file-share {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
   color: var(--ink-soft);
 }
 
