@@ -962,6 +962,13 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Source-pipeline diagnostics" in publication_output_section
     assert "Source coverage report" in publication_output_section
     assert "Pipeline manifest" in publication_output_section
+    assert 'class="rail-command-link output-registry-link"' in publication_output_section
+    assert "output-registry-label" in publication_output_section
+    assert "output-registry-meta" in publication_output_section
+    assert 'class="output-registry-badge output-registry-badge-target">data/metrics.json<' in publication_output_section
+    assert 'class="output-registry-badge output-registry-badge-format">JSON<' in publication_output_section
+    assert 'class="output-registry-badge output-registry-badge-target">data/business_model_summary.csv<' in publication_output_section
+    assert 'class="output-registry-badge output-registry-badge-format">CSV<' in publication_output_section
     assert "Provenance pack" in staged_output_section
     assert "Staging posture" in staged_output_section
     assert staged_total_bytes in staged_output_section
@@ -973,6 +980,11 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Fetched" in staged_output_section
     assert "Parsed" in staged_output_section
     assert "Staged detail rows" in staged_output_section
+    assert 'class="rail-command-link output-registry-link"' in staged_output_section
+    assert 'class="output-registry-badge output-registry-badge-target">data/source_pipeline/processed/detail_page_rows.csv<' in staged_output_section
+    assert 'class="output-registry-badge output-registry-badge-target">data/source_pipeline/snapshots/run_manifest.json<' in staged_output_section
+    assert 'class="output-registry-badge output-registry-badge-format">CSV<' in staged_output_section
+    assert 'class="output-registry-badge output-registry-badge-format">JSON<' in staged_output_section
     assert 'rail-command-divider-label">CSV<' in publication_output_section
     assert 'rail-command-divider-label">JSON<' in publication_output_section
     assert 'rail-command-divider-count">5<' in publication_output_section
@@ -1469,6 +1481,12 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".route-registry-badge {" in site_css
     assert ".route-registry-badge-target {" in site_css
     assert ".route-registry-badge-kind {" in site_css
+    assert ".output-registry-link {" in site_css
+    assert ".output-registry-label {" in site_css
+    assert ".output-registry-meta {" in site_css
+    assert ".output-registry-badge {" in site_css
+    assert ".output-registry-badge-target {" in site_css
+    assert ".output-registry-badge-format {" in site_css
     assert ".command-input {" in site_css
     assert ".command-input-wrap:focus-within {" in site_css
     assert ".infographic-grid {" in site_css
@@ -1737,6 +1755,12 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "Retryable" in fetch_failure_output_section
     assert "Do not retry" in fetch_failure_output_section
     assert "Robots blocked" in fetch_failure_output_section
+    assert 'class="rail-command-link output-registry-link"' in fetch_failure_output_section
+    assert 'class="output-registry-badge output-registry-badge-target">data/fetch_failures/category--ai.html<' in fetch_failure_output_section
+    assert 'class="output-registry-badge output-registry-badge-target">data/fetch_failures/category--ai.json<' in fetch_failure_output_section
+    assert 'class="output-registry-badge output-registry-badge-target">data/fetch_failures/category--sales.json<' in fetch_failure_output_section
+    assert 'class="output-registry-badge output-registry-badge-format">HTML<' in fetch_failure_output_section
+    assert 'class="output-registry-badge output-registry-badge-format">JSON<' in fetch_failure_output_section
     assert 'rail-command-divider-label">HTML<' in fetch_failure_output_section
     assert 'rail-command-divider-label">JSON<' in fetch_failure_output_section
     assert 'rail-command-divider-count">1<' in fetch_failure_output_section

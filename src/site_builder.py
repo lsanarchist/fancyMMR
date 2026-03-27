@@ -647,6 +647,25 @@ def route_registry_markup(route_registry_items: list[dict[str, object]]) -> str:
     )
 
 
+def output_registry_link_markup(item: dict[str, object]) -> str:
+    target = str(item.get("target") or "")
+    item_format = str(item.get("format") or Path(target).suffix.lstrip(".").lower() or "other").upper()
+    return (
+        f'<a class="rail-command-link output-registry-link" href="{html.escape(target, quote=True)}" '
+        f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
+        f'data-command-target="{html.escape(target, quote=True)}" '
+        f'data-command-kind="{html.escape(str(item["kind"]), quote=True)}" '
+        f'data-command-query="{html.escape(str(item["query"]), quote=True)}" '
+        f'data-command-terms="{html.escape(str(item["terms"]), quote=True)}">'
+        f'<span class="output-registry-label">{html.escape(str(item["label"]))}</span>'
+        '<span class="output-registry-meta">'
+        f'<span class="output-registry-badge output-registry-badge-target">{html.escape(target)}</span>'
+        f'<span class="output-registry-badge output-registry-badge-format">{html.escape(item_format)}</span>'
+        "</span>"
+        "</a>"
+    )
+
+
 def command_item(
     *,
     label: str,
@@ -851,7 +870,7 @@ def output_registry_sections_markup(output_registry_sections: list[dict[str, obj
         ]
         body_html = (
             f'<nav class="rail-command-links" aria-label="{html.escape(aria_label, quote=True)}">'
-            f"{output_registry_command_links_markup(items, link_renderer=lambda item: command_link_markup(item, link_class='rail-command-link'))}"
+            f"{output_registry_command_links_markup(items, link_renderer=output_registry_link_markup)}"
             "</nav>"
             if items
             else f'<p class="rail-command-group-empty">{html.escape(empty_message)}</p>'
@@ -5479,6 +5498,49 @@ body {
 }
 
 .route-registry-badge-kind {
+  color: var(--accent);
+  border-color: rgba(246, 165, 58, 0.22);
+  background: rgba(246, 165, 58, 0.08);
+}
+
+.output-registry-link {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.output-registry-label {
+  color: var(--ink);
+}
+
+.output-registry-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.output-registry-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(5, 7, 10, 0.2);
+  color: var(--ink-dim);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+}
+
+.output-registry-badge-target {
+  color: var(--cyan);
+  border-color: rgba(98, 201, 214, 0.22);
+  background: rgba(98, 201, 214, 0.08);
+}
+
+.output-registry-badge-format {
   color: var(--accent);
   border-color: rgba(246, 165, 58, 0.22);
   background: rgba(246, 165, 58, 0.08);
