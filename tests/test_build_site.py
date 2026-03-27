@@ -756,6 +756,13 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "data/source_pipeline/" in methodology_html
     assert "license-code-mit.txt" in methodology_html.lower()
     assert "9 duplicate names / 0 heuristic gaps" in methodology_html
+    assert "Signal board" in methodology_html
+    assert "Visible-sample contract" in methodology_html
+    assert "Gate posture" in methodology_html
+    assert "Warning envelope" in methodology_html
+    assert "Evidence surface" in methodology_html
+    assert "MD.01 Signals" in methodology_html
+    assert "These methodology-side infographics reuse the same validation report and hot-output registry metadata" in methodology_html
 
     assert "metrics.json" in data_html
     assert f'<meta http-equiv="Content-Security-Policy" content="{ESCAPED_CSP_SNIPPET}">' in data_html

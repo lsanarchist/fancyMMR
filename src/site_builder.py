@@ -1037,6 +1037,13 @@ def infographic_card(
 """
 
 
+def validation_check_by_id(validation_report: dict[str, object], check_id: str) -> dict[str, object] | None:
+    for check in validation_report.get("checks", []):
+        if isinstance(check, dict) and str(check.get("id")) == check_id:
+            return check
+    return None
+
+
 def overview_infographic_cards(metrics: dict[str, object], category_rows: list[dict[str, str]]) -> str:
     dominant_category = str(metrics["dominant_category"])
     dominant_category_row = next(
@@ -1242,6 +1249,204 @@ def data_page_infographic_cards(
                     tone=tone,
                 )
                 for row, tone in zip(top_source_rows, ["accent", "cyan", "green"])
+            ),
+        ),
+    ]
+    return "".join(cards)
+
+
+def methodology_infographic_cards(
+    validation_report: dict[str, object],
+    output_registry_sections: list[dict[str, object]],
+) -> str:
+    sample_row_count = int(validation_report.get("sample_row_count", 0))
+    source_page_count = int(validation_report.get("source_page_count", 0))
+    min_revenue_30d = float(validation_report.get("min_revenue_30d", 0.0))
+    required_columns = [
+        str(column)
+        for column in validation_report.get("required_columns", [])
+        if isinstance(column, str)
+    ]
+    missing_columns = [
+        str(column)
+        for column in validation_report.get("missing_columns", [])
+        if isinstance(column, str)
+    ]
+    null_counts = validation_report.get("null_counts", {}) or {}
+    duplicate_name_count = int(validation_report.get("duplicate_name_count", 0))
+    duplicate_pair_count = int(validation_report.get("duplicate_name_source_url_count", 0))
+    biz_gap_count = int(null_counts.get("biz_model", 0))
+    gtm_gap_count = int(null_counts.get("gtm_model", 0))
+
+    threshold_check = validation_check_by_id(validation_report, "revenue_threshold_respected") or {}
+    threshold_details = threshold_check.get("details", {}) if isinstance(threshold_check, dict) else {}
+    below_threshold_count = int(threshold_details.get("below_threshold_count", 0))
+
+    source_url_check = validation_check_by_id(validation_report, "source_url_present") or {}
+    source_url_details = source_url_check.get("details", {}) if isinstance(source_url_check, dict) else {}
+    missing_source_url_count = int(source_url_details.get("missing_source_url_count", 0))
+
+    hard_error_checks = [
+        check
+        for check in validation_report.get("checks", [])
+        if isinstance(check, dict) and str(check.get("severity")) == "error"
+    ]
+    warning_checks = [
+        check
+        for check in validation_report.get("checks", [])
+        if isinstance(check, dict) and str(check.get("severity")) == "warning"
+    ]
+    passed_hard_error_checks = sum(1 for check in hard_error_checks if bool(check.get("passed")))
+    passed_warning_checks = sum(1 for check in warning_checks if bool(check.get("passed")))
+
+    rows_above_floor = max(0, sample_row_count - below_threshold_count)
+    threshold_ratio = normalized_ratio(rows_above_floor, sample_row_count or 1)
+    source_url_ratio = normalized_ratio(max(0, sample_row_count - missing_source_url_count), sample_row_count or 1)
+    required_column_ratio = normalized_ratio(
+        max(0, len(required_columns) - len(missing_columns)),
+        len(required_columns) or 1,
+    )
+    duplicate_name_ratio = normalized_ratio(duplicate_name_count, sample_row_count or 1)
+    biz_label_ratio = normalized_ratio(max(0, sample_row_count - biz_gap_count), sample_row_count or 1)
+    gtm_label_ratio = normalized_ratio(max(0, sample_row_count - gtm_gap_count), sample_row_count or 1)
+    unique_pair_ratio = normalized_ratio(max(0, sample_row_count - duplicate_pair_count), sample_row_count or 1)
+
+    section_items_by_title = {
+        str(section.get("title") or ""): [
+            item
+            for item in section.get("items", [])
+            if isinstance(item, dict)
+        ]
+        for section in output_registry_sections
+        if isinstance(section, dict)
+    }
+    publication_bundle_items = section_items_by_title.get("Publication outputs", [])
+    staged_bundle_items = section_items_by_title.get("Staged provenance", [])
+    fetch_failure_items = section_items_by_title.get("Fetch-failure evidence", [])
+    total_artifact_count = len(publication_bundle_items) + len(staged_bundle_items) + len(fetch_failure_items)
+    total_artifact_bytes = sum(
+        int(item.get("bytes", 0))
+        for item in publication_bundle_items + staged_bundle_items + fetch_failure_items
+        if isinstance(item.get("bytes"), int)
+    )
+
+    cards = [
+        infographic_card(
+            title="Visible-sample contract",
+            kicker="Scope lock",
+            value=f"{sample_row_count:,} rows / {source_page_count:,} pages",
+            note=(
+                "The current publication remains a source-derived visible sample with an explicit "
+                f"{usd_short(min_revenue_30d)} / 30d inclusion floor."
+            ),
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Rows above floor",
+                        count_label(rows_above_floor, "row"),
+                        threshold_ratio,
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Source URLs kept",
+                        pct(source_url_ratio),
+                        source_url_ratio,
+                        tone="green",
+                    ),
+                    infographic_meter(
+                        "Required cols",
+                        f"{len(required_columns) - len(missing_columns)}/{len(required_columns)}",
+                        required_column_ratio,
+                        tone="cyan",
+                    ),
+                ]
+            ),
+        ),
+        infographic_card(
+            title="Gate posture",
+            kicker="Validation",
+            value=status_label(str(validation_report["status"])),
+            note="Hard-fail checks stay loud while warning-only signals remain visible instead of being smoothed away.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Hard gates",
+                        f"{passed_hard_error_checks}/{len(hard_error_checks)}",
+                        normalized_ratio(passed_hard_error_checks, len(hard_error_checks) or 1),
+                        tone="green",
+                    ),
+                    infographic_meter(
+                        "Warning checks",
+                        f"{passed_warning_checks}/{len(warning_checks)}",
+                        normalized_ratio(passed_warning_checks, len(warning_checks) or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Unique (name,url)",
+                        pct(unique_pair_ratio),
+                        unique_pair_ratio,
+                        tone="cyan",
+                    ),
+                ]
+            ),
+        ),
+        infographic_card(
+            title="Warning envelope",
+            kicker="Known caveats",
+            value=methodology_warning_snapshot(validation_report),
+            note="Duplicate startup names stay explicit, and heuristic label coverage is shown rather than assumed.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Duplicate names",
+                        count_label(duplicate_name_count, "name"),
+                        duplicate_name_ratio,
+                        tone="red",
+                    ),
+                    infographic_meter(
+                        "Biz labels present",
+                        pct(biz_label_ratio),
+                        biz_label_ratio,
+                        tone="green",
+                    ),
+                    infographic_meter(
+                        "GTM labels present",
+                        pct(gtm_label_ratio),
+                        gtm_label_ratio,
+                        tone="cyan",
+                    ),
+                ]
+            ),
+        ),
+        infographic_card(
+            title="Evidence surface",
+            kicker="Inspectable outputs",
+            value=count_label(total_artifact_count, "tracked file"),
+            note=(
+                f"{format_byte_count(total_artifact_bytes)} across publication outputs, staged provenance, "
+                "and any attached fetch-failure evidence."
+            ),
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Publication",
+                        count_label(len(publication_bundle_items), "file"),
+                        normalized_ratio(len(publication_bundle_items), total_artifact_count or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Staged",
+                        count_label(len(staged_bundle_items), "file"),
+                        normalized_ratio(len(staged_bundle_items), total_artifact_count or 1),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Failures",
+                        count_label(len(fetch_failure_items), "file"),
+                        normalized_ratio(len(fetch_failure_items), total_artifact_count or 1),
+                        tone="red",
+                    ),
+                ]
             ),
         ),
     ]
@@ -1550,11 +1755,13 @@ def build_methodology_page(
     validation_report: dict[str, object],
     output_registry_sections: list[dict[str, object]],
 ) -> str:
+    methodology_signal_cards = methodology_infographic_cards(validation_report, output_registry_sections)
     command_links = [
         ("MD.00 Top", "#top"),
-        ("MD.01 Methodology", "#methodology-panel"),
-        ("MD.02 Data notice", "#data-notice"),
-        ("MD.03 Validation", "#validation-checks"),
+        ("MD.01 Signals", "#methodology-signals"),
+        ("MD.02 Methodology", "#methodology-panel"),
+        ("MD.03 Data notice", "#data-notice"),
+        ("MD.04 Validation", "#validation-checks"),
     ]
     hero = hero_section(
         eyebrow="Methodology and caveats",
@@ -1608,11 +1815,23 @@ def build_methodology_page(
 
     sections = [
         section(
+            "Signal board",
+            "A quick-read methodology rack for scope, validation, warning, and evidence lanes before the prose panels begin.",
+            (
+                f'<div class="infographic-grid">{methodology_signal_cards}</div>'
+                '<p class="section-note">These methodology-side infographics reuse the same validation report and hot-output registry metadata already published in the static bundle, so the caveat layer stays deterministic and inspectable.</p>'
+            ),
+            section_id="methodology-signals",
+            panel_code="MD.01",
+            panel_tag="signal rack",
+            layout="compact",
+        ),
+        section(
             "Methodology",
             "Rendered directly from the repository methodology document to keep the site aligned with the source docs.",
             f'<div class="prose">{methodology_html}</div>',
             section_id="methodology-panel",
-            panel_code="MD.01",
+            panel_code="MD.02",
             panel_tag="operator notes",
             layout="compact",
         ),
@@ -1621,7 +1840,7 @@ def build_methodology_page(
             "Publication caveats from the repository root stay visible in the static site too.",
             f'<div class="prose">{data_notice_html}</div>',
             section_id="data-notice",
-            panel_code="MD.02",
+            panel_code="MD.03",
             panel_tag="caveat pane",
             layout="compact",
         ),
@@ -1630,7 +1849,7 @@ def build_methodology_page(
             "The seed bundle keeps warnings and failures explicit instead of silently smoothing them away.",
             render_checks(validation_report),
             section_id="validation-checks",
-            panel_code="MD.03",
+            panel_code="MD.04",
             panel_tag="gate monitor",
         ),
     ]
