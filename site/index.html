@@ -105,10 +105,31 @@
               autocapitalize="off"
               autocomplete="off"
               spellcheck="false"
+              aria-describedby="jump-palette-help jump-palette-shortcuts"
+              aria-keyshortcuts="/ Control+K"
+              aria-controls="workspace-main"
               data-command-input
             >
           </div>
-          <p class="command-help">Press <code>/</code> or <code>Ctrl+K</code> to focus. Press <code>Enter</code> to jump. Use <code>[</code> and <code>]</code> to cycle local panels. Try <code>/data</code>, <code>/data #downloads</code>, or <code>metrics.json</code>.</p>
+          <div class="command-shortcuts" id="jump-palette-shortcuts" aria-label="Jump palette shortcuts">
+            <span class="shortcut-chip">
+              <span class="shortcut-keys"><kbd>/</kbd><kbd>Ctrl+K</kbd></span>
+              <span>Focus palette</span>
+            </span>
+            <span class="shortcut-chip">
+              <span class="shortcut-keys"><kbd>Enter</kbd></span>
+              <span>Jump</span>
+            </span>
+            <span class="shortcut-chip">
+              <span class="shortcut-keys"><kbd>Esc</kbd></span>
+              <span>Exit search</span>
+            </span>
+            <span class="shortcut-chip">
+              <span class="shortcut-keys"><kbd>[</kbd><kbd>]</kbd></span>
+              <span>Cycle local panels</span>
+            </span>
+          </div>
+          <p class="command-help" id="jump-palette-help">Press <code>/</code> or <code>Ctrl+K</code> to focus. Press <code>Enter</code> to jump. Use <code>[</code> and <code>]</code> to cycle local panels. Try <code>/data</code>, <code>/data #downloads</code>, or <code>metrics.json</code>.</p>
         </div>
         <div class="command-bar-links">
           <a class="command-chip" href="#top" data-command-label="OV.00 Top" data-command-target="#top" data-command-kind="panel" data-command-query="/index" data-command-terms="OV.00 Top #top panel section index">OV.00 Top</a><a class="command-chip" href="#snapshot" data-command-label="OV.01 Snapshot" data-command-target="#snapshot" data-command-kind="panel" data-command-query="/index #snapshot" data-command-terms="OV.01 Snapshot #snapshot panel section index">OV.01 Snapshot</a><a class="command-chip" href="#scope-guardrails" data-command-label="OV.02 Guardrails" data-command-target="#scope-guardrails" data-command-kind="panel" data-command-query="/index #scope-guardrails" data-command-terms="OV.02 Guardrails #scope-guardrails panel section index">OV.02 Guardrails</a><a class="command-chip" href="#main-charts" data-command-label="OV.03 Charts" data-command-target="#main-charts" data-command-kind="panel" data-command-query="/index #main-charts" data-command-terms="OV.03 Charts #main-charts panel section index">OV.03 Charts</a><a class="command-chip" href="#category-leaders" data-command-label="OV.04 Leaders" data-command-target="#category-leaders" data-command-kind="panel" data-command-query="/index #category-leaders" data-command-terms="OV.04 Leaders #category-leaders panel section index">OV.04 Leaders</a>

@@ -900,10 +900,31 @@ def page_shell(
               autocapitalize="off"
               autocomplete="off"
               spellcheck="false"
+              aria-describedby="jump-palette-help jump-palette-shortcuts"
+              aria-keyshortcuts="/ Control+K"
+              aria-controls="workspace-main"
               data-command-input
             >
           </div>
-          <p class="command-help">Press <code>/</code> or <code>Ctrl+K</code> to focus. Press <code>Enter</code> to jump. Use <code>[</code> and <code>]</code> to cycle local panels. Try <code>/data</code>, <code>/data #downloads</code>, or <code>metrics.json</code>.</p>
+          <div class="command-shortcuts" id="jump-palette-shortcuts" aria-label="Jump palette shortcuts">
+            <span class="shortcut-chip">
+              <span class="shortcut-keys"><kbd>/</kbd><kbd>Ctrl+K</kbd></span>
+              <span>Focus palette</span>
+            </span>
+            <span class="shortcut-chip">
+              <span class="shortcut-keys"><kbd>Enter</kbd></span>
+              <span>Jump</span>
+            </span>
+            <span class="shortcut-chip">
+              <span class="shortcut-keys"><kbd>Esc</kbd></span>
+              <span>Exit search</span>
+            </span>
+            <span class="shortcut-chip">
+              <span class="shortcut-keys"><kbd>[</kbd><kbd>]</kbd></span>
+              <span>Cycle local panels</span>
+            </span>
+          </div>
+          <p class="command-help" id="jump-palette-help">Press <code>/</code> or <code>Ctrl+K</code> to focus. Press <code>Enter</code> to jump. Use <code>[</code> and <code>]</code> to cycle local panels. Try <code>/data</code>, <code>/data #downloads</code>, or <code>metrics.json</code>.</p>
         </div>
         <div class="command-bar-links">
           {command_bar_links}
@@ -2796,6 +2817,46 @@ body {
   color: var(--ink-dim);
 }
 
+.command-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.shortcut-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid rgba(98, 201, 214, 0.18);
+  border-radius: 999px;
+  background: rgba(98, 201, 214, 0.08);
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.shortcut-keys {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.shortcut-chip kbd {
+  min-width: 28px;
+  padding: 4px 6px;
+  border: 1px solid rgba(246, 165, 58, 0.24);
+  border-radius: 8px;
+  background: rgba(5, 7, 10, 0.92);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.68rem;
+  line-height: 1;
+  box-shadow: inset 0 -1px 0 rgba(246, 165, 58, 0.12);
+}
+
 .command-help,
 .command-status {
   margin: 0;
@@ -3427,6 +3488,7 @@ def build_script() -> str:
     const globalLabel = `${globalCommandCount} global command${globalCommandCount === 1 ? "" : "s"}`;
     return `Ready. ${panelLabel} and ${globalLabel} indexed.`;
   };
+  const shortcutHelpMessage = "Jump palette focused. Press Enter to jump, Escape to exit search, and [ or ] to cycle local panels.";
 
   const currentTarget = () => {
     const hash = window.location.hash || "#top";
@@ -3584,6 +3646,14 @@ def build_script() -> str:
   };
 
   input.addEventListener("input", () => {
+    renderMatches(matchedCommands(input.value), input.value);
+  });
+
+  input.addEventListener("focus", () => {
+    setStatus(shortcutHelpMessage);
+  });
+
+  input.addEventListener("blur", () => {
     renderMatches(matchedCommands(input.value), input.value);
   });
 

@@ -70,6 +70,7 @@
     const globalLabel = `${globalCommandCount} global command${globalCommandCount === 1 ? "" : "s"}`;
     return `Ready. ${panelLabel} and ${globalLabel} indexed.`;
   };
+  const shortcutHelpMessage = "Jump palette focused. Press Enter to jump, Escape to exit search, and [ or ] to cycle local panels.";
 
   const currentTarget = () => {
     const hash = window.location.hash || "#top";
@@ -227,6 +228,14 @@
   };
 
   input.addEventListener("input", () => {
+    renderMatches(matchedCommands(input.value), input.value);
+  });
+
+  input.addEventListener("focus", () => {
+    setStatus(shortcutHelpMessage);
+  });
+
+  input.addEventListener("blur", () => {
     renderMatches(matchedCommands(input.value), input.value);
   });
 

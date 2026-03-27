@@ -624,6 +624,17 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert staged_total_bytes in index_html
     assert fetch_failure_total_bytes in index_html
     assert "Jump palette" in index_html
+    assert 'aria-describedby="jump-palette-help jump-palette-shortcuts"' in index_html
+    assert 'aria-keyshortcuts="/ Control+K"' in index_html
+    assert 'aria-controls="workspace-main"' in index_html
+    assert 'id="jump-palette-shortcuts"' in index_html
+    assert "Focus palette" in index_html
+    assert "Exit search" in index_html
+    assert "Cycle local panels" in index_html
+    assert "<kbd>/</kbd><kbd>Ctrl+K</kbd>" in index_html
+    assert "<kbd>Enter</kbd>" in index_html
+    assert "<kbd>Esc</kbd>" in index_html
+    assert "<kbd>[</kbd><kbd>]</kbd>" in index_html
     assert 'class="command-status" role="status" aria-live="polite" aria-atomic="true" data-command-status' in index_html
     assert "GO / Overview" in index_html
     assert "GO / Data" in index_html
@@ -808,6 +819,11 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "System brief" in data_html
     assert "Command deck" in data_html
     assert "Jump palette" in data_html
+    assert 'aria-describedby="jump-palette-help jump-palette-shortcuts"' in data_html
+    assert 'aria-keyshortcuts="/ Control+K"' in data_html
+    assert "Focus palette" in data_html
+    assert "Exit search" in data_html
+    assert "Cycle local panels" in data_html
     assert 'class="command-status" role="status" aria-live="polite" aria-atomic="true" data-command-status' in data_html
     assert "Route registry" in data_html
     assert "Hot outputs" in data_html
@@ -841,6 +857,10 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".command-strip {" in site_css
     assert ".command-input {" in site_css
     assert ".command-input-wrap:focus-within {" in site_css
+    assert ".command-shortcuts {" in site_css
+    assert ".shortcut-chip {" in site_css
+    assert ".shortcut-keys {" in site_css
+    assert ".shortcut-chip kbd {" in site_css
     assert "@media (prefers-reduced-motion: reduce)" in site_css
     assert "scroll-behavior: auto;" in site_css
     assert "transition-duration: 0.01ms !important;" in site_css
@@ -874,6 +894,10 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Some browsers and privacy contexts block storage access entirely." in site_js
     assert "const storedTarget = readStoredTarget();" in site_js
     assert "writeStoredTarget(target);" in site_js
+    assert 'const shortcutHelpMessage = "Jump palette focused. Press Enter to jump, Escape to exit search, and [ or ] to cycle local panels.";'
+    assert 'input.addEventListener("focus", () => {' in site_js
+    assert "setStatus(shortcutHelpMessage);" in site_js
+    assert 'input.addEventListener("blur", () => {' in site_js
     assert 'window.matchMedia("(prefers-reduced-motion: reduce)")' in site_js
     assert 'const scrollBehavior = () => (reducedMotionQuery && reducedMotionQuery.matches ? "auto" : "smooth");' in site_js
     assert "scrollPanelIntoView" in site_js
