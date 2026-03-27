@@ -196,10 +196,21 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "GET category_summary.csv" in data_html
     assert "GET source_pipeline/snapshots/run_manifest.json" in data_html
     assert "GET source_pipeline/processed/detail_field_coverage.json" in data_html
+    assert "11 files" in data_html
+    assert "6 JSON" in data_html
+    assert "5 CSV" in data_html
+    assert "6 files" in data_html
+    assert "5 JSON" in data_html
+    assert "1 CSV" in data_html
+    assert "0 files" in data_html
+    assert "0 bytes" in data_html
     assert "--bg: #05070a" in site_css
     assert ".workstation {" in site_css
     assert ".command-strip {" in site_css
     assert ".command-input {" in site_css
+    assert ".download-summary {" in site_css
+    assert ".download-badge {" in site_css
+    assert ".download-badge-format {" in site_css
     assert ".section-card.is-focused" in site_css or ".hero.is-focused" in site_css
     assert "window.localStorage.setItem" in site_js
     assert 'event.key === "/"' in site_js
@@ -352,6 +363,9 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "GET fetch_failures/category--ai.json" in data_html
     assert "GET fetch_failures/category--ai.html" in data_html
     assert "GET fetch_failures/category--sales.json" in data_html
+    assert "3 files" in data_html
+    assert "2 JSON" in data_html
+    assert "1 HTML" in data_html
     for artifact in pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"]:
         assert artifact["site_path"] in data_html
         assert artifact["sha256"] in data_html

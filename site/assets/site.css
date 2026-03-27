@@ -672,6 +672,49 @@ h3 {
   background: rgba(98, 201, 214, 0.08);
 }
 
+.download-summary,
+.download-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.download-summary {
+  margin-bottom: 16px;
+}
+
+.download-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(246, 165, 58, 0.18);
+  background: rgba(246, 165, 58, 0.08);
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.68rem;
+  white-space: nowrap;
+}
+
+.download-badge-count {
+  border-color: rgba(246, 165, 58, 0.34);
+  color: var(--accent);
+}
+
+.download-badge-format {
+  border-color: rgba(98, 201, 214, 0.28);
+  background: rgba(98, 201, 214, 0.08);
+  color: var(--cyan);
+}
+
+.download-badge-meta {
+  border-color: rgba(244, 234, 215, 0.12);
+  background: rgba(244, 234, 215, 0.05);
+  color: var(--ink-soft);
+}
+
 .download-provenance,
 .download-hash {
   margin: 12px 0 0;

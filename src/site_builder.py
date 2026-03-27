@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 import csv
 import html
 import json
@@ -262,6 +263,54 @@ def publication_download_card_metadata(path: str) -> tuple[str, str]:
     )
 
 
+def count_label(count: int, singular: str) -> str:
+    return f"{count:,} {singular}" if count == 1 else f"{count:,} {singular}s"
+
+
+def artifact_format_label(artifact: dict[str, object]) -> str:
+    artifact_format = str(artifact.get("format") or "").strip().lower()
+    if artifact_format:
+        return artifact_format
+    site_path = str(artifact.get("site_path") or artifact.get("path") or "")
+    return Path(site_path).suffix.lstrip(".").lower()
+
+
+def download_badge(text: str, *, tone: str = "neutral") -> str:
+    tone_class = "" if tone == "neutral" else f" download-badge-{tone}"
+    return f'<span class="download-badge{tone_class}">{html.escape(text)}</span>'
+
+
+def download_badges_html(artifact: dict[str, object]) -> str:
+    badges: list[str] = []
+    artifact_format = artifact_format_label(artifact)
+    if artifact_format:
+        badges.append(download_badge(artifact_format.upper(), tone="format"))
+    artifact_bytes = artifact.get("bytes")
+    if isinstance(artifact_bytes, int):
+        badges.append(download_badge(format_byte_count(artifact_bytes), tone="meta"))
+    if not badges:
+        return ""
+    return f'<div class="download-badges">{"".join(badges)}</div>'
+
+
+def download_section_summary_html(items: list[dict[str, object]]) -> str:
+    format_counts: Counter[str] = Counter()
+    total_bytes = 0
+    for artifact in items:
+        artifact_format = artifact_format_label(artifact)
+        if artifact_format:
+            format_counts[artifact_format] += 1
+        artifact_bytes = artifact.get("bytes")
+        if isinstance(artifact_bytes, int):
+            total_bytes += artifact_bytes
+
+    badges = [download_badge(count_label(len(items), "file"), tone="count")]
+    for artifact_format, count in sorted(format_counts.items(), key=lambda item: (-item[1], item[0])):
+        badges.append(download_badge(f"{count:,} {artifact_format.upper()}", tone="format"))
+    badges.append(download_badge(format_byte_count(total_bytes), tone="meta"))
+    return f'<div class="download-summary">{"".join(badges)}</div>'
+
+
 def copy_assets(
     *,
     publication_download_items: list[dict[str, object]],
@@ -337,6 +386,7 @@ def download_card_html(
 <article class="download-card">
   <h3>{html.escape(card_label)}</h3>
   <p>{html.escape(card_description)}</p>
+  {download_badges_html(artifact)}
   {staged_download_provenance_html(artifact)}
   <a href="{html.escape(site_path, quote=True)}">Download</a>
 </article>
@@ -1942,7 +1992,7 @@ def build_data_page(
         section(
             "Downloads",
             "Manifest-driven publication outputs are copied into the site so the published Pages bundle stays inspectable on its own.",
-            f'<div class="card-grid">{downloads}</div>',
+            download_section_summary_html(publication_bundle_items) + f'<div class="card-grid">{downloads}</div>',
             section_id="downloads",
             panel_code="DT.01",
             panel_tag="core outputs",
@@ -1952,9 +2002,12 @@ def build_data_page(
             "Staged Bundle",
             "The active promoted staged source-pipeline bundle is exposed as a separate manifest-driven provenance surface, distinct from the promoted dataset contract.",
             (
-                f'<div class="card-grid">{staged_bundle_downloads}</div>'
+                download_section_summary_html(staged_bundle_items) + f'<div class="card-grid">{staged_bundle_downloads}</div>'
                 if staged_bundle_items
-                else '<p class="section-note">No staged source-pipeline bundle downloads are attached to the active publication manifest.</p>'
+                else (
+                    download_section_summary_html(staged_bundle_items)
+                    + '<p class="section-note">No staged source-pipeline bundle downloads are attached to the active publication manifest.</p>'
+                )
             ),
             section_id="staged-bundle",
             panel_code="DT.02",
@@ -1965,9 +2018,12 @@ def build_data_page(
             "Fetch Failure Snapshots",
             "When staged source fetch failures exist, their raw snapshot artifacts are exposed here as manifest-driven downloads separate from the promoted dataset contract.",
             (
-                f'<div class="card-grid">{fetch_failure_downloads}</div>'
+                download_section_summary_html(fetch_failure_items) + f'<div class="card-grid">{fetch_failure_downloads}</div>'
                 if fetch_failure_items
-                else '<p class="section-note">No staged fetch-failure snapshot downloads are currently attached to the active manifest.</p>'
+                else (
+                    download_section_summary_html(fetch_failure_items)
+                    + '<p class="section-note">No staged fetch-failure snapshot downloads are currently attached to the active manifest.</p>'
+                )
             ),
             section_id="fetch-failure-snapshots",
             panel_code="DT.03",
@@ -2711,6 +2767,49 @@ h3 {
   border: 1px solid rgba(98, 201, 214, 0.22);
   border-left: 3px solid var(--cyan);
   background: rgba(98, 201, 214, 0.08);
+}
+
+.download-summary,
+.download-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.download-summary {
+  margin-bottom: 16px;
+}
+
+.download-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(246, 165, 58, 0.18);
+  background: rgba(246, 165, 58, 0.08);
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.68rem;
+  white-space: nowrap;
+}
+
+.download-badge-count {
+  border-color: rgba(246, 165, 58, 0.34);
+  color: var(--accent);
+}
+
+.download-badge-format {
+  border-color: rgba(98, 201, 214, 0.28);
+  background: rgba(98, 201, 214, 0.08);
+  color: var(--cyan);
+}
+
+.download-badge-meta {
+  border-color: rgba(244, 234, 215, 0.12);
+  background: rgba(244, 234, 215, 0.05);
+  color: var(--ink-soft);
 }
 
 .download-provenance,
