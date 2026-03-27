@@ -1453,6 +1453,159 @@ def methodology_infographic_cards(
     return "".join(cards)
 
 
+def chart_annotation_rail(*, kicker: str, headline: str, note: str, meters_html: str) -> str:
+    return f"""
+<aside class="chart-annotation-rail">
+  <p class="chart-annotation-kicker">{html.escape(kicker)}</p>
+  <h4>{html.escape(headline)}</h4>
+  <p class="chart-annotation-note">{html.escape(note)}</p>
+  <div class="chart-annotation-stack">
+    {meters_html}
+  </div>
+</aside>
+"""
+
+
+def overview_chart_annotation_rails(
+    metrics: dict[str, object],
+    validation_report: dict[str, object],
+    category_rows: list[dict[str, str]],
+    business_model_rows: list[dict[str, str]],
+    gtm_model_rows: list[dict[str, str]],
+) -> dict[str, str]:
+    dominant_category = str(metrics["dominant_category"])
+    dominant_category_row = next(
+        (row for row in category_rows if str(row.get("category")) == dominant_category),
+        category_rows[0] if category_rows else None,
+    )
+    dominant_category_revenue_share = float(metrics["dominant_category_revenue_share"])
+    dominant_category_startup_share = float(metrics["dominant_category_startup_share"])
+    dominant_category_index = (
+        float(dominant_category_row["performance_index"]) if dominant_category_row is not None else 0.0
+    )
+    top_revenue_categories = category_rows[:3]
+    over_index_rows = sorted(category_rows, key=lambda row: float(row["performance_index"]), reverse=True)[:3]
+    over_index_max = (
+        max(float(row["performance_index"]) for row in category_rows)
+        if category_rows
+        else 0.0
+    )
+    categories_above_one = sum(1 for row in category_rows if float(row["performance_index"]) > 1.0)
+    combined_top_two_share = sum(float(row["revenue_share"]) for row in top_revenue_categories[:2])
+    top_business_row = business_model_rows[0] if business_model_rows else None
+    runner_up_business_row = business_model_rows[1] if len(business_model_rows) > 1 else None
+    top_gtm_row = gtm_model_rows[0] if gtm_model_rows else None
+    heuristic_gap_count = int(validation_report["null_counts"]["biz_model"]) + int(validation_report["null_counts"]["gtm_model"])
+    gini_coefficient = float(metrics.get("gini_coefficient", 0.0))
+
+    return {
+        "category_share_map": chart_annotation_rail(
+            kicker="Representation gap",
+            headline=(
+                f"{dominant_category} turns {pct(dominant_category_startup_share)} of startups into "
+                f"{pct(dominant_category_revenue_share)} of visible revenue."
+            ),
+            note="The share map is about mismatch between footprint and revenue weight, not raw category count alone.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Revenue share",
+                        pct(dominant_category_revenue_share),
+                        dominant_category_revenue_share,
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Startup share",
+                        pct(dominant_category_startup_share),
+                        dominant_category_startup_share,
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Performance index",
+                        f"{dominant_category_index:.1f}x",
+                        normalized_ratio(dominant_category_index, over_index_max or 1.0),
+                        tone="red",
+                    ),
+                ]
+            ),
+        ),
+        "top_categories_revenue": chart_annotation_rail(
+            kicker="Leader stack",
+            headline=f"Top 2 categories account for {pct(combined_top_two_share)} of visible revenue.",
+            note="The ranking chart stays steep after E-commerce, with only one close follower before the field drops away.",
+            meters_html="".join(
+                infographic_meter(
+                    str(row["category"]),
+                    pct(float(row["revenue_share"])),
+                    float(row["revenue_share"]),
+                    tone=tone,
+                )
+                for row, tone in zip(top_revenue_categories, ["accent", "cyan", "green"])
+            ),
+        ),
+        "category_over_index": chart_annotation_rail(
+            kicker="Outlier scan",
+            headline=f"{categories_above_one:,} categories over-index above 1.0x in the current sample.",
+            note="This chart separates representation from revenue efficiency, so the leaders here are not always the biggest groups by count.",
+            meters_html="".join(
+                infographic_meter(
+                    str(row["category"]),
+                    f"{float(row['performance_index']):.1f}x",
+                    normalized_ratio(float(row["performance_index"]), over_index_max or 1.0),
+                    tone=tone,
+                )
+                for row, tone in zip(over_index_rows, ["red", "accent", "cyan"])
+            ),
+        ),
+        "model_mix": chart_annotation_rail(
+            kicker="Model mix read",
+            headline="Commerce-led models dominate both the operating and acquisition mix.",
+            note=(
+                f"{str(top_gtm_row['gtm_model']) if top_gtm_row is not None else 'The current lead GTM lane'} "
+                f"paces the GTM side, and heuristic label gaps remain at {heuristic_gap_count}."
+            ),
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Biz leader",
+                        pct(float(top_business_row["revenue_share"])) if top_business_row is not None else "n/a",
+                        float(top_business_row["revenue_share"]) if top_business_row is not None else 0.0,
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "GTM leader",
+                        pct(float(top_gtm_row["revenue_share"])) if top_gtm_row is not None else "n/a",
+                        float(top_gtm_row["revenue_share"]) if top_gtm_row is not None else 0.0,
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Biz runner-up",
+                        pct(float(runner_up_business_row["revenue_share"])) if runner_up_business_row is not None else "n/a",
+                        float(runner_up_business_row["revenue_share"]) if runner_up_business_row is not None else 0.0,
+                        tone="green",
+                    ),
+                ]
+            ),
+        ),
+        "distribution_and_concentration": chart_annotation_rail(
+            kicker="Concentration curve",
+            headline=f"The top startup alone captures {pct(metrics['top_1_revenue_share'])} of visible revenue.",
+            note=(
+                f"Top-5 share reaches {pct(metrics['top_5_revenue_share'])}, top-20 reaches {pct(metrics['top_20_revenue_share'])}, "
+                f"and the Gini stays at {gini_coefficient:.2f}."
+            ),
+            meters_html="".join(
+                [
+                    infographic_meter("Top 1", pct(metrics["top_1_revenue_share"]), float(metrics["top_1_revenue_share"]), tone="red"),
+                    infographic_meter("Top 5", pct(metrics["top_5_revenue_share"]), float(metrics["top_5_revenue_share"]), tone="accent"),
+                    infographic_meter("Top 10", pct(metrics["top_10_revenue_share"]), float(metrics["top_10_revenue_share"]), tone="cyan"),
+                    infographic_meter("Top 20", pct(metrics["top_20_revenue_share"]), float(metrics["top_20_revenue_share"]), tone="green"),
+                ]
+            ),
+        ),
+    }
+
+
 def section(
     title: str,
     intro: str,
@@ -1559,6 +1712,8 @@ def build_index_page(
     metrics: dict[str, object],
     validation_report: dict[str, object],
     category_rows: list[dict[str, str]],
+    business_model_rows: list[dict[str, str]],
+    gtm_model_rows: list[dict[str, str]],
     output_registry_sections: list[dict[str, object]],
 ) -> str:
     command_links = [
@@ -1652,15 +1807,25 @@ def build_index_page(
         ]
     )
     infographics = overview_infographic_cards(metrics, category_rows)
+    chart_annotation_rails = overview_chart_annotation_rails(
+        metrics,
+        validation_report,
+        category_rows,
+        business_model_rows,
+        gtm_model_rows,
+    )
 
     chart_cards = "".join(
         f"""
 <article class="chart-card">
   <img src="assets/charts/{stem}.png" alt="{html.escape(title)}" loading="lazy" width="{width}" height="{height}">
-  <div class="chart-copy">
-    <h3>{html.escape(title)}</h3>
-    <p>{html.escape(caption)}</p>
-    <a href="assets/charts/{stem}.svg">View SVG</a>
+  <div class="chart-detail-grid">
+    <div class="chart-copy">
+      <h3>{html.escape(title)}</h3>
+      <p>{html.escape(caption)}</p>
+      <a href="assets/charts/{stem}.svg">View SVG</a>
+    </div>
+    {chart_annotation_rails.get(stem, "")}
   </div>
 </article>
 """
@@ -1721,7 +1886,10 @@ def build_index_page(
         section(
             "Main charts",
             "The published charts are copied into the site so GitHub Pages can serve the bundle directly.",
-            f'<div class="chart-grid">{chart_cards}</div>',
+            (
+                f'<div class="chart-grid">{chart_cards}</div>'
+                '<p class="section-note">These chart-adjacent story rails reuse the same static metrics plus category/business-model/GTM summaries already published in the bundle, so the interpretation layer stays deterministic and GitHub-Pages-safe.</p>'
+            ),
             section_id="main-charts",
             panel_code="OV.03",
             panel_tag="chart rack",
@@ -3743,8 +3911,52 @@ h3 {
   border-bottom: 1px solid rgba(246, 165, 58, 0.16);
 }
 
-.chart-copy {
+.chart-detail-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.85fr);
   padding: 16px 18px 18px;
+}
+
+.chart-copy {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.chart-copy h3,
+.chart-annotation-rail h4 {
+  margin: 0;
+}
+
+.chart-copy p,
+.chart-annotation-note {
+  margin: 0;
+}
+
+.chart-annotation-rail {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  padding-left: 16px;
+  border-left: 1px solid rgba(98, 201, 214, 0.18);
+}
+
+.chart-annotation-kicker {
+  margin: 0;
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.68rem;
+}
+
+.chart-annotation-note {
+  color: var(--ink-soft);
+}
+
+.chart-annotation-stack {
+  display: grid;
+  gap: 10px;
 }
 
 .chart-copy a,
@@ -3958,6 +4170,17 @@ pre code {
 
   .section-card.layout-compact {
     grid-column: 1 / -1;
+  }
+
+  .chart-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-annotation-rail {
+    padding-left: 0;
+    padding-top: 14px;
+    border-left: 0;
+    border-top: 1px solid rgba(98, 201, 214, 0.18);
   }
 }
 
@@ -4324,12 +4547,21 @@ def write_site_pages() -> None:
         pipeline_manifest,
     )
     category_rows = read_csv_rows(DATA_DIR / "category_summary.csv")
+    business_model_rows = read_csv_rows(DATA_DIR / "business_model_summary.csv")
+    gtm_model_rows = read_csv_rows(DATA_DIR / "gtm_model_summary.csv")
     revenue_band_rows = read_csv_rows(DATA_DIR / "revenue_band_summary.csv")
     methodology_markdown = (DOCS_DIR / "methodology.md").read_text(encoding="utf-8")
     data_notice_markdown = (ROOT / "DATA-NOTICE.md").read_text(encoding="utf-8")
 
     pages = {
-        "index.html": build_index_page(metrics, validation_report, category_rows, output_registry_sections),
+        "index.html": build_index_page(
+            metrics,
+            validation_report,
+            category_rows,
+            business_model_rows,
+            gtm_model_rows,
+            output_registry_sections,
+        ),
         "methodology.html": build_methodology_page(
             methodology_markdown,
             data_notice_markdown,

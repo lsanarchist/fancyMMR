@@ -627,6 +627,12 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Category over-index" in index_html
     assert "Revenue checkpoints" in index_html
     assert "Top category lanes" in index_html
+    assert "Representation gap" in index_html
+    assert "Leader stack" in index_html
+    assert "Outlier scan" in index_html
+    assert "Model mix read" in index_html
+    assert "Concentration curve" in index_html
+    assert "These chart-adjacent story rails reuse the same static metrics plus category/business-model/GTM summaries" in index_html
     assert "These quick-read infographics reuse the same static metrics and category summaries" in index_html
     assert "Jump palette" in index_html
     assert 'aria-describedby="jump-palette-help jump-palette-shortcuts"' in index_html
@@ -865,6 +871,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "--bg: #05070a" in site_css
     assert ".workstation {" in site_css
     assert ".skip-link {" in site_css
+    assert ".chart-detail-grid {" in site_css
+    assert ".chart-annotation-rail {" in site_css
+    assert ".chart-annotation-kicker {" in site_css
     assert ".skip-link:focus {" in site_css
     assert ".skip-link:focus-visible," in site_css
     assert ".brand:focus-visible," in site_css
