@@ -880,6 +880,28 @@ def build_data_page(
                 "<h3>Fetch-failure source context</h3>"
                 '<p class="section-note">No staged fetch-failure source-label context is currently recorded for the active manifest.</p>'
             )
+        fetch_failure_parser_strategy_counts = (
+            source_pipeline_diagnostics.get("fetch_failure_parser_strategy_counts", {}) or {}
+        )
+        if fetch_failure_sources:
+            diagnostics_fetch_failure_parser_context_section = (
+                "<h3>Fetch-failure parser context</h3>"
+                + render_table(
+                    ["Parser strategy", "Affected sources"],
+                    [
+                        [
+                            html.escape(str(parser_strategy)),
+                            html.escape(f"{int(count):,}"),
+                        ]
+                        for parser_strategy, count in fetch_failure_parser_strategy_counts.items()
+                    ],
+                )
+            )
+        else:
+            diagnostics_fetch_failure_parser_context_section = (
+                "<h3>Fetch-failure parser context</h3>"
+                '<p class="section-note">No staged fetch-failure parser-strategy context is currently recorded for the active manifest.</p>'
+            )
         fetch_failure_robots_policy_counts = source_pipeline_diagnostics.get("fetch_failure_robots_policy_counts", {}) or {}
         fetch_failure_robots_status_code_counts = (
             source_pipeline_diagnostics.get("fetch_failure_robots_status_code_counts", {}) or {}
@@ -1036,6 +1058,7 @@ def build_data_page(
             + diagnostics_fetch_failure_section
             + diagnostics_fetch_failure_timing_section
             + diagnostics_fetch_failure_source_context_section
+            + diagnostics_fetch_failure_parser_context_section
             + diagnostics_fetch_failure_delay_section
             + diagnostics_fetch_failure_robots_section
             + diagnostics_fetch_failure_breakdown_section

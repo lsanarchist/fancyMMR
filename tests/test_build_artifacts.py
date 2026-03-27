@@ -135,6 +135,7 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert source_pipeline_diagnostics["fetch_failure_max_effective_delay_seconds"] is None
     assert source_pipeline_diagnostics["fetch_failure_source_label_counts"] is None
     assert source_pipeline_diagnostics["fetch_failure_source_group_counts"] is None
+    assert source_pipeline_diagnostics["fetch_failure_parser_strategy_counts"] is None
     assert source_pipeline_diagnostics["fetch_failure_status_code_counts"] is None
     assert source_pipeline_diagnostics["detail_parse_failure_source_count"] is None
     assert source_pipeline_diagnostics["detail_parse_status_counts"] is None
@@ -181,6 +182,7 @@ def test_build_artifacts_smoke_and_metrics_contract(tmp_path: Path) -> None:
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_max_effective_delay_seconds"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_label_counts"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_group_counts"] is None
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_parser_strategy_counts"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"] == []
 
@@ -232,6 +234,7 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert diagnostics["fetch_failure_max_effective_delay_seconds"] is None
     assert diagnostics["fetch_failure_source_label_counts"] == {}
     assert diagnostics["fetch_failure_source_group_counts"] == {}
+    assert diagnostics["fetch_failure_parser_strategy_counts"] == {}
     assert diagnostics["fetch_failure_status_code_counts"] == {}
     assert diagnostics["detail_parse_failure_source_count"] == 0
     assert diagnostics["detail_parse_status_counts"]["not_requested"] == 852
@@ -276,6 +279,7 @@ def test_build_artifacts_writes_source_pipeline_diagnostics_for_promoted_manifes
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_max_effective_delay_seconds"] is None
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_label_counts"] == {}
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_group_counts"] == {}
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_parser_strategy_counts"] == {}
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] == {}
     assert pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"] == []
     assert pipeline_manifest["source_pipeline_diagnostics"]["detail_parse_failure_source_count"] == 0
@@ -407,6 +411,7 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
     assert diagnostics["fetch_failure_max_effective_delay_seconds"] == 15.0
     assert diagnostics["fetch_failure_source_label_counts"] == {"AI": 1, "Sales": 1}
     assert diagnostics["fetch_failure_source_group_counts"] == {"category": 2}
+    assert diagnostics["fetch_failure_parser_strategy_counts"] == {"trustmrr_category_listing": 2}
     assert diagnostics["fetch_failure_status_code_counts"] == {"500": 1, "n/a": 1}
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_error_type_counts"] == {
         "FetchError": 1,
@@ -430,6 +435,9 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
         "Sales": 1,
     }
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_source_group_counts"] == {"category": 2}
+    assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_parser_strategy_counts"] == {
+        "trustmrr_category_listing": 2
+    }
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_status_code_counts"] == {
         "500": 1,
         "n/a": 1,

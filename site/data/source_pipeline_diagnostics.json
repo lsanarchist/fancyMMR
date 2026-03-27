@@ -90,6 +90,7 @@
   "fetch_failure_latest_recorded_at": null,
   "fetch_failure_max_effective_delay_seconds": null,
   "fetch_failure_min_effective_delay_seconds": null,
+  "fetch_failure_parser_strategy_counts": {},
   "fetch_failure_robots_policy_counts": {},
   "fetch_failure_robots_status_code_counts": {},
   "fetch_failure_source_count": 0,

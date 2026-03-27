@@ -43,9 +43,9 @@
       "sha256": "1063d12d8aa30809c2c9a8f0d95caa0a3cf04474b784e3729143c03963063515"
     },
     {
-      "bytes": 39574,
+      "bytes": 39620,
       "path": "data/source_pipeline_diagnostics.json",
-      "sha256": "aacccec55d7562eb462d0a1027921ad236733462c2946213cca9c9b9594935bc"
+      "sha256": "7b0e25429e3e55019376d247badfd1545a43932a4cb4144af5cc2b702d7441bf"
     },
     {
       "bytes": 275582,
@@ -244,6 +244,7 @@
     "fetch_failure_latest_recorded_at": null,
     "fetch_failure_max_effective_delay_seconds": null,
     "fetch_failure_min_effective_delay_seconds": null,
+    "fetch_failure_parser_strategy_counts": {},
     "fetch_failure_robots_policy_counts": {},
     "fetch_failure_robots_status_code_counts": {},
     "fetch_failure_source_count": 0,

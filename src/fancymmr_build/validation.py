@@ -521,6 +521,7 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "fetch_failure_max_effective_delay_seconds": None,
         "fetch_failure_source_label_counts": None,
         "fetch_failure_source_group_counts": None,
+        "fetch_failure_parser_strategy_counts": None,
         "fetch_failure_status_code_counts": None,
         "detail_parse_failure_source_count": None,
         "detail_parse_status_counts": None,
@@ -714,6 +715,11 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
                 "source_group",
                 none_label="unknown",
             ),
+            "fetch_failure_parser_strategy_counts": _count_values(
+                fetch_failure_sources,
+                "parser_strategy",
+                none_label="unknown",
+            ),
             "fetch_failure_status_code_counts": _count_values(
                 fetch_failure_sources,
                 "status_code",
@@ -872,6 +878,9 @@ def write_pipeline_manifest(
             ],
             "fetch_failure_source_group_counts": source_pipeline_diagnostics_report[
                 "fetch_failure_source_group_counts"
+            ],
+            "fetch_failure_parser_strategy_counts": source_pipeline_diagnostics_report[
+                "fetch_failure_parser_strategy_counts"
             ],
             "fetch_failure_status_code_counts": source_pipeline_diagnostics_report["fetch_failure_status_code_counts"],
             "detail_parse_failure_source_count": source_pipeline_diagnostics_report["detail_parse_failure_source_count"],
