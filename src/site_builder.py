@@ -95,6 +95,20 @@ def format_byte_range(min_bytes: int | None, max_bytes: int | None) -> str:
     return f"{format_byte_count(min_bytes)} to {format_byte_count(max_bytes)}"
 
 
+def format_median_byte_count(byte_values: list[int]) -> str:
+    if not byte_values:
+        return "med 0 bytes"
+    ordered_values = sorted(byte_values)
+    midpoint = len(ordered_values) // 2
+    if len(ordered_values) % 2 == 1:
+        median_bytes = ordered_values[midpoint]
+    else:
+        lower = ordered_values[midpoint - 1]
+        upper = ordered_values[midpoint]
+        median_bytes = (lower + upper + 1) // 2
+    return f"med {format_byte_count(median_bytes)}"
+
+
 def format_delay_seconds(value: object) -> str:
     if value in (None, ""):
         return "n/a"
@@ -756,6 +770,7 @@ def output_registry_command_links_markup(command_items: list[dict[str, object]])
     )
     section_item_count = sum(format_counts.values())
     format_bytes: Counter[str] = Counter()
+    format_byte_values: dict[str, list[int]] = {}
     format_min_bytes: dict[str, int] = {}
     format_max_bytes: dict[str, int] = {}
     for item in command_items:
@@ -763,6 +778,7 @@ def output_registry_command_links_markup(command_items: list[dict[str, object]])
         item_bytes = item.get("bytes")
         if isinstance(item_bytes, int):
             format_bytes[item_format] += item_bytes
+            format_byte_values.setdefault(item_format, []).append(item_bytes)
             if item_format not in format_min_bytes or item_bytes < format_min_bytes[item_format]:
                 format_min_bytes[item_format] = item_bytes
             if item_format not in format_max_bytes or item_bytes > format_max_bytes[item_format]:
@@ -779,6 +795,7 @@ def output_registry_command_links_markup(command_items: list[dict[str, object]])
                 f'<span class="rail-command-divider-file-share">{html.escape(format_count_share(format_counts[item_format], section_item_count))}</span>'
                 f'<span class="rail-command-divider-bytes">{html.escape(format_byte_count(format_bytes[item_format]))}</span>'
                 f'<span class="rail-command-divider-range">{html.escape(format_byte_range(format_min_bytes.get(item_format), format_max_bytes.get(item_format)))}</span>'
+                f'<span class="rail-command-divider-median">{html.escape(format_median_byte_count(format_byte_values.get(item_format, [])))}</span>'
                 f'<span class="rail-command-divider-average">{html.escape(format_average_byte_count(format_bytes[item_format], format_counts[item_format]))}</span>'
                 f'<span class="rail-command-divider-share">{html.escape(format_byte_share(format_bytes[item_format], section_total_bytes))}</span>'
                 "</div>"
@@ -2528,6 +2545,12 @@ body {
   font-size: 0.64rem;
   letter-spacing: 0.08em;
   color: var(--ink-soft);
+}
+
+.rail-command-divider-median {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-dim);
 }
 
 .rail-command-divider-average {
