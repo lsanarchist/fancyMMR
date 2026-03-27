@@ -340,6 +340,12 @@ def format_share_gap(min_bytes: int | None, max_bytes: int | None, total_bytes: 
     return f"gap {gap:.0f}pp"
 
 
+def format_byte_delta(min_bytes: int | None, max_bytes: int | None) -> str:
+    if min_bytes is None or max_bytes is None:
+        return "delta n/a"
+    return f"delta {format_byte_count(abs(max_bytes - min_bytes))}"
+
+
 def artifact_format_label(artifact: dict[str, object]) -> str:
     artifact_format = str(artifact.get("format") or "").strip().lower()
     if artifact_format:
@@ -727,6 +733,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     item_format_top_share = str(item.get("format_top_share") or "")
     item_format_smallest_share = str(item.get("format_smallest_share") or "")
     item_format_share_gap = str(item.get("format_share_gap") or "")
+    item_format_byte_delta = str(item.get("format_byte_delta") or "")
     byte_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
         if isinstance(item_bytes, int)
@@ -797,6 +804,11 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         if item_format_share_gap
         else ""
     )
+    format_byte_delta_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-format-byte-delta">{html.escape(item_format_byte_delta)}</span>'
+        if item_format_byte_delta
+        else ""
+    )
     return (
         f'<a class="rail-command-link output-registry-link" href="{html.escape(target, quote=True)}" '
         f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
@@ -822,6 +834,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         f"{format_top_share_badge_html}"
         f"{format_smallest_share_badge_html}"
         f"{format_share_gap_badge_html}"
+        f"{format_byte_delta_badge_html}"
         "</span>"
         "</a>"
     )
@@ -1017,6 +1030,13 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
                 format_min_bytes.get(artifact_format_key),
                 format_max_bytes.get(artifact_format_key),
                 format_total_bytes.get(artifact_format_key, 0),
+            )}"
+        )
+        items[-1]["format_byte_delta"] = (
+            f"{artifact_format_label} "
+            f"{format_byte_delta(
+                format_min_bytes.get(artifact_format_key),
+                format_max_bytes.get(artifact_format_key),
             )}"
         )
         artifact_bytes = artifact.get("bytes")
@@ -5894,6 +5914,12 @@ body {
   color: var(--warning);
   border-color: rgba(255, 191, 97, 0.22);
   background: rgba(255, 191, 97, 0.12);
+}
+
+.output-registry-badge-format-byte-delta {
+  color: var(--accent);
+  border-color: rgba(246, 165, 58, 0.22);
+  background: rgba(246, 165, 58, 0.12);
 }
 
 .nav-link:hover,

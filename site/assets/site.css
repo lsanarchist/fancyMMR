@@ -683,6 +683,12 @@ body {
   background: rgba(255, 191, 97, 0.12);
 }
 
+.output-registry-badge-format-byte-delta {
+  color: var(--accent);
+  border-color: rgba(246, 165, 58, 0.22);
+  background: rgba(246, 165, 58, 0.12);
+}
+
 .nav-link:hover,
 .nav-link.is-active,
 .rail-command-link:hover,
