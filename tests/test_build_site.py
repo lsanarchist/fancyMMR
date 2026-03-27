@@ -67,7 +67,7 @@ def assert_text_order(text: str, snippets: list[str]) -> None:
 
 def extract_hot_output_section(text: str, title: str) -> str:
     pattern = re.compile(
-        rf'<div class="rail-command-group">\s*<div class="rail-command-group-head">\s*<p class="rail-command-group-title">{re.escape(title)}</p>.*?</div>\s*<nav class="rail-command-links" aria-label="{re.escape(title)}">.*?</nav>\s*</div>',
+        rf'<div class="rail-command-group">\s*<div class="rail-command-group-head">\s*<p class="rail-command-group-title">{re.escape(title)}</p>.*?(?=<div class="rail-command-group">\s*<div class="rail-command-group-head">|</section>)',
         re.DOTALL,
     )
     match = pattern.search(text)
@@ -616,6 +616,10 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Publication outputs" in index_html
     assert "Staged provenance" in index_html
     assert "Fetch-failure evidence" in index_html
+    assert "Registry cache" in index_html
+    assert "Action posture" in index_html
+    assert "No staged fetch-failure files are indexed in the command surface." in index_html
+    assert "No retryable, blocked, or do-not-retry posture is attached to the active manifest." in index_html
     assert "6 JSON" in index_html
     assert "5 CSV" in index_html
     assert "5 JSON" in index_html
@@ -874,6 +878,10 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Publication outputs" in data_html
     assert "Staged provenance" in data_html
     assert "Fetch-failure evidence" in data_html
+    assert "Registry cache" in data_html
+    assert "Action posture" in data_html
+    assert "No staged fetch-failure files are indexed in the command surface." in data_html
+    assert "No retryable, blocked, or do-not-retry posture is attached to the active manifest." in data_html
     assert "No fetch-failure evidence is currently attached to the active manifest." in data_html
     assert "GET category_summary.csv" in data_html
     assert "GET source_pipeline/snapshots/run_manifest.json" in data_html
@@ -1159,6 +1167,17 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "1 HTML" in data_html
     assert fetch_failure_total_bytes in data_html
     fetch_failure_output_section = extract_hot_output_section(data_html, "Fetch-failure evidence")
+    assert "Registry cache" in fetch_failure_output_section
+    assert "Action posture" in fetch_failure_output_section
+    assert "3 files keep 2 failed source pages one jump away at" in fetch_failure_output_section
+    assert fetch_failure_total_bytes in fetch_failure_output_section
+    assert "Retryable work and robots-blocked cases are both visible before the artifact list." in fetch_failure_output_section
+    assert "JSON files" in fetch_failure_output_section
+    assert "HTML files" in fetch_failure_output_section
+    assert "Failed sources" in fetch_failure_output_section
+    assert "Retryable" in fetch_failure_output_section
+    assert "Do not retry" in fetch_failure_output_section
+    assert "Robots blocked" in fetch_failure_output_section
     assert 'rail-command-divider-label">HTML<' in fetch_failure_output_section
     assert 'rail-command-divider-label">JSON<' in fetch_failure_output_section
     assert 'rail-command-divider-count">1<' in fetch_failure_output_section

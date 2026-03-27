@@ -675,38 +675,53 @@ def build_output_registry_sections(
     source_pipeline_diagnostics: dict[str, object],
     pipeline_manifest: dict[str, object],
 ) -> list[dict[str, object]]:
+    publication_artifacts = sorted(
+        manifest_generated_download_items(pipeline_manifest),
+        key=hot_output_artifact_sort_key,
+    )
+    staged_artifacts = sorted(
+        staged_source_pipeline_download_items(source_pipeline_diagnostics, pipeline_manifest),
+        key=hot_output_artifact_sort_key,
+    )
+    fetch_failure_artifacts = sorted(
+        fetch_failure_download_items(source_pipeline_diagnostics, pipeline_manifest),
+        key=hot_output_artifact_sort_key,
+    )
     section_specs = [
         (
             "Publication outputs",
             "Publication outputs",
             "No publication outputs are currently indexed in the static command surface.",
-            manifest_generated_download_items(pipeline_manifest),
+            publication_artifacts,
+            "",
         ),
         (
             "Staged provenance",
             "Staged provenance",
             "No staged provenance downloads are currently attached to the active manifest.",
-            staged_source_pipeline_download_items(source_pipeline_diagnostics, pipeline_manifest),
+            staged_artifacts,
+            "",
         ),
         (
             "Fetch-failure evidence",
             "Fetch-failure evidence",
             "No fetch-failure evidence is currently attached to the active manifest.",
-            fetch_failure_download_items(source_pipeline_diagnostics, pipeline_manifest),
+            fetch_failure_artifacts,
+            fetch_failure_output_registry_story_rails(fetch_failure_artifacts, source_pipeline_diagnostics),
         ),
     ]
     sections: list[dict[str, object]] = []
-    for title, aria_label, empty_message, artifacts in section_specs:
-        sorted_artifacts = sorted(artifacts, key=hot_output_artifact_sort_key)
+    for title, aria_label, empty_message, artifacts, story_html in section_specs:
         sections.append(
             {
                 "title": title,
                 "aria_label": aria_label,
                 "empty_message": empty_message,
-                "count_label": count_label(len(sorted_artifacts), "file"),
-                "format_badges_html": download_format_summary_badges_html(sorted_artifacts),
-                "byte_total_badge_html": download_total_bytes_badge_html(sorted_artifacts),
-                "items": global_output_command_items(sorted_artifacts),
+                "count_label": count_label(len(artifacts), "file"),
+                "format_badges_html": download_format_summary_badges_html(artifacts),
+                "byte_total_badge_html": download_total_bytes_badge_html(artifacts),
+                "story_html": story_html,
+                "items": global_output_command_items(artifacts),
             }
         )
     return sections
@@ -738,6 +753,7 @@ def output_registry_sections_markup(output_registry_sections: list[dict[str, obj
         count_text = str(section.get("count_label") or "0 files")
         format_badges_html = str(section.get("format_badges_html") or "")
         byte_total_badge_html = str(section.get("byte_total_badge_html") or "")
+        story_html = str(section.get("story_html") or "")
         items = [
             item
             for item in section.get("items", [])
@@ -761,6 +777,7 @@ def output_registry_sections_markup(output_registry_sections: list[dict[str, obj
       {byte_total_badge_html}
     </div>
   </div>
+  {story_html}
   {body_html}
 </div>
 """
@@ -2156,6 +2173,101 @@ def fetch_failure_story_rails(
         f'<div class="annotation-rail-grid">{"".join(rails)}</div>'
         '<p class="section-note">These fetch-failure story rails reuse the same staged failure artifact metadata and publication-facing failure counts already published in the bundle, so the operator readout stays deterministic and GitHub-Pages-safe.</p>'
     )
+
+
+def fetch_failure_output_registry_story_rails(
+    fetch_failure_items: list[dict[str, object]],
+    source_pipeline_diagnostics: dict[str, object],
+) -> str:
+    stats = artifact_collection_stats(fetch_failure_items)
+    format_counts: Counter[str] = stats["format_counts"]  # type: ignore[assignment]
+    item_count = int(stats["item_count"])
+    total_bytes = int(stats["total_bytes"])
+    json_count = format_counts.get("json", 0)
+    html_count = format_counts.get("html", 0)
+    fetch_failure_source_count = int(source_pipeline_diagnostics.get("fetch_failure_source_count") or 0)
+    retryability_counts = source_pipeline_diagnostics.get("fetch_failure_retryability_counts", {}) or {}
+    retryable_count = int(retryability_counts.get("retryable") or 0)
+    do_not_retry_count = int(retryability_counts.get("do_not_retry") or 0)
+    robots_policy_counts = source_pipeline_diagnostics.get("fetch_failure_robots_policy_counts", {}) or {}
+    robots_blocked_count = int(robots_policy_counts.get("disallowed") or 0)
+
+    if item_count == 0 and fetch_failure_source_count == 0:
+        registry_headline = "No staged fetch-failure files are indexed in the command surface."
+        action_headline = "No retryable, blocked, or do-not-retry posture is attached to the active manifest."
+    else:
+        registry_headline = (
+            f"{count_label(item_count, 'file')} keep {count_label(fetch_failure_source_count, 'failed source page')} "
+            f"one jump away at {format_byte_count(total_bytes)}."
+        )
+        if retryable_count > 0 and robots_blocked_count > 0:
+            action_headline = "Retryable work and robots-blocked cases are both visible before the artifact list."
+        elif robots_blocked_count > 0:
+            action_headline = "Policy-blocked cases stay visible before the artifact list."
+        elif retryable_count > 0:
+            action_headline = "Retryable work stays visible before the artifact list."
+        else:
+            action_headline = "Failure posture stays visible before the artifact list."
+
+    rails = [
+        chart_annotation_rail(
+            kicker="Registry cache",
+            headline=registry_headline,
+            note="The shared command rail keeps raw fetch-failure evidence one jump away instead of burying it inside the deeper diagnostics pane.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "JSON files",
+                        count_label(json_count, "file"),
+                        normalized_ratio(json_count, item_count or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "HTML files",
+                        count_label(html_count, "file"),
+                        normalized_ratio(html_count, item_count or 1),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Failed sources",
+                        count_label(fetch_failure_source_count, "source page"),
+                        normalized_ratio(fetch_failure_source_count, max(item_count, fetch_failure_source_count, 1)),
+                        tone="red",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+        chart_annotation_rail(
+            kicker="Action posture",
+            headline=action_headline,
+            note="The shell keeps recovery bias readable even before opening the raw failure JSON or HTML artifacts.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Retryable",
+                        count_label(retryable_count, "source page"),
+                        normalized_ratio(retryable_count, fetch_failure_source_count or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Do not retry",
+                        count_label(do_not_retry_count, "source page"),
+                        normalized_ratio(do_not_retry_count, fetch_failure_source_count or 1),
+                        tone="red",
+                    ),
+                    infographic_meter(
+                        "Robots blocked",
+                        count_label(robots_blocked_count, "source page"),
+                        normalized_ratio(robots_blocked_count, fetch_failure_source_count or 1),
+                        tone="cyan",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+    ]
+    return f'<div class="annotation-rail-grid">{"".join(rails)}</div>'
 
 
 def section(
