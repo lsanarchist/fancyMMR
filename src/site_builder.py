@@ -983,13 +983,24 @@ def build_data_page(
                     ],
                 )
                 + render_table(
-                    ["Recommended action", "Affected sources", "Action artifact rollup"],
+                    [
+                        "Recommended action",
+                        "Affected sources",
+                        "Action artifact rollup",
+                        "Artifact format counts",
+                    ],
                     [
                         [
                             html.escape(str(rollup.get("failure_next_action") or "unknown")),
                             html.escape(f"{int(rollup.get('source_count') or 0):,}"),
                             html.escape(
                                 str(rollup.get("artifact_summary") or "No staged fetch-failure artifact rollup")
+                            ),
+                            html.escape(
+                                str(
+                                    rollup.get("artifact_format_count_summary")
+                                    or "No staged fetch-failure artifact format counts"
+                                )
                             ),
                         ]
                         for rollup in fetch_failure_next_action_artifact_rollups
@@ -1049,7 +1060,7 @@ def build_data_page(
         else:
             diagnostics_fetch_failure_next_action_section = (
                 "<h3>Fetch-failure next actions</h3>"
-                '<p class="section-note">No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, or artifact rollups are currently recorded for the active manifest.</p>'
+                '<p class="section-note">No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, artifact rollups, or artifact format counts are currently recorded for the active manifest.</p>'
             )
         fetch_failure_html_snapshot_availability_counts = (
             source_pipeline_diagnostics.get("fetch_failure_html_snapshot_availability_counts", {}) or {}

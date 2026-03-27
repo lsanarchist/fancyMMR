@@ -458,6 +458,8 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
             "artifact_count": 1,
             "artifact_formats": ["json"],
             "artifact_summary": "1 artifact · JSON",
+            "artifact_format_counts": {"json": 1},
+            "artifact_format_count_summary": "JSON: 1",
         },
         {
             "failure_next_action": "retry_after_backoff",
@@ -465,6 +467,8 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
             "artifact_count": 2,
             "artifact_formats": ["html", "json"],
             "artifact_summary": "2 artifacts · HTML, JSON",
+            "artifact_format_counts": {"html": 1, "json": 1},
+            "artifact_format_count_summary": "HTML: 1, JSON: 1",
         },
     ]
     assert diagnostics["fetch_failure_next_action_source_lists"] == [
@@ -584,6 +588,8 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
             "artifact_count": 1,
             "artifact_formats": ["json"],
             "artifact_summary": "1 artifact · JSON",
+            "artifact_format_counts": {"json": 1},
+            "artifact_format_count_summary": "JSON: 1",
         },
         {
             "failure_next_action": "retry_after_backoff",
@@ -591,6 +597,8 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
             "artifact_count": 2,
             "artifact_formats": ["html", "json"],
             "artifact_summary": "2 artifacts · HTML, JSON",
+            "artifact_format_counts": {"html": 1, "json": 1},
+            "artifact_format_count_summary": "HTML: 1, JSON: 1",
         },
     ]
     assert pipeline_manifest["source_pipeline_diagnostics"]["fetch_failure_next_action_source_lists"] == [

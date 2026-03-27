@@ -140,7 +140,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "No staged fetch-failure severity context is currently recorded for the active manifest." in data_html
     assert "No staged fetch-failure retryability context is currently recorded for the active manifest." in data_html
     assert (
-        "No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, or artifact rollups are currently recorded for the active manifest."
+        "No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, artifact rollups, or artifact format counts are currently recorded for the active manifest."
         in data_html
     )
     assert "No staged fetch-failure snapshot-availability context is currently recorded for the active manifest." in data_html
@@ -235,6 +235,7 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "Affected source labels" in data_html
     assert "Affected source pages" in data_html
     assert "Action artifact rollup" in data_html
+    assert "Artifact format counts" in data_html
     assert "Failure context" in data_html
     assert "Artifact summary" in data_html
     assert "Artifact links" in data_html
@@ -267,6 +268,8 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "Fetch failure metadata - Sales" in data_html
     assert "1 artifact · JSON" in data_html
     assert "2 artifacts · HTML, JSON" in data_html
+    assert "JSON: 1" in data_html
+    assert "HTML: 1, JSON: 1" in data_html
     assert data_html.count("https://trustmrr.com/category/ai") >= 3
     assert data_html.count("https://trustmrr.com/category/sales") >= 3
     assert ">available<" in data_html
