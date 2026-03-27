@@ -701,6 +701,12 @@ body {
   background: rgba(131, 212, 134, 0.12);
 }
 
+.output-registry-badge-format-section-byte-share {
+  color: var(--warning);
+  border-color: rgba(255, 191, 97, 0.22);
+  background: rgba(255, 191, 97, 0.12);
+}
+
 .nav-link:hover,
 .nav-link.is-active,
 .rail-command-link:hover,

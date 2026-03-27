@@ -753,6 +753,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     item_format_byte_delta = str(item.get("format_byte_delta") or "")
     item_format_byte_range = str(item.get("format_byte_range") or "")
     item_format_spread_ratio = str(item.get("format_spread_ratio") or "")
+    item_format_section_byte_share = str(item.get("format_section_byte_share") or "")
     byte_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
         if isinstance(item_bytes, int)
@@ -838,6 +839,11 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         if item_format_spread_ratio
         else ""
     )
+    format_section_byte_share_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-format-section-byte-share">{html.escape(item_format_section_byte_share)}</span>'
+        if item_format_section_byte_share
+        else ""
+    )
     return (
         f'<a class="rail-command-link output-registry-link" href="{html.escape(target, quote=True)}" '
         f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
@@ -866,6 +872,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         f"{format_byte_delta_badge_html}"
         f"{format_byte_range_badge_html}"
         f"{format_spread_ratio_badge_html}"
+        f"{format_section_byte_share_badge_html}"
         "</span>"
         "</a>"
     )
@@ -1083,6 +1090,10 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
                 format_min_bytes.get(artifact_format_key),
                 format_max_bytes.get(artifact_format_key),
             )}"
+        )
+        items[-1]["format_section_byte_share"] = (
+            f"{artifact_format_label} "
+            f"{format_byte_share(format_total_bytes.get(artifact_format_key, 0), section_total_bytes)}"
         )
         artifact_bytes = artifact.get("bytes")
         if isinstance(artifact_bytes, int):
@@ -5977,6 +5988,12 @@ body {
   color: var(--green);
   border-color: rgba(131, 212, 134, 0.22);
   background: rgba(131, 212, 134, 0.12);
+}
+
+.output-registry-badge-format-section-byte-share {
+  color: var(--warning);
+  border-color: rgba(255, 191, 97, 0.22);
+  background: rgba(255, 191, 97, 0.12);
 }
 
 .nav-link:hover,
