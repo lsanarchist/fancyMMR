@@ -464,6 +464,14 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                     "failure_context_summary": (
                         "2026-03-27T00:05:00Z · HTTP n/a · FetchError · policy_blocked · do_not_retry"
                     ),
+                    "artifact_links": [
+                        {
+                            "format": "json",
+                            "label": "Fetch failure metadata - Sales",
+                            "path": "data/fetch_failures/category--sales.json",
+                            "site_path": "data/fetch_failures/category--sales.json",
+                        }
+                    ],
                 }
             ],
         },
@@ -483,6 +491,20 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                     "failure_context_summary": (
                         "2026-03-27T00:00:00Z · HTTP 500 · HTTPError · server_error · retryable"
                     ),
+                    "artifact_links": [
+                        {
+                            "format": "json",
+                            "label": "Fetch failure metadata - AI",
+                            "path": "data/fetch_failures/category--ai.json",
+                            "site_path": "data/fetch_failures/category--ai.json",
+                        },
+                        {
+                            "format": "html",
+                            "label": "Fetch failure HTML snapshot - AI",
+                            "path": "data/fetch_failures/category--ai.html",
+                            "site_path": "data/fetch_failures/category--ai.html",
+                        },
+                    ],
                 }
             ],
         },
@@ -546,6 +568,14 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                     "failure_context_summary": (
                         "2026-03-27T00:05:00Z · HTTP n/a · FetchError · policy_blocked · do_not_retry"
                     ),
+                    "artifact_links": [
+                        {
+                            "format": "json",
+                            "label": "Fetch failure metadata - Sales",
+                            "path": "data/fetch_failures/category--sales.json",
+                            "site_path": "data/fetch_failures/category--sales.json",
+                        }
+                    ],
                 }
             ],
         },
@@ -565,6 +595,20 @@ def test_build_artifacts_surfaces_staged_fetch_failure_diagnostics_for_promoted_
                     "failure_context_summary": (
                         "2026-03-27T00:00:00Z · HTTP 500 · HTTPError · server_error · retryable"
                     ),
+                    "artifact_links": [
+                        {
+                            "format": "json",
+                            "label": "Fetch failure metadata - AI",
+                            "path": "data/fetch_failures/category--ai.json",
+                            "site_path": "data/fetch_failures/category--ai.json",
+                        },
+                        {
+                            "format": "html",
+                            "label": "Fetch failure HTML snapshot - AI",
+                            "path": "data/fetch_failures/category--ai.html",
+                            "site_path": "data/fetch_failures/category--ai.html",
+                        },
+                    ],
                 }
             ],
         },

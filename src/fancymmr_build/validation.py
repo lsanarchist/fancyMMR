@@ -534,49 +534,57 @@ def _load_fetch_failure_sources(
     return failure_sources
 
 
+def _build_fetch_failure_artifacts_for_source(
+    failure_source: dict[str, object],
+) -> list[dict[str, object]]:
+    artifacts: list[dict[str, object]] = []
+    source_id = str(failure_source["source_id"])
+    category_label = str(failure_source.get("category_label") or source_id)
+    source_url = str(failure_source.get("source_url") or source_id)
+    status_code = failure_source.get("status_code")
+    status_text = f"HTTP {status_code}" if status_code is not None else "no HTTP status"
+
+    metadata_artifact = _artifact_download_record(
+        relative_path=f"data/fetch_failures/{source_id}.json",
+        label=f"Fetch failure metadata - {category_label}",
+        description=(
+            f"Structured staged fetch-failure metadata for {source_url} "
+            f"({status_text}). This remains staged provenance."
+        ),
+        artifact_format="json",
+    )
+    if metadata_artifact is not None:
+        artifacts.append(metadata_artifact)
+
+    html_snapshot_path = str(failure_source.get("html_snapshot_path") or "")
+    if html_snapshot_path:
+        html_artifact = _artifact_download_record(
+            relative_path=html_snapshot_path,
+            label=f"Fetch failure HTML snapshot - {category_label}",
+            description=(
+                f"Captured staged response body for the fetch failure on {source_url} "
+                f"({status_text}). This remains staged provenance."
+            ),
+            artifact_format="html",
+        )
+        if html_artifact is not None:
+            artifacts.append(html_artifact)
+    return artifacts
+
+
 def _build_downloadable_fetch_failure_artifacts(
     fetch_failure_sources: list[dict[str, object]],
 ) -> list[dict[str, object]]:
     artifacts: list[dict[str, object]] = []
     for failure_source in fetch_failure_sources:
-        source_id = str(failure_source["source_id"])
-        category_label = str(failure_source.get("category_label") or source_id)
-        source_url = str(failure_source.get("source_url") or source_id)
-        status_code = failure_source.get("status_code")
-        status_text = f"HTTP {status_code}" if status_code is not None else "no HTTP status"
-
-        metadata_artifact = _artifact_download_record(
-            relative_path=f"data/fetch_failures/{source_id}.json",
-            label=f"Fetch failure metadata - {category_label}",
-            description=(
-                f"Structured staged fetch-failure metadata for {source_url} "
-                f"({status_text}). This remains staged provenance."
-            ),
-            artifact_format="json",
-        )
-        if metadata_artifact is not None:
-            artifacts.append(metadata_artifact)
-
-        html_snapshot_path = str(failure_source.get("html_snapshot_path") or "")
-        if html_snapshot_path:
-            html_artifact = _artifact_download_record(
-                relative_path=html_snapshot_path,
-                label=f"Fetch failure HTML snapshot - {category_label}",
-                description=(
-                    f"Captured staged response body for the fetch failure on {source_url} "
-                    f"({status_text}). This remains staged provenance."
-                ),
-                artifact_format="html",
-            )
-            if html_artifact is not None:
-                artifacts.append(html_artifact)
+        artifacts.extend(_build_fetch_failure_artifacts_for_source(failure_source))
     return artifacts
 
 
 def _group_fetch_failure_sources_by_next_action(
     fetch_failure_sources: list[dict[str, object]],
 ) -> list[dict[str, object]]:
-    grouped_sources: dict[str, list[dict[str, str]]] = {}
+    grouped_sources: dict[str, list[dict[str, object]]] = {}
     for failure_source in fetch_failure_sources:
         failure_next_action = str(failure_source.get("failure_next_action") or "unknown")
         source_id = str(failure_source.get("source_id") or "")
@@ -589,6 +597,15 @@ def _group_fetch_failure_sources_by_next_action(
         failure_context_parts = [status_code_text, error_type, failure_severity, failure_retryability]
         if recorded_at:
             failure_context_parts.insert(0, recorded_at)
+        artifact_links = [
+            {
+                "label": str(artifact.get("label") or ""),
+                "path": str(artifact.get("path") or ""),
+                "site_path": str(artifact.get("site_path") or ""),
+                "format": str(artifact.get("format") or ""),
+            }
+            for artifact in _build_fetch_failure_artifacts_for_source(failure_source)
+        ]
         grouped_sources.setdefault(failure_next_action, []).append(
             {
                 "source_id": source_id,
@@ -600,6 +617,7 @@ def _group_fetch_failure_sources_by_next_action(
                 "failure_severity": failure_severity,
                 "failure_retryability": failure_retryability,
                 "failure_context_summary": " · ".join(failure_context_parts),
+                "artifact_links": artifact_links,
             }
         )
 

@@ -1004,7 +1004,7 @@ def build_data_page(
                     ],
                 )
                 + render_table(
-                    ["Recommended action", "Source label", "Source page", "Failure context"],
+                    ["Recommended action", "Source label", "Source page", "Failure context", "Artifact links"],
                     [
                         [
                             html.escape(str(group.get("failure_next_action") or "unknown")),
@@ -1016,6 +1016,13 @@ def build_data_page(
                             if str(source.get("source_url") or "")
                             else html.escape(str(source.get("source_id") or "unknown")),
                             html.escape(str(source.get("failure_context_summary") or "unknown")),
+                            "<br>".join(
+                                f'<a href="{html.escape(str(artifact.get("site_path") or ""), quote=True)}">'
+                                f'{html.escape(str(artifact.get("label") or artifact.get("path") or "artifact"))}</a>'
+                                for artifact in source.get("artifact_links", [])
+                                if str(artifact.get("site_path") or "")
+                            )
+                            or html.escape("No staged fetch-failure artifact links"),
                         ]
                         for group in fetch_failure_next_action_source_lists
                         for source in group.get("sources", [])
@@ -1025,7 +1032,7 @@ def build_data_page(
         else:
             diagnostics_fetch_failure_next_action_section = (
                 "<h3>Fetch-failure next actions</h3>"
-                '<p class="section-note">No staged fetch-failure next-action recommendations, source lists, or source details are currently recorded for the active manifest.</p>'
+                '<p class="section-note">No staged fetch-failure next-action recommendations, source lists, source details, or artifact links are currently recorded for the active manifest.</p>'
             )
         fetch_failure_html_snapshot_availability_counts = (
             source_pipeline_diagnostics.get("fetch_failure_html_snapshot_availability_counts", {}) or {}
