@@ -6,6 +6,7 @@
   <title>Overview | TrustMRR visible sample</title>
   <meta name="description" content="Static overview of the TrustMRR visible-sample research bundle.">
   <link rel="stylesheet" href="assets/site.css">
+  <script defer src="assets/site.js"></script>
 </head>
 <body class="page-index">
   <div class="page-backdrop"></div>
@@ -31,7 +32,7 @@
       <section class="rail-module">
         <p class="rail-kicker">Command deck</p>
         <nav class="rail-command-links" aria-label="Page panels">
-          <a class="rail-command-link" href="#top">OV.00 Top</a><a class="rail-command-link" href="#snapshot">OV.01 Snapshot</a><a class="rail-command-link" href="#scope-guardrails">OV.02 Guardrails</a><a class="rail-command-link" href="#main-charts">OV.03 Charts</a><a class="rail-command-link" href="#category-leaders">OV.04 Leaders</a>
+          <a class="rail-command-link" href="#top" data-command-label="OV.00 Top" data-command-target="#top">OV.00 Top</a><a class="rail-command-link" href="#snapshot" data-command-label="OV.01 Snapshot" data-command-target="#snapshot">OV.01 Snapshot</a><a class="rail-command-link" href="#scope-guardrails" data-command-label="OV.02 Guardrails" data-command-target="#scope-guardrails">OV.02 Guardrails</a><a class="rail-command-link" href="#main-charts" data-command-label="OV.03 Charts" data-command-target="#main-charts">OV.03 Charts</a><a class="rail-command-link" href="#category-leaders" data-command-label="OV.04 Leaders" data-command-target="#category-leaders">OV.04 Leaders</a>
         </nav>
       </section>
       <section class="rail-module">
@@ -40,14 +41,30 @@
       </section>
     </aside>
     <main class="workspace">
-      <section class="workspace-command">
-        <div class="command-prompt">
-          <span class="command-prompt-label">Jump palette</span>
-          <code>jump --panel /index</code>
+      <section class="workspace-command" data-command-surface data-page-route="/index">
+        <div class="command-entry">
+          <label class="command-prompt-label" for="jump-palette">Jump palette</label>
+          <div class="command-input-wrap">
+            <span class="command-prefix">jump --panel</span>
+            <input
+              id="jump-palette"
+              class="command-input"
+              type="text"
+              name="jump_palette"
+              value="/index"
+              placeholder="/index #panel"
+              autocapitalize="off"
+              autocomplete="off"
+              spellcheck="false"
+              data-command-input
+            >
+          </div>
+          <p class="command-help">Press <code>/</code> or <code>Ctrl+K</code> to focus. Press <code>Enter</code> to jump. Use <code>[</code> and <code>]</code> to cycle panels.</p>
         </div>
         <div class="command-bar-links">
-          <a class="command-chip" href="#top">OV.00 Top</a><a class="command-chip" href="#snapshot">OV.01 Snapshot</a><a class="command-chip" href="#scope-guardrails">OV.02 Guardrails</a><a class="command-chip" href="#main-charts">OV.03 Charts</a><a class="command-chip" href="#category-leaders">OV.04 Leaders</a>
+          <a class="command-chip" href="#top" data-command-label="OV.00 Top" data-command-target="#top">OV.00 Top</a><a class="command-chip" href="#snapshot" data-command-label="OV.01 Snapshot" data-command-target="#snapshot">OV.01 Snapshot</a><a class="command-chip" href="#scope-guardrails" data-command-label="OV.02 Guardrails" data-command-target="#scope-guardrails">OV.02 Guardrails</a><a class="command-chip" href="#main-charts" data-command-label="OV.03 Charts" data-command-target="#main-charts">OV.03 Charts</a><a class="command-chip" href="#category-leaders" data-command-label="OV.04 Leaders" data-command-target="#category-leaders">OV.04 Leaders</a>
         </div>
+        <p class="command-status" aria-live="polite" data-command-status>Ready. 5 panels indexed for this route.</p>
       </section>
       
 <section class="hero" id="top">

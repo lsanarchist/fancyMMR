@@ -331,8 +331,80 @@ body {
   color: var(--ink-soft);
 }
 
-.command-prompt code {
+.command-entry {
+  min-width: min(100%, 460px);
+  display: grid;
+  gap: 8px;
+}
+
+.command-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 10px 14px;
+  border: 1px solid rgba(246, 165, 58, 0.24);
+  border-radius: 12px;
+  background: rgba(246, 165, 58, 0.08);
+}
+
+.command-prefix {
   color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.command-input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+}
+
+.command-input::placeholder {
+  color: var(--ink-dim);
+}
+
+.command-help,
+.command-status {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+
+.command-status {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.command-chip.is-muted,
+.rail-command-link.is-muted {
+  opacity: 0.38;
+}
+
+.command-chip.is-targeted,
+.rail-command-link.is-targeted {
+  color: var(--ink);
+  background: rgba(98, 201, 214, 0.12);
+  border-color: rgba(98, 201, 214, 0.34);
+}
+
+.hero,
+.section-card {
+  scroll-margin-top: 92px;
+}
+
+.hero.is-focused,
+.section-card.is-focused {
+  border-color: rgba(98, 201, 214, 0.42);
+  box-shadow:
+    0 0 0 1px rgba(98, 201, 214, 0.24),
+    var(--shadow);
 }
 
 .hero {
@@ -775,7 +847,8 @@ pre code {
 
   .ticker-strip,
   .command-bar-links,
-  .rail-command-links {
+  .rail-command-links,
+  .command-entry {
     width: 100%;
   }
 
@@ -783,6 +856,11 @@ pre code {
   .rail-command-link,
   .command-chip {
     width: 100%;
+  }
+
+  .command-input-wrap {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   h1 {

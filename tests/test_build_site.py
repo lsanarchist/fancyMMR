@@ -63,6 +63,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert (site_root / "methodology.html").exists()
     assert (site_root / "data.html").exists()
     assert (site_root / "assets" / "site.css").exists()
+    assert (site_root / "assets" / "site.js").exists()
     assert (site_root / "assets" / "charts" / "category_share_map.png").exists()
     assert (site_root / "assets" / "charts" / "category_share_map.svg").exists()
     assert (site_root / "data" / "metrics.json").exists()
@@ -82,6 +83,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     methodology_html = (site_root / "methodology.html").read_text(encoding="utf-8")
     data_html = (site_root / "data.html").read_text(encoding="utf-8")
     site_css = (site_root / "assets" / "site.css").read_text(encoding="utf-8")
+    site_js = (site_root / "assets" / "site.js").read_text(encoding="utf-8")
     pipeline_manifest = json.loads((site_root / "data" / "pipeline_manifest.json").read_text(encoding="utf-8"))
 
     assert "visible public sample" in index_html.lower()
@@ -96,6 +98,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "TrustMRR visible-sample terminal" in index_html
     assert "Command deck" in index_html
     assert "Jump palette" in index_html
+    assert 'src="assets/site.js"' in index_html
+    assert "Ctrl+K" in index_html
+    assert "data-command-input" in index_html
 
     assert "not a full database export" in methodology_html.lower()
     assert "source-derived visible sample" in methodology_html.lower()
@@ -163,6 +168,12 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "--bg: #05070a" in site_css
     assert ".workstation {" in site_css
     assert ".command-strip {" in site_css
+    assert ".command-input {" in site_css
+    assert ".section-card.is-focused" in site_css or ".hero.is-focused" in site_css
+    assert "window.localStorage.setItem" in site_js
+    assert 'event.key === "/"' in site_js
+    assert 'event.key === "[" || event.key === "]"' in site_js
+    assert "scrollIntoView" in site_js
     for artifact in pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"]:
         assert artifact["site_path"] in data_html
         assert artifact["sha256"] in data_html

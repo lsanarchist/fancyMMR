@@ -322,7 +322,13 @@ def shell_tokens(*, active: str, status: str) -> str:
 
 def command_links_markup(command_links: list[tuple[str, str]], *, link_class: str) -> str:
     return "".join(
-        f'<a class="{html.escape(link_class, quote=True)}" href="{html.escape(href, quote=True)}">{html.escape(label)}</a>'
+        (
+            f'<a class="{html.escape(link_class, quote=True)}" '
+            f'href="{html.escape(href, quote=True)}" '
+            f'data-command-label="{html.escape(label, quote=True)}" '
+            f'data-command-target="{html.escape(href, quote=True)}">'
+            f"{html.escape(label)}</a>"
+        )
         for label, href in command_links
     )
 
@@ -385,6 +391,7 @@ def page_shell(
   <title>{html.escape(title)} | TrustMRR visible sample</title>
   <meta name="description" content="{html.escape(description, quote=True)}">
   <link rel="stylesheet" href="assets/site.css">
+  <script defer src="assets/site.js"></script>
 </head>
 <body class="page-{active}">
   <div class="page-backdrop"></div>
@@ -419,14 +426,30 @@ def page_shell(
       </section>
     </aside>
     <main class="workspace">
-      <section class="workspace-command">
-        <div class="command-prompt">
-          <span class="command-prompt-label">Jump palette</span>
-          <code>jump --panel /{html.escape(active)}</code>
+      <section class="workspace-command" data-command-surface data-page-route="/{html.escape(active, quote=True)}">
+        <div class="command-entry">
+          <label class="command-prompt-label" for="jump-palette">Jump palette</label>
+          <div class="command-input-wrap">
+            <span class="command-prefix">jump --panel</span>
+            <input
+              id="jump-palette"
+              class="command-input"
+              type="text"
+              name="jump_palette"
+              value="/{html.escape(active, quote=True)}"
+              placeholder="/{html.escape(active, quote=True)} #panel"
+              autocapitalize="off"
+              autocomplete="off"
+              spellcheck="false"
+              data-command-input
+            >
+          </div>
+          <p class="command-help">Press <code>/</code> or <code>Ctrl+K</code> to focus. Press <code>Enter</code> to jump. Use <code>[</code> and <code>]</code> to cycle panels.</p>
         </div>
         <div class="command-bar-links">
           {command_bar_links}
         </div>
+        <p class="command-status" aria-live="polite" data-command-status>Ready. {len(command_links):,} panels indexed for this route.</p>
       </section>
       {body_html}
     </main>
@@ -2094,8 +2117,80 @@ body {
   color: var(--ink-soft);
 }
 
-.command-prompt code {
+.command-entry {
+  min-width: min(100%, 460px);
+  display: grid;
+  gap: 8px;
+}
+
+.command-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 10px 14px;
+  border: 1px solid rgba(246, 165, 58, 0.24);
+  border-radius: 12px;
+  background: rgba(246, 165, 58, 0.08);
+}
+
+.command-prefix {
   color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.command-input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+}
+
+.command-input::placeholder {
+  color: var(--ink-dim);
+}
+
+.command-help,
+.command-status {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+
+.command-status {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.command-chip.is-muted,
+.rail-command-link.is-muted {
+  opacity: 0.38;
+}
+
+.command-chip.is-targeted,
+.rail-command-link.is-targeted {
+  color: var(--ink);
+  background: rgba(98, 201, 214, 0.12);
+  border-color: rgba(98, 201, 214, 0.34);
+}
+
+.hero,
+.section-card {
+  scroll-margin-top: 92px;
+}
+
+.hero.is-focused,
+.section-card.is-focused {
+  border-color: rgba(98, 201, 214, 0.42);
+  box-shadow:
+    0 0 0 1px rgba(98, 201, 214, 0.24),
+    var(--shadow);
 }
 
 .hero {
@@ -2538,7 +2633,8 @@ pre code {
 
   .ticker-strip,
   .command-bar-links,
-  .rail-command-links {
+  .rail-command-links,
+  .command-entry {
     width: 100%;
   }
 
@@ -2548,10 +2644,237 @@ pre code {
     width: 100%;
   }
 
+  .command-input-wrap {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   h1 {
     max-width: none;
   }
 }
+"""
+
+
+def build_script() -> str:
+    return """\
+(() => {
+  const surface = document.querySelector("[data-command-surface]");
+  if (!surface) {
+    return;
+  }
+
+  const input = surface.querySelector("[data-command-input]");
+  const status = surface.querySelector("[data-command-status]");
+  if (!(input instanceof HTMLInputElement) || !status) {
+    return;
+  }
+
+  const route = surface.getAttribute("data-page-route") || window.location.pathname || "/";
+  const storageKey = `fancymmr:last-panel:${route}`;
+  const linkNodes = Array.from(document.querySelectorAll("[data-command-target]"));
+  const panelMap = new Map();
+
+  for (const node of linkNodes) {
+    const target = node.getAttribute("data-command-target") || "";
+    const label = node.getAttribute("data-command-label") || node.textContent || target;
+    if (!target) {
+      continue;
+    }
+    if (!panelMap.has(target)) {
+      const panel = document.querySelector(target);
+      const titleNode = panel ? panel.querySelector("h1, h2, h3") : null;
+      const title = (titleNode && titleNode.textContent ? titleNode.textContent : label).trim();
+      panelMap.set(target, {
+        target,
+        label: label.trim(),
+        title,
+        panel,
+        elements: [],
+        terms: `${label} ${target} ${title}`.toLowerCase(),
+      });
+    }
+    panelMap.get(target).elements.push(node);
+  }
+
+  const panels = Array.from(panelMap.values());
+  const panelCount = panels.length;
+  let lastMatches = panels;
+
+  const isEditableTarget = (eventTarget) => {
+    if (!(eventTarget instanceof HTMLElement)) {
+      return false;
+    }
+    return (
+      eventTarget === input ||
+      eventTarget.tagName === "INPUT" ||
+      eventTarget.tagName === "TEXTAREA" ||
+      eventTarget.tagName === "SELECT" ||
+      eventTarget.isContentEditable
+    );
+  };
+
+  const currentTarget = () => {
+    const hash = window.location.hash || "#top";
+    return panelMap.has(hash) ? hash : "#top";
+  };
+
+  const setStatus = (message) => {
+    status.textContent = message;
+  };
+
+  const normalizedCommandQuery = (rawValue) => {
+    const raw = rawValue.trim().toLowerCase();
+    if (!raw) {
+      return "";
+    }
+    const normalizedRoute = route.trim().toLowerCase();
+    if (raw === normalizedRoute) {
+      return "";
+    }
+    if (raw.startsWith(`${normalizedRoute} `)) {
+      return raw.slice(normalizedRoute.length).trim();
+    }
+    return raw;
+  };
+
+  const syncInputValue = (target) => {
+    if (document.activeElement === input) {
+      return;
+    }
+    input.value = target === "#top" ? route : `${route} ${target}`;
+  };
+
+  const highlightPanel = (target) => {
+    for (const panel of panels) {
+      const isTarget = panel.target === target;
+      for (const element of panel.elements) {
+        element.classList.toggle("is-targeted", isTarget);
+      }
+      if (panel.panel) {
+        panel.panel.classList.toggle("is-focused", isTarget);
+      }
+    }
+    syncInputValue(target);
+    const activePanel = panelMap.get(target);
+    if (activePanel) {
+      window.localStorage.setItem(storageKey, target);
+      const index = panels.findIndex((panel) => panel.target === target);
+      setStatus(`Focused ${activePanel.label}. Panel ${index + 1} of ${panelCount}.`);
+    } else {
+      setStatus(`Ready. ${panelCount} panels indexed for this route.`);
+    }
+  };
+
+  const matchedPanels = (query) => {
+    const normalized = normalizedCommandQuery(query);
+    if (!normalized) {
+      return panels;
+    }
+    return panels.filter((panel) => panel.terms.includes(normalized));
+  };
+
+  const renderMatches = (matches, query) => {
+    lastMatches = matches;
+    const normalized = normalizedCommandQuery(query);
+    if (!normalized) {
+      for (const panel of panels) {
+        for (const element of panel.elements) {
+          element.classList.remove("is-muted");
+        }
+      }
+      highlightPanel(currentTarget());
+      return;
+    }
+
+    for (const panel of panels) {
+      const isMatch = matches.includes(panel);
+      for (const element of panel.elements) {
+        element.classList.toggle("is-muted", !isMatch);
+      }
+    }
+
+    if (matches.length) {
+      setStatus(`${matches.length} panel match${matches.length === 1 ? "" : "es"} for "${normalized}". Press Enter to jump.`);
+    } else {
+      setStatus(`No panel matches for "${normalized}".`);
+    }
+  };
+
+  const navigateTo = (panel) => {
+    if (!panel) {
+      return;
+    }
+    if (window.location.hash === panel.target) {
+      highlightPanel(panel.target);
+      panel.panel?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    window.location.hash = panel.target;
+  };
+
+  const cyclePanels = (direction) => {
+    if (!panelCount) {
+      return;
+    }
+    const activeTarget = currentTarget();
+    const currentIndex = Math.max(
+      0,
+      panels.findIndex((panel) => panel.target === activeTarget),
+    );
+    const nextIndex = (currentIndex + direction + panelCount) % panelCount;
+    navigateTo(panels[nextIndex]);
+  };
+
+  input.addEventListener("input", () => {
+    renderMatches(matchedPanels(input.value), input.value);
+  });
+
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      navigateTo(lastMatches[0] || panelMap.get(currentTarget()));
+      return;
+    }
+    if (event.key === "Escape") {
+      input.blur();
+      input.value = "";
+      renderMatches(panels, "");
+    }
+  });
+
+  window.addEventListener("hashchange", () => {
+    highlightPanel(currentTarget());
+    renderMatches(matchedPanels(input.value), input.value);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if ((event.key === "/" && !event.metaKey && !event.ctrlKey && !event.altKey) || ((event.key === "k" || event.key === "K") && event.ctrlKey)) {
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+      event.preventDefault();
+      input.focus();
+      input.select();
+      return;
+    }
+
+    if ((event.key === "[" || event.key === "]") && !isEditableTarget(event.target)) {
+      event.preventDefault();
+      cyclePanels(event.key === "]" ? 1 : -1);
+    }
+  });
+
+  const initialTarget = currentTarget();
+  const storedTarget = window.localStorage.getItem(storageKey);
+  syncInputValue(initialTarget);
+  if (!window.location.hash && storedTarget && panelMap.has(storedTarget)) {
+    setStatus(`Ready. ${panelCount} panels indexed for this route. Last panel: ${panelMap.get(storedTarget).label}.`);
+  } else {
+    setStatus(`Ready. ${panelCount} panels indexed for this route.`);
+  }
+  highlightPanel(initialTarget);
+})();
 """
 
 
@@ -2584,6 +2907,7 @@ def write_site_pages() -> None:
     for filename, content in pages.items():
         (SITE_DIR / filename).write_text(content, encoding="utf-8")
     (SITE_ASSETS_DIR / "site.css").write_text(build_stylesheet(), encoding="utf-8")
+    (SITE_ASSETS_DIR / "site.js").write_text(build_script(), encoding="utf-8")
 
 
 def build_site() -> None:

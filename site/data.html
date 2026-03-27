@@ -6,6 +6,7 @@
   <title>Data | TrustMRR visible sample</title>
   <meta name="description" content="Download links and source coverage for the TrustMRR visible-sample static site.">
   <link rel="stylesheet" href="assets/site.css">
+  <script defer src="assets/site.js"></script>
 </head>
 <body class="page-data">
   <div class="page-backdrop"></div>
@@ -31,7 +32,7 @@
       <section class="rail-module">
         <p class="rail-kicker">Command deck</p>
         <nav class="rail-command-links" aria-label="Page panels">
-          <a class="rail-command-link" href="#top">DT.00 Top</a><a class="rail-command-link" href="#downloads">DT.01 Downloads</a><a class="rail-command-link" href="#staged-bundle">DT.02 Staged bundle</a><a class="rail-command-link" href="#fetch-failure-snapshots">DT.03 Fetch failures</a><a class="rail-command-link" href="#top-categories">DT.04 Categories</a><a class="rail-command-link" href="#revenue-bands">DT.05 Revenue bands</a><a class="rail-command-link" href="#source-coverage">DT.06 Source coverage</a><a class="rail-command-link" href="#source-pipeline-diagnostics">DT.07 Diagnostics</a><a class="rail-command-link" href="#manifest-notes">DT.08 Manifest</a>
+          <a class="rail-command-link" href="#top" data-command-label="DT.00 Top" data-command-target="#top">DT.00 Top</a><a class="rail-command-link" href="#downloads" data-command-label="DT.01 Downloads" data-command-target="#downloads">DT.01 Downloads</a><a class="rail-command-link" href="#staged-bundle" data-command-label="DT.02 Staged bundle" data-command-target="#staged-bundle">DT.02 Staged bundle</a><a class="rail-command-link" href="#fetch-failure-snapshots" data-command-label="DT.03 Fetch failures" data-command-target="#fetch-failure-snapshots">DT.03 Fetch failures</a><a class="rail-command-link" href="#top-categories" data-command-label="DT.04 Categories" data-command-target="#top-categories">DT.04 Categories</a><a class="rail-command-link" href="#revenue-bands" data-command-label="DT.05 Revenue bands" data-command-target="#revenue-bands">DT.05 Revenue bands</a><a class="rail-command-link" href="#source-coverage" data-command-label="DT.06 Source coverage" data-command-target="#source-coverage">DT.06 Source coverage</a><a class="rail-command-link" href="#source-pipeline-diagnostics" data-command-label="DT.07 Diagnostics" data-command-target="#source-pipeline-diagnostics">DT.07 Diagnostics</a><a class="rail-command-link" href="#manifest-notes" data-command-label="DT.08 Manifest" data-command-target="#manifest-notes">DT.08 Manifest</a>
         </nav>
       </section>
       <section class="rail-module">
@@ -40,14 +41,30 @@
       </section>
     </aside>
     <main class="workspace">
-      <section class="workspace-command">
-        <div class="command-prompt">
-          <span class="command-prompt-label">Jump palette</span>
-          <code>jump --panel /data</code>
+      <section class="workspace-command" data-command-surface data-page-route="/data">
+        <div class="command-entry">
+          <label class="command-prompt-label" for="jump-palette">Jump palette</label>
+          <div class="command-input-wrap">
+            <span class="command-prefix">jump --panel</span>
+            <input
+              id="jump-palette"
+              class="command-input"
+              type="text"
+              name="jump_palette"
+              value="/data"
+              placeholder="/data #panel"
+              autocapitalize="off"
+              autocomplete="off"
+              spellcheck="false"
+              data-command-input
+            >
+          </div>
+          <p class="command-help">Press <code>/</code> or <code>Ctrl+K</code> to focus. Press <code>Enter</code> to jump. Use <code>[</code> and <code>]</code> to cycle panels.</p>
         </div>
         <div class="command-bar-links">
-          <a class="command-chip" href="#top">DT.00 Top</a><a class="command-chip" href="#downloads">DT.01 Downloads</a><a class="command-chip" href="#staged-bundle">DT.02 Staged bundle</a><a class="command-chip" href="#fetch-failure-snapshots">DT.03 Fetch failures</a><a class="command-chip" href="#top-categories">DT.04 Categories</a><a class="command-chip" href="#revenue-bands">DT.05 Revenue bands</a><a class="command-chip" href="#source-coverage">DT.06 Source coverage</a><a class="command-chip" href="#source-pipeline-diagnostics">DT.07 Diagnostics</a><a class="command-chip" href="#manifest-notes">DT.08 Manifest</a>
+          <a class="command-chip" href="#top" data-command-label="DT.00 Top" data-command-target="#top">DT.00 Top</a><a class="command-chip" href="#downloads" data-command-label="DT.01 Downloads" data-command-target="#downloads">DT.01 Downloads</a><a class="command-chip" href="#staged-bundle" data-command-label="DT.02 Staged bundle" data-command-target="#staged-bundle">DT.02 Staged bundle</a><a class="command-chip" href="#fetch-failure-snapshots" data-command-label="DT.03 Fetch failures" data-command-target="#fetch-failure-snapshots">DT.03 Fetch failures</a><a class="command-chip" href="#top-categories" data-command-label="DT.04 Categories" data-command-target="#top-categories">DT.04 Categories</a><a class="command-chip" href="#revenue-bands" data-command-label="DT.05 Revenue bands" data-command-target="#revenue-bands">DT.05 Revenue bands</a><a class="command-chip" href="#source-coverage" data-command-label="DT.06 Source coverage" data-command-target="#source-coverage">DT.06 Source coverage</a><a class="command-chip" href="#source-pipeline-diagnostics" data-command-label="DT.07 Diagnostics" data-command-target="#source-pipeline-diagnostics">DT.07 Diagnostics</a><a class="command-chip" href="#manifest-notes" data-command-label="DT.08 Manifest" data-command-target="#manifest-notes">DT.08 Manifest</a>
         </div>
+        <p class="command-status" aria-live="polite" data-command-status>Ready. 9 panels indexed for this route.</p>
       </section>
       
 <section class="hero" id="top">

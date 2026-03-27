@@ -6,6 +6,7 @@
   <title>Methodology | TrustMRR visible sample</title>
   <meta name="description" content="Methodology and data caveats for the TrustMRR visible-sample static site.">
   <link rel="stylesheet" href="assets/site.css">
+  <script defer src="assets/site.js"></script>
 </head>
 <body class="page-methodology">
   <div class="page-backdrop"></div>
@@ -31,7 +32,7 @@
       <section class="rail-module">
         <p class="rail-kicker">Command deck</p>
         <nav class="rail-command-links" aria-label="Page panels">
-          <a class="rail-command-link" href="#top">MD.00 Top</a><a class="rail-command-link" href="#methodology-panel">MD.01 Methodology</a><a class="rail-command-link" href="#data-notice">MD.02 Data notice</a><a class="rail-command-link" href="#validation-checks">MD.03 Validation</a>
+          <a class="rail-command-link" href="#top" data-command-label="MD.00 Top" data-command-target="#top">MD.00 Top</a><a class="rail-command-link" href="#methodology-panel" data-command-label="MD.01 Methodology" data-command-target="#methodology-panel">MD.01 Methodology</a><a class="rail-command-link" href="#data-notice" data-command-label="MD.02 Data notice" data-command-target="#data-notice">MD.02 Data notice</a><a class="rail-command-link" href="#validation-checks" data-command-label="MD.03 Validation" data-command-target="#validation-checks">MD.03 Validation</a>
         </nav>
       </section>
       <section class="rail-module">
@@ -40,14 +41,30 @@
       </section>
     </aside>
     <main class="workspace">
-      <section class="workspace-command">
-        <div class="command-prompt">
-          <span class="command-prompt-label">Jump palette</span>
-          <code>jump --panel /methodology</code>
+      <section class="workspace-command" data-command-surface data-page-route="/methodology">
+        <div class="command-entry">
+          <label class="command-prompt-label" for="jump-palette">Jump palette</label>
+          <div class="command-input-wrap">
+            <span class="command-prefix">jump --panel</span>
+            <input
+              id="jump-palette"
+              class="command-input"
+              type="text"
+              name="jump_palette"
+              value="/methodology"
+              placeholder="/methodology #panel"
+              autocapitalize="off"
+              autocomplete="off"
+              spellcheck="false"
+              data-command-input
+            >
+          </div>
+          <p class="command-help">Press <code>/</code> or <code>Ctrl+K</code> to focus. Press <code>Enter</code> to jump. Use <code>[</code> and <code>]</code> to cycle panels.</p>
         </div>
         <div class="command-bar-links">
-          <a class="command-chip" href="#top">MD.00 Top</a><a class="command-chip" href="#methodology-panel">MD.01 Methodology</a><a class="command-chip" href="#data-notice">MD.02 Data notice</a><a class="command-chip" href="#validation-checks">MD.03 Validation</a>
+          <a class="command-chip" href="#top" data-command-label="MD.00 Top" data-command-target="#top">MD.00 Top</a><a class="command-chip" href="#methodology-panel" data-command-label="MD.01 Methodology" data-command-target="#methodology-panel">MD.01 Methodology</a><a class="command-chip" href="#data-notice" data-command-label="MD.02 Data notice" data-command-target="#data-notice">MD.02 Data notice</a><a class="command-chip" href="#validation-checks" data-command-label="MD.03 Validation" data-command-target="#validation-checks">MD.03 Validation</a>
         </div>
+        <p class="command-status" aria-live="polite" data-command-status>Ready. 4 panels indexed for this route.</p>
       </section>
       
 <section class="hero" id="top">
