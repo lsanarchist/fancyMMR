@@ -125,6 +125,13 @@ def format_top_file_share(max_bytes: int | None, total_bytes: int) -> str:
     return f"top {share:.0f}%"
 
 
+def format_smallest_file_share(min_bytes: int | None, total_bytes: int) -> str:
+    if min_bytes is None or total_bytes <= 0:
+        return "min n/a"
+    share = (100 * min_bytes) / total_bytes
+    return f"min {share:.0f}%"
+
+
 def format_delay_seconds(value: object) -> str:
     if value in (None, ""):
         return "n/a"
@@ -813,6 +820,7 @@ def output_registry_command_links_markup(command_items: list[dict[str, object]])
                 f'<span class="rail-command-divider-range">{html.escape(format_byte_range(format_min_bytes.get(item_format), format_max_bytes.get(item_format)))}</span>'
                 f'<span class="rail-command-divider-spread">{html.escape(format_byte_spread_ratio(format_min_bytes.get(item_format), format_max_bytes.get(item_format)))}</span>'
                 f'<span class="rail-command-divider-top-share">{html.escape(format_top_file_share(format_max_bytes.get(item_format), format_bytes[item_format]))}</span>'
+                f'<span class="rail-command-divider-smallest-share">{html.escape(format_smallest_file_share(format_min_bytes.get(item_format), format_bytes[item_format]))}</span>'
                 f'<span class="rail-command-divider-median">{html.escape(format_median_byte_count(format_byte_values.get(item_format, [])))}</span>'
                 f'<span class="rail-command-divider-average">{html.escape(format_average_byte_count(format_bytes[item_format], format_counts[item_format]))}</span>'
                 f'<span class="rail-command-divider-share">{html.escape(format_byte_share(format_bytes[item_format], section_total_bytes))}</span>'
@@ -2575,6 +2583,12 @@ body {
   font-size: 0.64rem;
   letter-spacing: 0.08em;
   color: var(--accent);
+}
+
+.rail-command-divider-smallest-share {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
 }
 
 .rail-command-divider-median {

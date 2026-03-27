@@ -251,6 +251,12 @@ body {
   color: var(--accent);
 }
 
+.rail-command-divider-smallest-share {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
 .rail-command-divider-median {
   font-size: 0.64rem;
   letter-spacing: 0.08em;
