@@ -718,6 +718,10 @@ def command_links_markup(command_items: list[dict[str, object]], *, link_class: 
 
 def output_registry_command_links_markup(command_items: list[dict[str, object]]) -> str:
     parts: list[str] = []
+    format_counts: Counter[str] = Counter(
+        str(item.get("format") or "").strip().lower() or "other"
+        for item in command_items
+    )
     active_format = None
     for item in command_items:
         item_format = str(item.get("format") or "").strip().lower() or "other"
@@ -725,6 +729,7 @@ def output_registry_command_links_markup(command_items: list[dict[str, object]])
             parts.append(
                 '<div class="rail-command-divider">'
                 f'<span class="rail-command-divider-label">{html.escape(item_format.upper())}</span>'
+                f'<span class="rail-command-divider-count">{format_counts[item_format]:,}</span>'
                 "</div>"
             )
             active_format = item_format
@@ -2447,6 +2452,13 @@ body {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--cyan);
+}
+
+.rail-command-divider-count {
+  font-size: 0.64rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
 }
 
 .rail-command-group-title,

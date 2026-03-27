@@ -214,6 +214,13 @@ body {
   color: var(--cyan);
 }
 
+.rail-command-divider-count {
+  font-size: 0.64rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
 .rail-command-group-title,
 .rail-command-group-empty {
   margin: 0;
