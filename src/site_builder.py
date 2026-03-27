@@ -845,6 +845,13 @@ def page_shell(
     command_bar_links = command_links_markup(local_panel_items, link_class="command-chip")
     command_deck_links = command_links_markup(local_panel_items, link_class="rail-command-link")
     route_registry_links = command_links_markup(route_registry_items, link_class="rail-command-link")
+    route_map_story_html = route_map_story_rail(nav_items, active=active)
+    operating_mode_story_html = operating_mode_story_rail(
+        status=status,
+        local_panel_items=local_panel_items,
+        route_registry_items=route_registry_items,
+        output_registry_sections=output_registry_sections,
+    )
     command_deck_story_html = command_deck_story_rail(local_panel_items, active=active)
     route_registry_story_html = route_registry_story_rail(route_registry_items)
     output_registry_links = output_registry_sections_markup(output_registry_sections)
@@ -878,6 +885,7 @@ def page_shell(
     <aside class="control-rail" aria-label="Command rail">
       <section class="rail-module">
         <p class="rail-kicker">Route map</p>
+        {route_map_story_html}
         <nav class="nav-links" aria-label="Primary">
           {navigation}
         </nav>
@@ -902,6 +910,7 @@ def page_shell(
       </section>
       <section class="rail-module">
         <p class="rail-kicker">Operating mode</p>
+        {operating_mode_story_html}
         <p class="rail-copy">Visible public sample only. Static GitHub Pages publication. No runtime server, no hidden backend, no platform-wide claim.</p>
       </section>
     </aside>
@@ -2356,6 +2365,93 @@ def route_registry_story_rail(route_registry_items: list[dict[str, object]]) -> 
                         "Data-bound",
                         count_label(data_bound_count, "route"),
                         normalized_ratio(data_bound_count, item_count or 1),
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        )
+        + "</div>"
+    )
+
+
+def route_map_story_rail(nav_items: list[tuple[str, str, str]], *, active: str) -> str:
+    item_count = len(nav_items)
+    headline = (
+        "No top-level routes are currently indexed."
+        if item_count == 0
+        else f"{count_label(item_count, 'route')} keep overview, methodology, and data one jump away."
+    )
+    return (
+        '<div class="annotation-rail-grid">'
+        + chart_annotation_rail(
+            kicker="Route spread",
+            headline=headline,
+            note="The route map keeps the current surface visible while the other primary pages remain one jump away in the same static shell.",
+            meters_html="".join(
+                infographic_meter(
+                    label,
+                    "active" if slug == active else "standby",
+                    1.0 if slug == active else 0.42,
+                    tone="accent" if slug == active else "cyan",
+                )
+                for slug, label, _href in nav_items
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        )
+        + "</div>"
+    )
+
+
+def operating_mode_story_rail(
+    *,
+    status: str,
+    local_panel_items: list[dict[str, object]],
+    route_registry_items: list[dict[str, object]],
+    output_registry_sections: list[dict[str, object]],
+) -> str:
+    validation_ratio = {
+        "passed": 1.0,
+        "passed_with_warnings": 0.72,
+        "failed": 0.32,
+    }.get(status, 0.5)
+    validation_tone = {
+        "passed": "green",
+        "passed_with_warnings": "accent",
+        "failed": "red",
+    }.get(status, "cyan")
+    headline = (
+        f"{status_label(status)} validation stays locked to a static, visible-public-sample shell."
+    )
+    note = (
+        f"The shell currently exposes {count_label(len(local_panel_items), 'local jump')}, "
+        f"{count_label(len(route_registry_items), 'cross-page route')}, and "
+        f"{count_label(len(output_registry_sections), 'hot-output block')} without a runtime backend."
+    )
+    return (
+        '<div class="annotation-rail-grid">'
+        + chart_annotation_rail(
+            kicker="Mode contract",
+            headline=headline,
+            note=note,
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Validation",
+                        status_label(status),
+                        validation_ratio,
+                        tone=validation_tone,
+                    ),
+                    infographic_meter(
+                        "Runtime",
+                        "static pages",
+                        1.0,
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Claim scope",
+                        "visible sample",
+                        1.0,
                         tone="green",
                     ),
                 ]

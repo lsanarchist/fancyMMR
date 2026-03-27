@@ -669,8 +669,17 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "GET public_source_pages.csv" in index_html
     assert "GET source_pipeline/snapshots/run_manifest.json" in index_html
     assert "GET source_pipeline/processed/detail_page_rows.csv" in index_html
+    route_map_section = extract_rail_module(index_html, "Route map")
     command_deck_section = extract_rail_module(index_html, "Command deck")
     route_registry_section = extract_rail_module(index_html, "Route registry")
+    operating_mode_section = extract_rail_module(index_html, "Operating mode")
+    assert "Route spread" in route_map_section
+    assert "3 routes keep overview, methodology, and data one jump away." in route_map_section
+    assert ">Overview<" in route_map_section
+    assert ">active<" in route_map_section
+    assert ">Methodology<" in route_map_section
+    assert ">Data<" in route_map_section
+    assert ">standby<" in route_map_section
     assert "Deck spread" in command_deck_section
     assert "5 local jumps map the /index surface from #top to #category-leaders." in command_deck_section
     assert "Top anchor" in command_deck_section
@@ -682,6 +691,14 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Page roots" in route_registry_section
     assert "Direct anchors" in route_registry_section
     assert "Data-bound" in route_registry_section
+    assert "Mode contract" in operating_mode_section
+    assert "Passed with warnings validation stays locked to a static, visible-public-sample shell." in operating_mode_section
+    assert "5 local jumps, 5 cross-page routes, and 3 hot-output blocks" in operating_mode_section
+    assert "Validation" in operating_mode_section
+    assert "Runtime" in operating_mode_section
+    assert "Claim scope" in operating_mode_section
+    assert "static pages" in operating_mode_section
+    assert "visible sample" in operating_mode_section
     publication_output_section = extract_hot_output_section(index_html, "Publication outputs")
     staged_output_section = extract_hot_output_section(index_html, "Staged provenance")
     assert "Registry shape" in publication_output_section
@@ -923,8 +940,17 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Publication outputs" in data_html
     assert "Staged provenance" in data_html
     assert "Fetch-failure evidence" in data_html
+    data_route_map_section = extract_rail_module(data_html, "Route map")
     data_command_deck_section = extract_rail_module(data_html, "Command deck")
     data_route_registry_section = extract_rail_module(data_html, "Route registry")
+    data_operating_mode_section = extract_rail_module(data_html, "Operating mode")
+    assert "Route spread" in data_route_map_section
+    assert "3 routes keep overview, methodology, and data one jump away." in data_route_map_section
+    assert ">Data<" in data_route_map_section
+    assert ">active<" in data_route_map_section
+    assert ">Overview<" in data_route_map_section
+    assert ">Methodology<" in data_route_map_section
+    assert ">standby<" in data_route_map_section
     assert "Deck spread" in data_command_deck_section
     assert "10 local jumps map the /data surface from #top to #manifest-notes." in data_command_deck_section
     assert "Top anchor" in data_command_deck_section
@@ -936,6 +962,14 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Page roots" in data_route_registry_section
     assert "Direct anchors" in data_route_registry_section
     assert "Data-bound" in data_route_registry_section
+    assert "Mode contract" in data_operating_mode_section
+    assert "Passed with warnings validation stays locked to a static, visible-public-sample shell." in data_operating_mode_section
+    assert "10 local jumps, 5 cross-page routes, and 3 hot-output blocks" in data_operating_mode_section
+    assert "Validation" in data_operating_mode_section
+    assert "Runtime" in data_operating_mode_section
+    assert "Claim scope" in data_operating_mode_section
+    assert "static pages" in data_operating_mode_section
+    assert "visible sample" in data_operating_mode_section
     assert "Registry shape" in data_html
     assert "Signal anchors" in data_html
     assert "keep the publication command surface self-contained at" in data_html
