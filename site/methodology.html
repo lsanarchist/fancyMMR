@@ -9,47 +9,88 @@
 </head>
 <body class="page-methodology">
   <div class="page-backdrop"></div>
-  <header class="topbar">
-    <div class="site-shell topbar-inner">
+  <header class="command-strip">
+    <div class="site-shell command-strip-inner">
       <a class="brand" href="index.html">
         <span class="brand-kicker">fancyMMR</span>
-        <span class="brand-title">TrustMRR visible-sample research</span>
+        <span class="brand-title">TrustMRR visible-sample terminal</span>
       </a>
-      <nav class="nav-links" aria-label="Primary">
-        <a class="nav-link" href="index.html">Overview</a><a class="nav-link is-active" href="methodology.html">Methodology</a><a class="nav-link" href="data.html">Data</a>
-      </nav>
+      <div class="ticker-strip" aria-label="Workspace status">
+        <span class="shell-pill shell-pill-accent"><strong>surface</strong><span>static pages</span></span><span class="shell-pill is-warning"><strong>validation</strong><span>Passed with warnings</span></span><span class="shell-pill"><strong>route</strong><span>methodology</span></span><span class="shell-pill"><strong>mode</strong><span>visible public sample</span></span>
+      </div>
     </div>
   </header>
-  <main class="site-shell">
-    
-<section class="hero">
-  <div class="hero-copy">
-    <p class="eyebrow">Methodology and caveats</p>
-    <h1>How the visible sample is defined, validated, and limited</h1>
-    <p class="hero-lede">The methodology page keeps the inclusion rule, heuristic-field caveats, and publication limitations visible in the site itself so the static bundle does not outgrow its evidence.</p>
-    <div class="hero-meta">
-      <span class="status-pill is-warning">Passed with warnings</span>
-      <a class="button" href="data.html">Inspect data</a>
-      <a class="button button-secondary" href="methodology.html">Read methodology</a>
+  <div class="site-shell workstation">
+    <aside class="control-rail" aria-label="Command rail">
+      <section class="rail-module">
+        <p class="rail-kicker">Route map</p>
+        <nav class="nav-links" aria-label="Primary">
+          <a class="nav-link" href="index.html">Overview</a><a class="nav-link is-active" href="methodology.html">Methodology</a><a class="nav-link" href="data.html">Data</a>
+        </nav>
+      </section>
+      <section class="rail-module">
+        <p class="rail-kicker">Command deck</p>
+        <nav class="rail-command-links" aria-label="Page panels">
+          <a class="rail-command-link" href="#top">MD.00 Top</a><a class="rail-command-link" href="#methodology-panel">MD.01 Methodology</a><a class="rail-command-link" href="#data-notice">MD.02 Data notice</a><a class="rail-command-link" href="#validation-checks">MD.03 Validation</a>
+        </nav>
+      </section>
+      <section class="rail-module">
+        <p class="rail-kicker">Operating mode</p>
+        <p class="rail-copy">Visible public sample only. Static GitHub Pages publication. No runtime server, no hidden backend, no platform-wide claim.</p>
+      </section>
+    </aside>
+    <main class="workspace">
+      <section class="workspace-command">
+        <div class="command-prompt">
+          <span class="command-prompt-label">Jump palette</span>
+          <code>jump --panel /methodology</code>
+        </div>
+        <div class="command-bar-links">
+          <a class="command-chip" href="#top">MD.00 Top</a><a class="command-chip" href="#methodology-panel">MD.01 Methodology</a><a class="command-chip" href="#data-notice">MD.02 Data notice</a><a class="command-chip" href="#validation-checks">MD.03 Validation</a>
+        </div>
+      </section>
+      
+<section class="hero" id="top">
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <div class="hero-head">
+        <div>
+          <p class="eyebrow">Methodology and caveats</p>
+          <h1>How the visible sample is defined, validated, and limited</h1>
+        </div>
+        <span class="panel-code">Primary monitor</span>
+      </div>
+      <p class="hero-lede">This pane keeps the inclusion rule, heuristic-field caveats, and publication limitations visible inside the static bundle so the research surface does not outgrow its evidence.</p>
+      <div class="hero-meta">
+        <span class="status-pill is-warning">Passed with warnings</span>
+        <a class="button" href="data.html">Inspect data</a>
+        <a class="button button-secondary" href="methodology.html">Read methodology</a>
+      </div>
     </div>
-  </div>
-  <div class="hero-panel">
-    
+    <div class="hero-panel">
+      
 <div class="hero-aside">
   <p class="eyebrow">Warning-only signals</p>
   <p class="hero-aside-value">9 duplicate names / 0 heuristic gaps</p>
   <p class="hero-aside-note">Warning-only checks currently cover duplicate startup names and heuristic label gaps, while missing provenance, threshold violations, and duplicate (name, source_url) pairs still fail the build.</p>
+  <dl class="metric-list"><div><dt>Validation</dt><dd>Passed with warnings</dd></div><div><dt>Duplicate names</dt><dd>9</dd></div><div><dt>Heuristic gaps</dt><dd>0</dd></div></dl>
 </div>
 
+    </div>
   </div>
 </section>
-
-<section class="section-card">
+<div class="panel-stack">
+<section class="section-card layout-compact" id="methodology-panel">
   <div class="section-head">
-    <h2>Methodology</h2>
-    <p>Rendered directly from the repository methodology document to keep the site aligned with the source docs.</p>
+    <div class="section-head-copy">
+      <p class="panel-kicker">MD.01</p>
+      <h2>Methodology</h2>
+      <p>Rendered directly from the repository methodology document to keep the site aligned with the source docs.</p>
+    </div>
+    <span class="panel-tag">operator notes</span>
   </div>
-  <div class="prose"><h1>Methodology</h1>
+  <div class="section-body">
+    <div class="prose"><h1>Methodology</h1>
 <h2>Scope</h2>
 <p>This repository packages a <strong>visible public sample</strong> of startups from public TrustMRR pages where <code>Revenue (30d) &gt;= $5,000</code>. It is intended for research, not as an official platform export or a full platform export.</p>
 <h2>Inclusion rule</h2>
@@ -81,25 +122,37 @@ python src/build_artifacts.py
 python src/build_site.py
 python src/build_all.py --limit 1</code></pre>
 <p><code>python src/build_all.py --limit 1</code> remains a smoke check; the promotion command is intentionally gated so that partial source-registry runs cannot become the published dataset by accident.</p></div>
+  </div>
 </section>
 
-<section class="section-card">
+<section class="section-card layout-compact" id="data-notice">
   <div class="section-head">
-    <h2>Data notice</h2>
-    <p>Publication caveats from the repository root stay visible in the static site too.</p>
+    <div class="section-head-copy">
+      <p class="panel-kicker">MD.02</p>
+      <h2>Data notice</h2>
+      <p>Publication caveats from the repository root stay visible in the static site too.</p>
+    </div>
+    <span class="panel-tag">caveat pane</span>
   </div>
-  <div class="prose"><h1>Data notice</h1>
+  <div class="section-body">
+    <div class="prose"><h1>Data notice</h1>
 <p>This bundle is an independent research artifact built from public visible pages and is <strong>not affiliated with TrustMRR</strong>.</p>
 <h2>What this means</h2>
 <ul><li>Startup names, category labels, and source URLs point back to public pages for verification.</li><li>The processed CSVs are a <strong>derived research sample</strong>, not an official export or API dump.</li><li><code>LICENSE-CODE-MIT.txt</code> applies to the original code and original documentation only; it does not relicense the source-derived data bundle.</li><li>Keep this notice with any redistributed CSV/JSON outputs, charts, or static-site artifacts that are built from the visible sample.</li><li>Before public release, review the source website's terms and your own intended use of source-derived data.</li><li>If you publish this repository, keep the scope note intact so readers do not mistake it for full platform coverage.</li></ul></div>
+  </div>
 </section>
 
-<section class="section-card">
+<section class="section-card layout-full" id="validation-checks">
   <div class="section-head">
-    <h2>Validation checks</h2>
-    <p>The seed bundle keeps warnings and failures explicit instead of silently smoothing them away.</p>
+    <div class="section-head-copy">
+      <p class="panel-kicker">MD.03</p>
+      <h2>Validation checks</h2>
+      <p>The seed bundle keeps warnings and failures explicit instead of silently smoothing them away.</p>
+    </div>
+    <span class="panel-tag">gate monitor</span>
   </div>
-  <ul class="check-list">
+  <div class="section-body">
+    <ul class="check-list">
 <li class="check-item check-pass">
   <strong>All required visible-sample columns are present.</strong>
   <span>required_columns_present</span>
@@ -140,9 +193,41 @@ python src/build_all.py --limit 1</code></pre>
   <span>heuristic_label_completeness</span>
 </li>
 </ul>
+  </div>
+</section>
+</div>
+    </main>
+    <aside class="monitor-rail" aria-label="Operator monitors">
+      <section class="rail-module">
+        <p class="rail-kicker">System brief</p>
+        <h2 class="rail-title">Methodology</h2>
+        <p class="rail-copy">Methodology and data caveats for the TrustMRR visible-sample static site.</p>
+      </section>
+      
+<section class="rail-module rail-module-accent">
+  <p class="rail-kicker">Inclusion rule</p>
+  <h2 class="rail-title">&gt;= $5,000 / 30d</h2>
+  <p class="rail-copy">The publication remains a visible public sample derived from public pages above the explicit threshold.</p>
 </section>
 
-  </main>
+<section class="rail-module rail-module-warning">
+  <p class="rail-kicker">Validation posture</p>
+  <h2 class="rail-title">Passed with warnings</h2>
+  <p class="rail-copy">9 duplicate startup names.</p>
+</section>
+
+<section class="rail-module">
+  <p class="rail-kicker">Publication caveat</p>
+  <h2 class="rail-title">Not a full export</h2>
+  <p class="rail-copy">Methodology, legal caveats, and provenance stay first-class so the static publication remains explicit about what it can and cannot claim.</p>
+</section>
+
+      <section class="rail-module">
+        <p class="rail-kicker">Build path</p>
+        <p class="rail-copy">Regenerate the static operator surface with <code>python src/build_site.py</code>.</p>
+      </section>
+    </aside>
+  </div>
   <footer class="site-shell site-footer">
     <p>This static site is a source-derived visible sample research artifact. It is not a full platform export and is not affiliated with TrustMRR.</p>
     <p>Build inputs live in <code>data/</code>, <code>charts/</code>, <code>docs/</code>, and <code>DATA-NOTICE.md</code>; regenerate the site with <code>python src/build_site.py</code>.</p>

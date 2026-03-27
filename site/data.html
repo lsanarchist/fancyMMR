@@ -9,47 +9,88 @@
 </head>
 <body class="page-data">
   <div class="page-backdrop"></div>
-  <header class="topbar">
-    <div class="site-shell topbar-inner">
+  <header class="command-strip">
+    <div class="site-shell command-strip-inner">
       <a class="brand" href="index.html">
         <span class="brand-kicker">fancyMMR</span>
-        <span class="brand-title">TrustMRR visible-sample research</span>
+        <span class="brand-title">TrustMRR visible-sample terminal</span>
       </a>
-      <nav class="nav-links" aria-label="Primary">
-        <a class="nav-link" href="index.html">Overview</a><a class="nav-link" href="methodology.html">Methodology</a><a class="nav-link is-active" href="data.html">Data</a>
-      </nav>
+      <div class="ticker-strip" aria-label="Workspace status">
+        <span class="shell-pill shell-pill-accent"><strong>surface</strong><span>static pages</span></span><span class="shell-pill is-warning"><strong>validation</strong><span>Passed with warnings</span></span><span class="shell-pill"><strong>route</strong><span>data</span></span><span class="shell-pill"><strong>mode</strong><span>visible public sample</span></span>
+      </div>
     </div>
   </header>
-  <main class="site-shell">
-    
-<section class="hero">
-  <div class="hero-copy">
-    <p class="eyebrow">Data and provenance</p>
-    <h1>Machine-readable outputs, source coverage, and manifest details</h1>
-    <p class="hero-lede">The site ships the current JSON outputs alongside a human-readable summary so the published artifact stays inspectable without cloning the repository.</p>
-    <div class="hero-meta">
-      <span class="status-pill is-warning">Passed with warnings</span>
-      <a class="button" href="data.html">Inspect data</a>
-      <a class="button button-secondary" href="methodology.html">Read methodology</a>
+  <div class="site-shell workstation">
+    <aside class="control-rail" aria-label="Command rail">
+      <section class="rail-module">
+        <p class="rail-kicker">Route map</p>
+        <nav class="nav-links" aria-label="Primary">
+          <a class="nav-link" href="index.html">Overview</a><a class="nav-link" href="methodology.html">Methodology</a><a class="nav-link is-active" href="data.html">Data</a>
+        </nav>
+      </section>
+      <section class="rail-module">
+        <p class="rail-kicker">Command deck</p>
+        <nav class="rail-command-links" aria-label="Page panels">
+          <a class="rail-command-link" href="#top">DT.00 Top</a><a class="rail-command-link" href="#downloads">DT.01 Downloads</a><a class="rail-command-link" href="#staged-bundle">DT.02 Staged bundle</a><a class="rail-command-link" href="#fetch-failure-snapshots">DT.03 Fetch failures</a><a class="rail-command-link" href="#top-categories">DT.04 Categories</a><a class="rail-command-link" href="#revenue-bands">DT.05 Revenue bands</a><a class="rail-command-link" href="#source-coverage">DT.06 Source coverage</a><a class="rail-command-link" href="#source-pipeline-diagnostics">DT.07 Diagnostics</a><a class="rail-command-link" href="#manifest-notes">DT.08 Manifest</a>
+        </nav>
+      </section>
+      <section class="rail-module">
+        <p class="rail-kicker">Operating mode</p>
+        <p class="rail-copy">Visible public sample only. Static GitHub Pages publication. No runtime server, no hidden backend, no platform-wide claim.</p>
+      </section>
+    </aside>
+    <main class="workspace">
+      <section class="workspace-command">
+        <div class="command-prompt">
+          <span class="command-prompt-label">Jump palette</span>
+          <code>jump --panel /data</code>
+        </div>
+        <div class="command-bar-links">
+          <a class="command-chip" href="#top">DT.00 Top</a><a class="command-chip" href="#downloads">DT.01 Downloads</a><a class="command-chip" href="#staged-bundle">DT.02 Staged bundle</a><a class="command-chip" href="#fetch-failure-snapshots">DT.03 Fetch failures</a><a class="command-chip" href="#top-categories">DT.04 Categories</a><a class="command-chip" href="#revenue-bands">DT.05 Revenue bands</a><a class="command-chip" href="#source-coverage">DT.06 Source coverage</a><a class="command-chip" href="#source-pipeline-diagnostics">DT.07 Diagnostics</a><a class="command-chip" href="#manifest-notes">DT.08 Manifest</a>
+        </div>
+      </section>
+      
+<section class="hero" id="top">
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <div class="hero-head">
+        <div>
+          <p class="eyebrow">Data and provenance</p>
+          <h1>Machine-readable outputs, source coverage, and manifest details</h1>
+        </div>
+        <span class="panel-code">Primary monitor</span>
+      </div>
+      <p class="hero-lede">This operator pane ships the current JSON outputs alongside human-readable summaries so the published artifact stays inspectable without cloning the repository.</p>
+      <div class="hero-meta">
+        <span class="status-pill is-warning">Passed with warnings</span>
+        <a class="button" href="data.html">Inspect data</a>
+        <a class="button button-secondary" href="methodology.html">Read methodology</a>
+      </div>
     </div>
-  </div>
-  <div class="hero-panel">
-    
+    <div class="hero-panel">
+      
 <div class="hero-aside">
   <p class="eyebrow">Manifest summary</p>
   <p class="hero-aside-value">21 generated outputs</p>
   <p class="hero-aside-note">30 source pages and 249 visible startups feed the current site build.</p>
+  <dl class="metric-list"><div><dt>Publication input</dt><dd>Promoted from staged source-pipeline visible rows</dd></div><div><dt>Validation</dt><dd>Passed with warnings</dd></div><div><dt>Diagnostics</dt><dd>attached</dd></div></dl>
 </div>
 
+    </div>
   </div>
 </section>
-
-<section class="section-card">
+<div class="panel-stack">
+<section class="section-card layout-compact" id="downloads">
   <div class="section-head">
-    <h2>Downloads</h2>
-    <p>Core JSON outputs are copied into the site so the published Pages bundle stays inspectable on its own.</p>
+    <div class="section-head-copy">
+      <p class="panel-kicker">DT.01</p>
+      <h2>Downloads</h2>
+      <p>Core JSON outputs are copied into the site so the published Pages bundle stays inspectable on its own.</p>
+    </div>
+    <span class="panel-tag">core outputs</span>
   </div>
-  <div class="card-grid">
+  <div class="section-body">
+    <div class="card-grid">
 <article class="download-card">
   <h3>Top-line metrics</h3>
   <p>Sample size, revenue concentration, and dominant-category snapshots.</p>
@@ -86,14 +127,20 @@
   <a href="data/pipeline_manifest.json">Download</a>
 </article>
 </div>
+  </div>
 </section>
 
-<section class="section-card">
+<section class="section-card layout-compact" id="staged-bundle">
   <div class="section-head">
-    <h2>Staged Bundle</h2>
-    <p>The active promoted staged source-pipeline bundle is exposed as a separate manifest-driven provenance surface, distinct from the promoted dataset contract.</p>
+    <div class="section-head-copy">
+      <p class="panel-kicker">DT.02</p>
+      <h2>Staged Bundle</h2>
+      <p>The active promoted staged source-pipeline bundle is exposed as a separate manifest-driven provenance surface, distinct from the promoted dataset contract.</p>
+    </div>
+    <span class="panel-tag">staged provenance</span>
   </div>
-  <div class="card-grid">
+  <div class="section-body">
+    <div class="card-grid">
 <article class="download-card">
   <h3>Staged run manifest</h3>
   <p>End-to-end staged fetch/parse/normalize snapshot for the active promoted source-pipeline bundle.</p>
@@ -136,22 +183,34 @@
   <a href="data/source_pipeline/processed/detail_field_coverage.json">Download</a>
 </article>
 </div>
+  </div>
 </section>
 
-<section class="section-card">
+<section class="section-card layout-compact" id="fetch-failure-snapshots">
   <div class="section-head">
-    <h2>Fetch Failure Snapshots</h2>
-    <p>When staged source fetch failures exist, their raw snapshot artifacts are exposed here as manifest-driven downloads separate from the promoted dataset contract.</p>
+    <div class="section-head-copy">
+      <p class="panel-kicker">DT.03</p>
+      <h2>Fetch Failure Snapshots</h2>
+      <p>When staged source fetch failures exist, their raw snapshot artifacts are exposed here as manifest-driven downloads separate from the promoted dataset contract.</p>
+    </div>
+    <span class="panel-tag">failure cache</span>
   </div>
-  <p class="section-note">No staged fetch-failure snapshot downloads are currently attached to the active manifest.</p>
+  <div class="section-body">
+    <p class="section-note">No staged fetch-failure snapshot downloads are currently attached to the active manifest.</p>
+  </div>
 </section>
 
-<section class="section-card">
+<section class="section-card layout-compact" id="top-categories">
   <div class="section-head">
-    <h2>Top categories</h2>
-    <p>Category revenue concentration remains the clearest summary of the current sample shape.</p>
+    <div class="section-head-copy">
+      <p class="panel-kicker">DT.04</p>
+      <h2>Top categories</h2>
+      <p>Category revenue concentration remains the clearest summary of the current sample shape.</p>
+    </div>
+    <span class="panel-tag">category board</span>
   </div>
-  
+  <div class="section-body">
+    
 <div class="table-wrap">
   <table>
     <thead><tr><th>Category</th><th>Visible revenue</th><th>Median revenue</th><th>Revenue share</th></tr></thead>
@@ -159,14 +218,20 @@
   </table>
 </div>
 
+  </div>
 </section>
 
-<section class="section-card">
+<section class="section-card layout-compact" id="revenue-bands">
   <div class="section-head">
-    <h2>Revenue bands</h2>
-    <p>Most visible startups sit below $50k in 30-day revenue even though the total revenue is dominated by the top tail.</p>
+    <div class="section-head-copy">
+      <p class="panel-kicker">DT.05</p>
+      <h2>Revenue bands</h2>
+      <p>Most visible startups sit below $50k in 30-day revenue even though the total revenue is dominated by the top tail.</p>
+    </div>
+    <span class="panel-tag">distribution board</span>
   </div>
-  
+  <div class="section-body">
+    
 <div class="table-wrap">
   <table>
     <thead><tr><th>Revenue band</th><th>Startup count</th><th>Visible revenue</th><th>Revenue share</th></tr></thead>
@@ -174,14 +239,20 @@
   </table>
 </div>
 
+  </div>
 </section>
 
-<section class="section-card">
+<section class="section-card layout-compact" id="source-coverage">
   <div class="section-head">
-    <h2>Source coverage</h2>
-    <p>The source coverage report keeps the public-page footprint explicit, with links back to the source pages.</p>
+    <div class="section-head-copy">
+      <p class="panel-kicker">DT.06</p>
+      <h2>Source coverage</h2>
+      <p>The source coverage report keeps the public-page footprint explicit, with links back to the source pages.</p>
+    </div>
+    <span class="panel-tag">source monitor</span>
   </div>
-  
+  <div class="section-body">
+    
 <div class="table-wrap">
   <table>
     <thead><tr><th>Source page</th><th>Startups</th><th>Visible revenue</th><th>Revenue share</th></tr></thead>
@@ -189,14 +260,20 @@
   </table>
 </div>
 
+  </div>
 </section>
 
-<section class="section-card">
+<section class="section-card layout-full" id="source-pipeline-diagnostics">
   <div class="section-head">
-    <h2>Source-pipeline diagnostics</h2>
-    <p>The promoted bundle keeps the staged parser/override/duplicate provenance visible instead of burying it inside the repo-only staging directory.</p>
+    <div class="section-head-copy">
+      <p class="panel-kicker">DT.07</p>
+      <h2>Source-pipeline diagnostics</h2>
+      <p>The promoted bundle keeps the staged parser/override/duplicate provenance visible instead of burying it inside the repo-only staging directory.</p>
+    </div>
+    <span class="panel-tag">provenance monitor</span>
   </div>
-  
+  <div class="section-body">
+    
 <div class="card-grid">
   <article class="callout-card">
     <h3>Promotion cutover</h3>
@@ -235,14 +312,20 @@
   </table>
 </div>
 <p class="section-note">No source pages in the active manifest currently report staged detail parse failures.</p><p class="section-note">No staged source fetch failures are currently recorded for the active manifest.</p><h3>Fetch-failure timing</h3><p class="section-note">No staged fetch-failure timing is currently recorded for the active manifest.</p><h3>Fetch-failure source context</h3><p class="section-note">No staged fetch-failure source-label context is currently recorded for the active manifest.</p><h3>Fetch-failure parser context</h3><p class="section-note">No staged fetch-failure parser-strategy context is currently recorded for the active manifest.</p><h3>Fetch-failure severity</h3><p class="section-note">No staged fetch-failure severity context is currently recorded for the active manifest.</p><h3>Fetch-failure retryability</h3><p class="section-note">No staged fetch-failure retryability context is currently recorded for the active manifest.</p><h3>Fetch-failure next actions</h3><p class="section-note">No staged fetch-failure next-action recommendations, source lists, source details, artifact links, artifact summaries, artifact rollups, artifact format counts, artifact-format source lists, artifact-format source-count summaries, or artifact-format source-count totals are currently recorded for the active manifest.</p><h3>Fetch-failure snapshot availability</h3><p class="section-note">No staged fetch-failure snapshot-availability context is currently recorded for the active manifest.</p><h3>Fetch-failure delay context</h3><p class="section-note">No staged fetch-failure delay context is currently recorded for the active manifest.</p><h3>Fetch-failure robots context</h3><p class="section-note">No staged fetch-failure robots context is currently recorded for the active manifest.</p><h3>Fetch-failure causes</h3><p class="section-note">No staged fetch-failure causes are currently recorded for the active manifest.</p><p class="section-note">No staged detail rows in the active manifest currently populate the shared detail fields.</p><p class="section-note">Staged validation: <strong>Passed</strong>. Run-manifest validation: <strong>Passed</strong>. Suspicious duplicate groups: <strong>0</strong>. Fetch failures: <strong>0</strong> source pages. Detail parse failures: <strong>0</strong> across <strong>0</strong> source pages.</p>
+  </div>
 </section>
 
-<section class="section-card">
+<section class="section-card layout-compact" id="manifest-notes">
   <div class="section-head">
-    <h2>Manifest notes</h2>
-    <p>The site build depends on the processed research outputs already generated in the repository root.</p>
+    <div class="section-head-copy">
+      <p class="panel-kicker">DT.08</p>
+      <h2>Manifest notes</h2>
+      <p>The site build depends on the processed research outputs already generated in the repository root.</p>
+    </div>
+    <span class="panel-tag">build notes</span>
   </div>
-  
+  <div class="section-body">
+    
 <div class="two-up">
   <article class="callout-card">
     <h3>Sample size</h3>
@@ -254,9 +337,41 @@
   </article>
 </div>
 
+  </div>
+</section>
+</div>
+    </main>
+    <aside class="monitor-rail" aria-label="Operator monitors">
+      <section class="rail-module">
+        <p class="rail-kicker">System brief</p>
+        <h2 class="rail-title">Data</h2>
+        <p class="rail-copy">Download links and source coverage for the TrustMRR visible-sample static site.</p>
+      </section>
+      
+<section class="rail-module rail-module-accent">
+  <p class="rail-kicker">Publication source</p>
+  <h2 class="rail-title">Promoted from staged source-pipeline visible rows</h2>
+  <p class="rail-copy">The published dataset remains URL-addressable and fully static for GitHub Pages.</p><dl class="metric-list"><div><dt>Rows</dt><dd>249</dd></div><div><dt>Source pages</dt><dd>30</dd></div></dl>
 </section>
 
-  </main>
+<section class="rail-module">
+  <p class="rail-kicker">Download surface</p>
+  <h2 class="rail-title">6 core JSON files</h2>
+  <p class="rail-copy">Core bundle downloads, staged provenance files, and fetch-failure snapshots are published as static artifacts.</p><dl class="metric-list"><div><dt>Staged bundle files</dt><dd>6</dd></div><div><dt>Fetch-failure files</dt><dd>0</dd></div></dl>
+</section>
+
+<section class="rail-module rail-module-good">
+  <p class="rail-kicker">Diagnostics feed</p>
+  <h2 class="rail-title">30/30 sources</h2>
+  <p class="rail-copy">Promoted staged diagnostics are attached to the active publication manifest.</p><dl class="metric-list"><div><dt>Fetch failures</dt><dd>0</dd></div><div><dt>Detail failures</dt><dd>0</dd></div><div><dt>Parsed details</dt><dd>0</dd></div></dl>
+</section>
+
+      <section class="rail-module">
+        <p class="rail-kicker">Build path</p>
+        <p class="rail-copy">Regenerate the static operator surface with <code>python src/build_site.py</code>.</p>
+      </section>
+    </aside>
+  </div>
   <footer class="site-shell site-footer">
     <p>This static site is a source-derived visible sample research artifact. It is not a full platform export and is not affiliated with TrustMRR.</p>
     <p>Build inputs live in <code>data/</code>, <code>charts/</code>, <code>docs/</code>, and <code>DATA-NOTICE.md</code>; regenerate the site with <code>python src/build_site.py</code>.</p>

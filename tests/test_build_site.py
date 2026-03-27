@@ -81,6 +81,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     index_html = (site_root / "index.html").read_text(encoding="utf-8")
     methodology_html = (site_root / "methodology.html").read_text(encoding="utf-8")
     data_html = (site_root / "data.html").read_text(encoding="utf-8")
+    site_css = (site_root / "assets" / "site.css").read_text(encoding="utf-8")
     pipeline_manifest = json.loads((site_root / "data" / "pipeline_manifest.json").read_text(encoding="utf-8"))
 
     assert "visible public sample" in index_html.lower()
@@ -92,6 +93,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert 'src="/' not in index_html
     assert "249 startups" in index_html
     assert "9 duplicate startup names" in index_html
+    assert "TrustMRR visible-sample terminal" in index_html
+    assert "Command deck" in index_html
+    assert "Jump palette" in index_html
 
     assert "not a full database export" in methodology_html.lower()
     assert "source-derived visible sample" in methodology_html.lower()
@@ -153,6 +157,12 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Staged override coverage" in data_html
     assert "Staged duplicate review" in data_html
     assert "SHA256" in data_html
+    assert "System brief" in data_html
+    assert "Command deck" in data_html
+    assert "Jump palette" in data_html
+    assert "--bg: #05070a" in site_css
+    assert ".workstation {" in site_css
+    assert ".command-strip {" in site_css
     for artifact in pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"]:
         assert artifact["site_path"] in data_html
         assert artifact["sha256"] in data_html

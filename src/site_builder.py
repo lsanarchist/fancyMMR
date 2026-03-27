@@ -304,7 +304,66 @@ def status_class(status: str) -> str:
     }.get(status, "is-neutral")
 
 
-def page_shell(*, title: str, active: str, description: str, body_html: str) -> str:
+def shell_tokens(*, active: str, status: str) -> str:
+    route_label = {
+        "index": "overview",
+        "methodology": "methodology",
+        "data": "data",
+    }.get(active, active)
+    return "".join(
+        [
+            '<span class="shell-pill shell-pill-accent"><strong>surface</strong><span>static pages</span></span>',
+            f'<span class="shell-pill {status_class(status)}"><strong>validation</strong><span>{html.escape(status_label(status))}</span></span>',
+            f'<span class="shell-pill"><strong>route</strong><span>{html.escape(route_label)}</span></span>',
+            '<span class="shell-pill"><strong>mode</strong><span>visible public sample</span></span>',
+        ]
+    )
+
+
+def command_links_markup(command_links: list[tuple[str, str]], *, link_class: str) -> str:
+    return "".join(
+        f'<a class="{html.escape(link_class, quote=True)}" href="{html.escape(href, quote=True)}">{html.escape(label)}</a>'
+        for label, href in command_links
+    )
+
+
+def metric_list(items: list[tuple[str, str]]) -> str:
+    return (
+        '<dl class="metric-list">'
+        + "".join(
+            (
+                "<div>"
+                f"<dt>{html.escape(label)}</dt>"
+                f"<dd>{html.escape(value)}</dd>"
+                "</div>"
+            )
+            for label, value in items
+        )
+        + "</dl>"
+    )
+
+
+def rail_module(*, kicker: str, title: str, body_html: str, tone: str = "neutral") -> str:
+    tone_class = "" if tone == "neutral" else f" rail-module-{tone}"
+    return f"""
+<section class="rail-module{tone_class}">
+  <p class="rail-kicker">{html.escape(kicker)}</p>
+  <h2 class="rail-title">{html.escape(title)}</h2>
+  {body_html}
+</section>
+"""
+
+
+def page_shell(
+    *,
+    title: str,
+    active: str,
+    description: str,
+    status: str,
+    command_links: list[tuple[str, str]],
+    monitor_html: str,
+    body_html: str,
+) -> str:
     nav_items = [
         ("index", "Overview", "index.html"),
         ("methodology", "Methodology", "methodology.html"),
@@ -316,6 +375,8 @@ def page_shell(*, title: str, active: str, description: str, body_html: str) -> 
         )
         for slug, label, href in nav_items
     )
+    command_bar_links = command_links_markup(command_links, link_class="command-chip")
+    command_deck_links = command_links_markup(command_links, link_class="rail-command-link")
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -327,20 +388,61 @@ def page_shell(*, title: str, active: str, description: str, body_html: str) -> 
 </head>
 <body class="page-{active}">
   <div class="page-backdrop"></div>
-  <header class="topbar">
-    <div class="site-shell topbar-inner">
+  <header class="command-strip">
+    <div class="site-shell command-strip-inner">
       <a class="brand" href="index.html">
         <span class="brand-kicker">fancyMMR</span>
-        <span class="brand-title">TrustMRR visible-sample research</span>
+        <span class="brand-title">TrustMRR visible-sample terminal</span>
       </a>
-      <nav class="nav-links" aria-label="Primary">
-        {navigation}
-      </nav>
+      <div class="ticker-strip" aria-label="Workspace status">
+        {shell_tokens(active=active, status=status)}
+      </div>
     </div>
   </header>
-  <main class="site-shell">
-    {body_html}
-  </main>
+  <div class="site-shell workstation">
+    <aside class="control-rail" aria-label="Command rail">
+      <section class="rail-module">
+        <p class="rail-kicker">Route map</p>
+        <nav class="nav-links" aria-label="Primary">
+          {navigation}
+        </nav>
+      </section>
+      <section class="rail-module">
+        <p class="rail-kicker">Command deck</p>
+        <nav class="rail-command-links" aria-label="Page panels">
+          {command_deck_links}
+        </nav>
+      </section>
+      <section class="rail-module">
+        <p class="rail-kicker">Operating mode</p>
+        <p class="rail-copy">Visible public sample only. Static GitHub Pages publication. No runtime server, no hidden backend, no platform-wide claim.</p>
+      </section>
+    </aside>
+    <main class="workspace">
+      <section class="workspace-command">
+        <div class="command-prompt">
+          <span class="command-prompt-label">Jump palette</span>
+          <code>jump --panel /{html.escape(active)}</code>
+        </div>
+        <div class="command-bar-links">
+          {command_bar_links}
+        </div>
+      </section>
+      {body_html}
+    </main>
+    <aside class="monitor-rail" aria-label="Operator monitors">
+      <section class="rail-module">
+        <p class="rail-kicker">System brief</p>
+        <h2 class="rail-title">{html.escape(title)}</h2>
+        <p class="rail-copy">{html.escape(description)}</p>
+      </section>
+      {monitor_html}
+      <section class="rail-module">
+        <p class="rail-kicker">Build path</p>
+        <p class="rail-copy">Regenerate the static operator surface with <code>python src/build_site.py</code>.</p>
+      </section>
+    </aside>
+  </div>
   <footer class="site-shell site-footer">
     <p>This static site is a source-derived visible sample research artifact. It is not a full platform export and is not affiliated with TrustMRR.</p>
     <p>Build inputs live in <code>data/</code>, <code>charts/</code>, <code>docs/</code>, and <code>DATA-NOTICE.md</code>; regenerate the site with <code>python src/build_site.py</code>.</p>
@@ -352,19 +454,26 @@ def page_shell(*, title: str, active: str, description: str, body_html: str) -> 
 
 def hero_section(*, eyebrow: str, title: str, lede: str, status: str, aside_html: str) -> str:
     return f"""
-<section class="hero">
-  <div class="hero-copy">
-    <p class="eyebrow">{html.escape(eyebrow)}</p>
-    <h1>{html.escape(title)}</h1>
-    <p class="hero-lede">{html.escape(lede)}</p>
-    <div class="hero-meta">
-      <span class="status-pill {status_class(status)}">{html.escape(status_label(status))}</span>
-      <a class="button" href="data.html">Inspect data</a>
-      <a class="button button-secondary" href="methodology.html">Read methodology</a>
+<section class="hero" id="top">
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <div class="hero-head">
+        <div>
+          <p class="eyebrow">{html.escape(eyebrow)}</p>
+          <h1>{html.escape(title)}</h1>
+        </div>
+        <span class="panel-code">Primary monitor</span>
+      </div>
+      <p class="hero-lede">{html.escape(lede)}</p>
+      <div class="hero-meta">
+        <span class="status-pill {status_class(status)}">{html.escape(status_label(status))}</span>
+        <a class="button" href="data.html">Inspect data</a>
+        <a class="button button-secondary" href="methodology.html">Read methodology</a>
+      </div>
     </div>
-  </div>
-  <div class="hero-panel">
-    {aside_html}
+    <div class="hero-panel">
+      {aside_html}
+    </div>
   </div>
 </section>
 """
@@ -380,14 +489,32 @@ def stat_card(label: str, value: str, note: str) -> str:
 """
 
 
-def section(title: str, intro: str, body_html: str) -> str:
+def section(
+    title: str,
+    intro: str,
+    body_html: str,
+    *,
+    section_id: str | None = None,
+    panel_code: str | None = None,
+    panel_tag: str | None = None,
+    layout: str = "full",
+) -> str:
+    section_id_attr = f' id="{html.escape(section_id, quote=True)}"' if section_id else ""
+    panel_code_html = f'<p class="panel-kicker">{html.escape(panel_code)}</p>' if panel_code else ""
+    panel_tag_html = f'<span class="panel-tag">{html.escape(panel_tag)}</span>' if panel_tag else ""
     return f"""
-<section class="section-card">
+<section class="section-card layout-{html.escape(layout, quote=True)}"{section_id_attr}>
   <div class="section-head">
-    <h2>{html.escape(title)}</h2>
-    <p>{html.escape(intro)}</p>
+    <div class="section-head-copy">
+      {panel_code_html}
+      <h2>{html.escape(title)}</h2>
+      <p>{html.escape(intro)}</p>
+    </div>
+    {panel_tag_html}
   </div>
-  {body_html}
+  <div class="section-body">
+    {body_html}
+  </div>
 </section>
 """
 
@@ -469,18 +596,70 @@ def build_index_page(
     validation_report: dict[str, object],
     category_rows: list[dict[str, str]],
 ) -> str:
+    command_links = [
+        ("OV.00 Top", "#top"),
+        ("OV.01 Snapshot", "#snapshot"),
+        ("OV.02 Guardrails", "#scope-guardrails"),
+        ("OV.03 Charts", "#main-charts"),
+        ("OV.04 Leaders", "#category-leaders"),
+    ]
     hero = hero_section(
         eyebrow="Static GitHub Pages bundle",
-        title="Visible startup revenue research, published as a fully static site",
-        lede="This site packages the current processed TrustMRR visible sample into a Pages-friendly publication flow: summary metrics, charts, methodology, and machine-readable provenance live together with no runtime server.",
+        title="Visible startup revenue workstation",
+        lede="This operator surface packages the current processed TrustMRR visible sample into a dense, fully static Pages publication: summary metrics, charts, methodology, and machine-readable provenance live together with no runtime server.",
         status=str(validation_report["status"]),
         aside_html=f"""
 <div class="hero-aside">
   <p class="eyebrow">Current build snapshot</p>
   <p class="hero-aside-value">{int(metrics["sample_size"])} startups</p>
-  <p class="hero-aside-note">30 public source pages, deterministic charts, and validation/manifests copied into the published site output.</p>
+  <p class="hero-aside-note">30 public source pages, deterministic charts, and validation manifests copied directly into the published site output.</p>
+  {metric_list([
+      ("Visible revenue", usd_short(metrics["total_visible_revenue_usd"])),
+      ("Median startup", usd_short(metrics["median_revenue_usd"])),
+      ("Top-10 share", pct(metrics["top_10_revenue_share"])),
+  ])}
 </div>
 """,
+    )
+
+    monitor_html = "".join(
+        [
+            rail_module(
+                kicker="Revenue lens",
+                title=usd_short(metrics["total_visible_revenue_usd"]),
+                body_html=(
+                    '<p class="rail-copy">Current visible 30-day revenue across the published sample.</p>'
+                    + metric_list(
+                        [
+                            ("Median startup", usd_short(metrics["median_revenue_usd"])),
+                            ("Sample size", f"{int(metrics['sample_size']):,} startups"),
+                        ]
+                    )
+                ),
+                tone="accent",
+            ),
+            rail_module(
+                kicker="Concentration monitor",
+                title=pct(metrics["top_10_revenue_share"]),
+                body_html=(
+                    '<p class="rail-copy">Top-10 revenue share is the fastest concentration-risk readout in the visible sample.</p>'
+                    + metric_list(
+                        [
+                            ("Dominant category", str(metrics["dominant_category"])),
+                            ("Revenue share", pct(metrics["dominant_category_revenue_share"])),
+                        ]
+                    )
+                ),
+            ),
+            rail_module(
+                kicker="Warning posture",
+                title=status_label(str(validation_report["status"])),
+                body_html=(
+                    f'<p class="rail-copy">{html.escape(warning_summary(validation_report))}.</p>'
+                ),
+                tone="warning" if str(validation_report["status"]) == "passed_with_warnings" else "good",
+            ),
+        ]
     )
 
     stats = "".join(
@@ -543,6 +722,10 @@ def build_index_page(
             "Snapshot",
             "Top-line metrics and the current validation posture for the visible sample.",
             f'<div class="stat-grid">{stats}</div>',
+            section_id="snapshot",
+            panel_code="OV.01",
+            panel_tag="summary pane",
+            layout="compact",
         ),
         section(
             "Scope guardrails",
@@ -560,24 +743,37 @@ def build_index_page(
 </div>
 <p class="section-note">Validation status: <strong>{html.escape(status_label(str(validation_report["status"])))}</strong>. Warning summary: {html.escape(warning_summary(validation_report))}.</p>
 """,
+            section_id="scope-guardrails",
+            panel_code="OV.02",
+            panel_tag="guardrail pane",
+            layout="compact",
         ),
         section(
             "Main charts",
             "The published charts are copied into the site so GitHub Pages can serve the bundle directly.",
             f'<div class="chart-grid">{chart_cards}</div>',
+            section_id="main-charts",
+            panel_code="OV.03",
+            panel_tag="chart rack",
         ),
         section(
             "Category leaders",
             "The current sample is concentrated in a small number of categories, with E-commerce far ahead of the rest.",
             top_categories,
+            section_id="category-leaders",
+            panel_code="OV.04",
+            panel_tag="ranking table",
         ),
     ]
 
-    body = hero + "".join(sections)
+    body = hero + f'<div class="panel-stack">{"".join(sections)}</div>'
     return page_shell(
         title="Overview",
         active="index",
         description="Static overview of the TrustMRR visible-sample research bundle.",
+        status=str(validation_report["status"]),
+        command_links=command_links,
+        monitor_html=monitor_html,
         body_html=body,
     )
 
@@ -587,18 +783,57 @@ def build_methodology_page(
     data_notice_markdown: str,
     validation_report: dict[str, object],
 ) -> str:
+    command_links = [
+        ("MD.00 Top", "#top"),
+        ("MD.01 Methodology", "#methodology-panel"),
+        ("MD.02 Data notice", "#data-notice"),
+        ("MD.03 Validation", "#validation-checks"),
+    ]
     hero = hero_section(
         eyebrow="Methodology and caveats",
         title="How the visible sample is defined, validated, and limited",
-        lede="The methodology page keeps the inclusion rule, heuristic-field caveats, and publication limitations visible in the site itself so the static bundle does not outgrow its evidence.",
+        lede="This pane keeps the inclusion rule, heuristic-field caveats, and publication limitations visible inside the static bundle so the research surface does not outgrow its evidence.",
         status=str(validation_report["status"]),
         aside_html=f"""
 <div class="hero-aside">
   <p class="eyebrow">Warning-only signals</p>
   <p class="hero-aside-value">{html.escape(methodology_warning_snapshot(validation_report))}</p>
   <p class="hero-aside-note">Warning-only checks currently cover duplicate startup names and heuristic label gaps, while missing provenance, threshold violations, and duplicate (name, source_url) pairs still fail the build.</p>
+  {metric_list([
+      ("Validation", status_label(str(validation_report["status"]))),
+      ("Duplicate names", str(int(validation_report.get("duplicate_name_count", 0)))),
+      ("Heuristic gaps", str(int(validation_report["null_counts"]["biz_model"]) + int(validation_report["null_counts"]["gtm_model"]))),
+  ])}
 </div>
 """,
+    )
+
+    methodology_monitor_html = "".join(
+        [
+            rail_module(
+                kicker="Inclusion rule",
+                title=">= $5,000 / 30d",
+                body_html=(
+                    '<p class="rail-copy">The publication remains a visible public sample derived from public pages above the explicit threshold.</p>'
+                ),
+                tone="accent",
+            ),
+            rail_module(
+                kicker="Validation posture",
+                title=status_label(str(validation_report["status"])),
+                body_html=(
+                    f'<p class="rail-copy">{html.escape(warning_summary(validation_report))}.</p>'
+                ),
+                tone="warning" if str(validation_report["status"]) == "passed_with_warnings" else "good",
+            ),
+            rail_module(
+                kicker="Publication caveat",
+                title="Not a full export",
+                body_html=(
+                    '<p class="rail-copy">Methodology, legal caveats, and provenance stay first-class so the static publication remains explicit about what it can and cannot claim.</p>'
+                ),
+            ),
+        ]
     )
 
     methodology_html = markdown_to_html(methodology_markdown)
@@ -609,24 +844,38 @@ def build_methodology_page(
             "Methodology",
             "Rendered directly from the repository methodology document to keep the site aligned with the source docs.",
             f'<div class="prose">{methodology_html}</div>',
+            section_id="methodology-panel",
+            panel_code="MD.01",
+            panel_tag="operator notes",
+            layout="compact",
         ),
         section(
             "Data notice",
             "Publication caveats from the repository root stay visible in the static site too.",
             f'<div class="prose">{data_notice_html}</div>',
+            section_id="data-notice",
+            panel_code="MD.02",
+            panel_tag="caveat pane",
+            layout="compact",
         ),
         section(
             "Validation checks",
             "The seed bundle keeps warnings and failures explicit instead of silently smoothing them away.",
             render_checks(validation_report),
+            section_id="validation-checks",
+            panel_code="MD.03",
+            panel_tag="gate monitor",
         ),
     ]
 
-    body = hero + "".join(sections)
+    body = hero + f'<div class="panel-stack">{"".join(sections)}</div>'
     return page_shell(
         title="Methodology",
         active="methodology",
         description="Methodology and data caveats for the TrustMRR visible-sample static site.",
+        status=str(validation_report["status"]),
+        command_links=command_links,
+        monitor_html=methodology_monitor_html,
         body_html=body,
     )
 
@@ -641,16 +890,32 @@ def build_data_page(
     category_rows: list[dict[str, str]],
     revenue_band_rows: list[dict[str, str]],
 ) -> str:
+    command_links = [
+        ("DT.00 Top", "#top"),
+        ("DT.01 Downloads", "#downloads"),
+        ("DT.02 Staged bundle", "#staged-bundle"),
+        ("DT.03 Fetch failures", "#fetch-failure-snapshots"),
+        ("DT.04 Categories", "#top-categories"),
+        ("DT.05 Revenue bands", "#revenue-bands"),
+        ("DT.06 Source coverage", "#source-coverage"),
+        ("DT.07 Diagnostics", "#source-pipeline-diagnostics"),
+        ("DT.08 Manifest", "#manifest-notes"),
+    ]
     hero = hero_section(
         eyebrow="Data and provenance",
         title="Machine-readable outputs, source coverage, and manifest details",
-        lede="The site ships the current JSON outputs alongside a human-readable summary so the published artifact stays inspectable without cloning the repository.",
+        lede="This operator pane ships the current JSON outputs alongside human-readable summaries so the published artifact stays inspectable without cloning the repository.",
         status=str(validation_report["status"]),
         aside_html=f"""
 <div class="hero-aside">
   <p class="eyebrow">Manifest summary</p>
   <p class="hero-aside-value">{len(pipeline_manifest['generated_outputs'])} generated outputs</p>
   <p class="hero-aside-note">{source_coverage_report['source_page_count']} source pages and {pipeline_manifest['input_dataset']['rows']} visible startups feed the current site build.</p>
+  {metric_list([
+      ("Publication input", str(publication_input["source_label"])),
+      ("Validation", status_label(str(validation_report["status"]))),
+      ("Diagnostics", "attached" if source_pipeline_diagnostics["available"] else "seed only"),
+  ])}
 </div>
 """,
     )
@@ -673,6 +938,64 @@ def build_data_page(
     ]
     staged_bundle_items = staged_source_pipeline_download_items(source_pipeline_diagnostics, pipeline_manifest)
     fetch_failure_items = fetch_failure_download_items(source_pipeline_diagnostics, pipeline_manifest)
+
+    if source_pipeline_diagnostics["available"]:
+        diagnostics_title = f"{int(source_pipeline_diagnostics['selected_source_count'])}/{int(source_pipeline_diagnostics['expected_source_count'])} sources"
+        diagnostics_body = (
+            '<p class="rail-copy">Promoted staged diagnostics are attached to the active publication manifest.</p>'
+            + metric_list(
+                [
+                    ("Fetch failures", str(int(source_pipeline_diagnostics["fetch_failure_source_count"]))),
+                    ("Detail failures", str(int(source_pipeline_diagnostics["failed_detail_page_count"]))),
+                    ("Parsed details", str(int(source_pipeline_diagnostics["parsed_detail_page_count"]))),
+                ]
+            )
+        )
+        diagnostics_tone = "good" if str(source_pipeline_diagnostics["validation_status"]) == "passed" else "warning"
+    else:
+        diagnostics_title = "seed manifest"
+        diagnostics_body = (
+            f'<p class="rail-copy">{html.escape(str(source_pipeline_diagnostics["message"]))}</p>'
+        )
+        diagnostics_tone = "neutral"
+
+    data_monitor_html = "".join(
+        [
+            rail_module(
+                kicker="Publication source",
+                title=str(publication_input["source_label"]),
+                body_html=(
+                    '<p class="rail-copy">The published dataset remains URL-addressable and fully static for GitHub Pages.</p>'
+                    + metric_list(
+                        [
+                            ("Rows", f"{int(pipeline_manifest['input_dataset']['rows']):,}"),
+                            ("Source pages", str(source_coverage_report["source_page_count"])),
+                        ]
+                    )
+                ),
+                tone="accent",
+            ),
+            rail_module(
+                kicker="Download surface",
+                title=f"{len(JSON_EXPORTS)} core JSON files",
+                body_html=(
+                    '<p class="rail-copy">Core bundle downloads, staged provenance files, and fetch-failure snapshots are published as static artifacts.</p>'
+                    + metric_list(
+                        [
+                            ("Staged bundle files", str(len(staged_bundle_items))),
+                            ("Fetch-failure files", str(len(fetch_failure_items))),
+                        ]
+                    )
+                ),
+            ),
+            rail_module(
+                kicker="Diagnostics feed",
+                title=diagnostics_title,
+                body_html=diagnostics_body,
+                tone=diagnostics_tone,
+            ),
+        ]
+    )
 
     downloads = "".join(
         f"""
@@ -1306,6 +1629,9 @@ def build_data_page(
                 f'Detail parse failures: <strong>{html.escape(str(source_pipeline_diagnostics["failed_detail_page_count"]))}</strong> across '
                 f'<strong>{html.escape(str(source_pipeline_diagnostics["detail_parse_failure_source_count"]))}</strong> source pages.</p>'
             ),
+            section_id="source-pipeline-diagnostics",
+            panel_code="DT.07",
+            panel_tag="provenance monitor",
         )
     else:
         diagnostics_section = section(
@@ -1323,6 +1649,9 @@ def build_data_page(
   </article>
 </div>
 """,
+            section_id="source-pipeline-diagnostics",
+            panel_code="DT.07",
+            panel_tag="provenance monitor",
         )
 
     manifest_note = (
@@ -1337,6 +1666,10 @@ def build_data_page(
             "Downloads",
             "Core JSON outputs are copied into the site so the published Pages bundle stays inspectable on its own.",
             f'<div class="card-grid">{downloads}</div>',
+            section_id="downloads",
+            panel_code="DT.01",
+            panel_tag="core outputs",
+            layout="compact",
         ),
         section(
             "Staged Bundle",
@@ -1346,6 +1679,10 @@ def build_data_page(
                 if staged_bundle_items
                 else '<p class="section-note">No staged source-pipeline bundle downloads are attached to the active publication manifest.</p>'
             ),
+            section_id="staged-bundle",
+            panel_code="DT.02",
+            panel_tag="staged provenance",
+            layout="compact",
         ),
         section(
             "Fetch Failure Snapshots",
@@ -1355,21 +1692,37 @@ def build_data_page(
                 if fetch_failure_items
                 else '<p class="section-note">No staged fetch-failure snapshot downloads are currently attached to the active manifest.</p>'
             ),
+            section_id="fetch-failure-snapshots",
+            panel_code="DT.03",
+            panel_tag="failure cache",
+            layout="compact",
         ),
         section(
             "Top categories",
             "Category revenue concentration remains the clearest summary of the current sample shape.",
             category_table,
+            section_id="top-categories",
+            panel_code="DT.04",
+            panel_tag="category board",
+            layout="compact",
         ),
         section(
             "Revenue bands",
             "Most visible startups sit below $50k in 30-day revenue even though the total revenue is dominated by the top tail.",
             band_table,
+            section_id="revenue-bands",
+            panel_code="DT.05",
+            panel_tag="distribution board",
+            layout="compact",
         ),
         section(
             "Source coverage",
             "The source coverage report keeps the public-page footprint explicit, with links back to the source pages.",
             source_table,
+            section_id="source-coverage",
+            panel_code="DT.06",
+            panel_tag="source monitor",
+            layout="compact",
         ),
         diagnostics_section,
         section(
@@ -1387,14 +1740,21 @@ def build_data_page(
   </article>
 </div>
 """,
+            section_id="manifest-notes",
+            panel_code="DT.08",
+            panel_tag="build notes",
+            layout="compact",
         ),
     ]
 
-    body = hero + "".join(sections)
+    body = hero + f'<div class="panel-stack">{"".join(sections)}</div>'
     return page_shell(
         title="Data",
         active="data",
         description="Download links and source coverage for the TrustMRR visible-sample static site.",
+        status=str(validation_report["status"]),
+        command_links=command_links,
+        monitor_html=data_monitor_html,
         body_html=body,
     )
 
@@ -1402,22 +1762,30 @@ def build_data_page(
 def build_stylesheet() -> str:
     return """\
 :root {
-  --paper: #f5efe3;
-  --paper-strong: #fffaf0;
-  --ink: #172033;
-  --muted: #5b6578;
-  --line: rgba(23, 32, 51, 0.12);
-  --blue: #1d4ed8;
-  --blue-soft: rgba(29, 78, 216, 0.12);
-  --amber: #b45309;
-  --amber-soft: rgba(180, 83, 9, 0.14);
-  --green: #166534;
-  --green-soft: rgba(22, 101, 52, 0.14);
-  --red: #b91c1c;
-  --red-soft: rgba(185, 28, 28, 0.14);
-  --shadow: 0 18px 40px rgba(23, 32, 51, 0.09);
-  --radius-lg: 28px;
-  --radius-md: 18px;
+  --bg: #05070a;
+  --bg-elevated: #0b0f13;
+  --bg-panel: #11161d;
+  --bg-panel-strong: #171d26;
+  --ink: #f4ead7;
+  --ink-soft: #b6ae9d;
+  --ink-dim: #827c70;
+  --line: rgba(246, 165, 58, 0.18);
+  --line-strong: rgba(246, 165, 58, 0.38);
+  --accent: #f6a53a;
+  --accent-soft: rgba(246, 165, 58, 0.14);
+  --cyan: #62c9d6;
+  --cyan-soft: rgba(98, 201, 214, 0.14);
+  --green: #83d486;
+  --green-soft: rgba(131, 212, 134, 0.14);
+  --red: #ff7b69;
+  --red-soft: rgba(255, 123, 105, 0.14);
+  --warning: #ffbf61;
+  --warning-soft: rgba(255, 191, 97, 0.14);
+  --shadow: 0 24px 64px rgba(0, 0, 0, 0.42);
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --mono: "IBM Plex Mono", "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --sans: "Aptos", "Segoe UI Variable", "Segoe UI", sans-serif;
 }
 
 * {
@@ -1432,11 +1800,11 @@ body {
   margin: 0;
   color: var(--ink);
   background:
-    radial-gradient(circle at top left, rgba(29, 78, 216, 0.18), transparent 32%),
-    radial-gradient(circle at top right, rgba(180, 83, 9, 0.14), transparent 26%),
-    linear-gradient(180deg, #f8f3e8 0%, #f2eadc 100%);
-  font-family: "Avenir Next", "Segoe UI Variable", "Segoe UI", sans-serif;
-  line-height: 1.6;
+    radial-gradient(circle at top left, rgba(246, 165, 58, 0.12), transparent 30%),
+    radial-gradient(circle at top right, rgba(98, 201, 214, 0.08), transparent 22%),
+    linear-gradient(180deg, #05070a 0%, #0a0e13 48%, #05070a 100%);
+  font-family: var(--mono);
+  line-height: 1.55;
 }
 
 .page-backdrop {
@@ -1444,137 +1812,368 @@ body {
   inset: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(23, 32, 51, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(23, 32, 51, 0.03) 1px, transparent 1px);
-  background-size: 24px 24px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.4), transparent 90%);
+    linear-gradient(rgba(246, 165, 58, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(246, 165, 58, 0.025) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025) 0%, transparent 18%, rgba(0, 0, 0, 0.06) 100%);
+  background-size: 28px 28px, 28px 28px, 100% 6px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.4));
+  opacity: 0.8;
 }
 
 .site-shell {
-  width: min(1180px, calc(100vw - 32px));
+  width: min(1480px, calc(100vw - 32px));
   margin: 0 auto;
 }
 
-.topbar {
+.command-strip {
   position: sticky;
   top: 0;
-  z-index: 10;
-  backdrop-filter: blur(18px);
-  background: rgba(245, 239, 227, 0.82);
-  border-bottom: 1px solid rgba(23, 32, 51, 0.08);
+  z-index: 20;
+  backdrop-filter: blur(16px);
+  background: rgba(5, 7, 10, 0.92);
+  border-bottom: 1px solid var(--line-strong);
 }
 
-.topbar-inner {
+.command-strip-inner {
   display: flex;
   gap: 18px;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 0;
+  padding: 12px 0;
 }
 
 .brand {
   display: inline-flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   color: inherit;
   text-decoration: none;
 }
 
 .brand-kicker,
 .eyebrow,
-.stat-label {
-  letter-spacing: 0.12em;
+.stat-label,
+.panel-kicker,
+.rail-kicker,
+.command-prompt-label {
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  font-size: 0.74rem;
-  color: var(--amber);
+  font-size: 0.72rem;
+  color: var(--accent);
   font-weight: 700;
 }
 
 .brand-title {
-  font-size: 0.98rem;
+  font-size: 0.96rem;
   font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.nav-links {
+.ticker-strip,
+.command-bar-links {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
 }
 
-.nav-link {
+.shell-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(17, 22, 29, 0.92);
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.shell-pill strong {
+  color: var(--ink);
+  font-size: 0.7rem;
+}
+
+.shell-pill-accent {
+  border-color: var(--line-strong);
+  background: var(--accent-soft);
+}
+
+.shell-pill.is-passed {
+  color: var(--green);
+  background: var(--green-soft);
+  border-color: rgba(131, 212, 134, 0.36);
+}
+
+.shell-pill.is-warning {
+  color: var(--warning);
+  background: var(--warning-soft);
+  border-color: rgba(255, 191, 97, 0.36);
+}
+
+.shell-pill.is-failed {
+  color: var(--red);
+  background: var(--red-soft);
+  border-color: rgba(255, 123, 105, 0.36);
+}
+
+.nav-links {
+  display: grid;
+  gap: 8px;
+}
+
+.rail-command-links {
+  display: grid;
+  gap: 8px;
+}
+
+.nav-link,
+.rail-command-link,
+.command-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
   padding: 10px 14px;
   border-radius: 999px;
-  color: var(--muted);
+  color: var(--ink-soft);
   text-decoration: none;
-  border: 1px solid transparent;
+  border: 1px solid var(--line);
+  background: rgba(17, 22, 29, 0.92);
   transition: 180ms ease;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.78rem;
 }
 
 .nav-link:hover,
-.nav-link.is-active {
+.nav-link.is-active,
+.rail-command-link:hover,
+.command-chip:hover {
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.55);
-  border-color: rgba(23, 32, 51, 0.08);
+  background: var(--accent-soft);
+  border-color: var(--line-strong);
 }
 
-.hero {
+.workstation {
   display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 0.9fr);
-  gap: 22px;
-  padding: 42px 0 26px;
+  grid-template-columns: 240px minmax(0, 1fr) 290px;
+  gap: 18px;
+  padding: 18px 0 0;
+  align-items: start;
 }
 
-.hero-copy,
-.hero-panel,
+.control-rail,
+.monitor-rail {
+  position: sticky;
+  top: 74px;
+  display: grid;
+  gap: 14px;
+}
+
+.workspace {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.rail-module,
+.workspace-command,
+.hero,
 .section-card,
 .site-footer {
-  background: rgba(255, 250, 240, 0.82);
+  background: linear-gradient(180deg, rgba(23, 29, 38, 0.95), rgba(11, 15, 19, 0.98));
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
   border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
 }
 
-.hero-copy {
-  padding: 36px;
+.rail-module::before,
+.workspace-command::before,
+.hero::before,
+.section-card::before,
+.site-footer::before,
+.table-wrap::before,
+.stat-card::before,
+.callout-card::before,
+.download-card::before,
+.chart-card::before,
+.check-item::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(246, 165, 58, 0.85), rgba(98, 201, 214, 0.28), transparent 92%);
+  pointer-events: none;
+}
+
+.rail-module,
+.workspace-command,
+.site-footer {
+  padding: 16px 18px;
+}
+
+.rail-module-accent {
+  border-color: rgba(246, 165, 58, 0.36);
+}
+
+.rail-module-warning {
+  border-color: rgba(255, 191, 97, 0.32);
+}
+
+.rail-module-good {
+  border-color: rgba(131, 212, 134, 0.32);
+}
+
+.rail-title {
+  margin: 6px 0 10px;
+  font-size: 1rem;
+}
+
+.rail-copy,
+.hero-aside-note,
+.section-head p,
+.site-footer p,
+.chart-copy p,
+.callout-card p,
+.download-card p,
+.hero-lede,
+.stat-note,
+.prose p,
+.prose li,
+.check-item span,
+.metric-list dt {
+  color: var(--ink-soft);
+}
+
+.metric-list {
+  margin: 14px 0 0;
+  display: grid;
+  gap: 8px;
+}
+
+.metric-list div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(246, 165, 58, 0.18);
+}
+
+.metric-list dt {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.metric-list dd {
+  margin: 0;
+  color: var(--ink);
+  text-align: right;
+}
+
+.workspace-command {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.command-prompt {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink-soft);
+}
+
+.command-prompt code {
+  color: var(--accent);
+}
+
+.hero {
+  padding: 24px;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.9fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.hero-head {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.panel-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+
+.panel-code::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(246, 165, 58, 0.12);
 }
 
 .hero-panel {
-  padding: 28px;
-  align-self: stretch;
+  padding: 18px;
+  border: 1px solid rgba(246, 165, 58, 0.2);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, rgba(246, 165, 58, 0.08), rgba(11, 15, 19, 0.4));
+}
+
+.hero-aside {
+  display: grid;
+  gap: 10px;
+}
+
+.hero-aside p {
+  margin: 0;
 }
 
 h1,
 h2,
 h3 {
   margin: 0 0 12px;
-  line-height: 1.08;
-  font-family: "Georgia", "Iowan Old Style", "Palatino Linotype", serif;
+  line-height: 1.05;
+  font-family: var(--sans);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 h1 {
-  font-size: clamp(2.4rem, 4vw, 4.8rem);
-  max-width: 12ch;
+  font-size: clamp(2.2rem, 4vw, 4.4rem);
+  max-width: 13ch;
 }
 
 h2 {
-  font-size: clamp(1.6rem, 2vw, 2.2rem);
+  font-size: clamp(1.2rem, 1.7vw, 1.75rem);
 }
 
 h3 {
-  font-size: 1.15rem;
-}
-
-.hero-lede,
-.section-head p,
-.site-footer p,
-.chart-copy p,
-.callout-card p,
-.download-card p,
-.hero-aside-note,
-.stat-note,
-.prose p,
-.prose li {
-  color: var(--muted);
+  font-size: 1rem;
 }
 
 .hero-meta {
@@ -1593,16 +2192,21 @@ h3 {
   padding: 0 18px;
   border-radius: 999px;
   text-decoration: none;
-  color: white;
-  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
-  box-shadow: 0 10px 18px rgba(29, 78, 216, 0.18);
+  color: #140f06;
+  background: linear-gradient(135deg, #f6a53a 0%, #ffbf61 100%);
+  border: 1px solid rgba(255, 191, 97, 0.52);
+  box-shadow: 0 10px 22px rgba(246, 165, 58, 0.18);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 .button.button-secondary {
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(17, 22, 29, 0.92);
   box-shadow: none;
-  border: 1px solid rgba(23, 32, 51, 0.08);
+  border: 1px solid rgba(98, 201, 214, 0.3);
 }
 
 .status-pill {
@@ -1612,8 +2216,11 @@ h3 {
   min-height: 36px;
   padding: 0 14px;
   border-radius: 999px;
-  font-size: 0.92rem;
+  font-size: 0.78rem;
   font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
 }
 
 .status-pill.is-passed {
@@ -1634,20 +2241,55 @@ h3 {
 .hero-aside-value,
 .stat-value {
   margin: 0;
-  font-size: clamp(1.8rem, 2vw, 2.8rem);
+  font-size: clamp(1.8rem, 2.2vw, 2.7rem);
   font-weight: 800;
+  font-family: var(--sans);
+  letter-spacing: 0.03em;
 }
 
 .section-card {
-  padding: 28px;
-  margin-bottom: 24px;
+  grid-column: 1 / -1;
+  padding: 22px;
+}
+
+.section-card.layout-compact {
+  grid-column: span 6;
+}
+
+.panel-stack {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 18px;
 }
 
 .section-head {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 20px;
+  gap: 14px;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(246, 165, 58, 0.16);
+}
+
+.section-head-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.panel-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(98, 201, 214, 0.24);
+  background: rgba(98, 201, 214, 0.08);
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  white-space: nowrap;
 }
 
 .stat-grid,
@@ -1655,7 +2297,7 @@ h3 {
 .chart-grid,
 .two-up {
   display: grid;
-  gap: 16px;
+  gap: 14px;
 }
 
 .stat-grid {
@@ -1674,9 +2316,12 @@ h3 {
 .stat-card,
 .callout-card,
 .download-card,
-.chart-card {
-  background: rgba(255, 255, 255, 0.68);
-  border: 1px solid rgba(23, 32, 51, 0.08);
+.chart-card,
+.table-wrap,
+.check-item {
+  position: relative;
+  background: linear-gradient(180deg, rgba(23, 29, 38, 0.88), rgba(11, 15, 19, 0.96));
+  border: 1px solid rgba(246, 165, 58, 0.16);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
@@ -1684,51 +2329,54 @@ h3 {
 .stat-card,
 .callout-card,
 .download-card {
-  padding: 20px;
+  padding: 18px;
 }
 
 .chart-card img {
   display: block;
   width: 100%;
   height: auto;
-  background: white;
+  background: #f7f3ea;
+  border-bottom: 1px solid rgba(246, 165, 58, 0.16);
 }
 
 .chart-copy {
-  padding: 18px 18px 20px;
+  padding: 16px 18px 18px;
 }
 
 .chart-copy a,
 .download-card a,
 .table-wrap a,
 .prose a {
-  color: var(--blue);
+  color: var(--cyan);
   text-decoration-thickness: 0.08em;
   text-underline-offset: 0.14em;
+  overflow-wrap: anywhere;
 }
 
 .section-note {
   margin-top: 16px;
   padding: 14px 16px;
-  border-radius: 16px;
-  background: rgba(29, 78, 216, 0.08);
+  border-radius: 12px;
+  border: 1px solid rgba(98, 201, 214, 0.22);
+  border-left: 3px solid var(--cyan);
+  background: rgba(98, 201, 214, 0.08);
 }
 
 .download-provenance,
 .download-hash {
   margin: 12px 0 0;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
 }
 
 .download-hash code {
-  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  font-family: var(--mono);
   overflow-wrap: anywhere;
 }
 
 .table-wrap {
   overflow-x: auto;
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(23, 32, 51, 0.08);
-  background: rgba(255, 255, 255, 0.78);
 }
 
 table {
@@ -1739,16 +2387,26 @@ table {
 
 th,
 td {
-  padding: 14px 16px;
+  padding: 12px 14px;
   text-align: left;
-  border-bottom: 1px solid rgba(23, 32, 51, 0.08);
+  border-bottom: 1px solid rgba(246, 165, 58, 0.12);
+  vertical-align: top;
 }
 
 th {
-  font-size: 0.82rem;
-  letter-spacing: 0.08em;
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--accent);
+  background: rgba(246, 165, 58, 0.06);
+}
+
+tbody tr:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.01);
+}
+
+tbody tr:hover {
+  background: rgba(246, 165, 58, 0.05);
 }
 
 tbody tr:last-child td {
@@ -1768,26 +2426,18 @@ tbody tr:last-child td {
   flex-direction: column;
   gap: 4px;
   padding: 14px 16px;
-  border-radius: 16px;
-  border: 1px solid rgba(23, 32, 51, 0.08);
-  background: rgba(255, 255, 255, 0.78);
-}
-
-.check-item span {
-  color: var(--muted);
-  font-size: 0.92rem;
 }
 
 .check-item.check-pass {
-  border-left: 6px solid var(--green);
+  border-left: 4px solid var(--green);
 }
 
 .check-item.check-warn {
-  border-left: 6px solid var(--amber);
+  border-left: 4px solid var(--warning);
 }
 
 .check-item.check-fail {
-  border-left: 6px solid var(--red);
+  border-left: 4px solid var(--red);
 }
 
 .prose h1,
@@ -1810,42 +2460,92 @@ tbody tr:last-child td {
 .prose pre {
   overflow-x: auto;
   padding: 16px;
-  border-radius: 16px;
-  background: #111827;
+  border-radius: 12px;
+  background: #05070a;
   color: #f8fafc;
+  border: 1px solid rgba(246, 165, 58, 0.18);
 }
 
-.prose code {
-  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+code {
+  font-family: var(--mono);
+  font-size: 0.94em;
+  background: rgba(246, 165, 58, 0.1);
+  padding: 0.12em 0.34em;
+  border-radius: 0.34em;
+}
+
+pre code {
+  padding: 0;
+  background: transparent;
 }
 
 .site-footer {
-  padding: 20px 22px 26px;
-  margin: 0 0 28px;
+  margin: 18px auto 28px;
 }
 
-@media (max-width: 880px) {
-  .hero {
+@media (max-width: 1240px) {
+  .workstation {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .monitor-rail {
+    position: static;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .workstation {
     grid-template-columns: 1fr;
+  }
+
+  .control-rail,
+  .monitor-rail {
+    position: static;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-card.layout-compact {
+    grid-column: 1 / -1;
   }
 }
 
 @media (max-width: 680px) {
-  .topbar-inner {
+  .command-strip-inner,
+  .workspace-command,
+  .hero-head,
+  .section-head {
     flex-direction: column;
     align-items: flex-start;
   }
 
   .site-shell {
-    width: min(100vw - 20px, 1180px);
+    width: min(100vw - 18px, 1480px);
   }
 
-  .hero-copy,
-  .hero-panel,
+  .hero,
   .section-card,
-  .site-footer {
-    padding: 22px;
-    border-radius: 22px;
+  .site-footer,
+  .rail-module,
+  .workspace-command {
+    padding: 16px;
+  }
+
+  .ticker-strip,
+  .command-bar-links,
+  .rail-command-links {
+    width: 100%;
+  }
+
+  .nav-link,
+  .rail-command-link,
+  .command-chip {
+    width: 100%;
   }
 
   h1 {
