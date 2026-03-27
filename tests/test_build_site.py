@@ -135,6 +135,16 @@ def extract_ticker_strip(text: str) -> str:
     return match.group(1)
 
 
+def extract_site_footer(text: str) -> str:
+    pattern = re.compile(
+        r'<footer class="site-shell site-footer">(.*?)</footer>',
+        re.DOTALL,
+    )
+    match = pattern.search(text)
+    assert match, "site-footer"
+    return match.group(1)
+
+
 def format_byte_count(byte_count: int) -> str:
     if byte_count == 1:
         return "1 byte"
@@ -730,6 +740,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     warning_posture_section = extract_rail_module(index_html, "Warning posture")
     overview_hero_aside = extract_hero_aside(index_html, "Current build snapshot")
     index_ticker_strip = extract_ticker_strip(index_html)
+    index_footer = extract_site_footer(index_html)
     assert "Route spread" in route_map_section
     assert "3 routes keep overview, methodology, and data one jump away." in route_map_section
     assert ">Overview<" in route_map_section
@@ -803,6 +814,21 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "17 files" in index_ticker_strip
     assert "mode" in index_ticker_strip
     assert "visible public sample" in index_ticker_strip
+    assert "Provenance lock" in index_footer
+    assert "Passed with warnings validation keeps /index published as a source-derived visible sample, not a full platform export." in index_footer
+    assert "Validation" in index_footer
+    assert "Current route" in index_footer
+    assert "Claim scope" in index_footer
+    assert "Build pack" in index_footer
+    assert "4 checked-in input zones plus 5 local panels and 22 global commands keep the shell reproducible." in index_footer
+    assert "Input zones" in index_footer
+    assert "Local panels" in index_footer
+    assert "Global commands" in index_footer
+    assert "Hosting contract" in index_footer
+    assert "Static pages currently expose 17 hot-output files with no runtime server, authenticated backend, or hidden publication layer." in index_footer
+    assert "Surface" in index_footer
+    assert "Hot outputs" in index_footer
+    assert "Backend" in index_footer
     publication_output_section = extract_hot_output_section(index_html, "Publication outputs")
     staged_output_section = extract_hot_output_section(index_html, "Staged provenance")
     assert "Registry shape" in publication_output_section
@@ -944,6 +970,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     methodology_publication_caveat_section = extract_rail_module(methodology_html, "Publication caveat")
     methodology_hero_aside = extract_hero_aside(methodology_html, "Warning-only signals")
     methodology_ticker_strip = extract_ticker_strip(methodology_html)
+    methodology_footer = extract_site_footer(methodology_html)
     assert "Gate contract" in methodology_inclusion_rule_section
     assert "The methodology keeps the visible sample tied to the public-page &gt;= $5,000 / 30d inclusion rule." in methodology_inclusion_rule_section
     assert "Threshold" in methodology_inclusion_rule_section
@@ -975,6 +1002,11 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "22 indexed" in methodology_ticker_strip
     assert "hot outputs" in methodology_ticker_strip
     assert "17 files" in methodology_ticker_strip
+    assert "Provenance lock" in methodology_footer
+    assert "Passed with warnings validation keeps /methodology published as a source-derived visible sample, not a full platform export." in methodology_footer
+    assert "Build pack" in methodology_footer
+    assert "4 checked-in input zones plus 5 local panels and 22 global commands keep the shell reproducible." in methodology_footer
+    assert "Hosting contract" in methodology_footer
 
     assert "metrics.json" in data_html
     assert f'<meta http-equiv="Content-Security-Policy" content="{ESCAPED_CSP_SNIPPET}">' in data_html
@@ -1091,6 +1123,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     diagnostics_feed_section = extract_rail_module(data_html, "Diagnostics feed")
     data_hero_aside = extract_hero_aside(data_html, "Manifest summary")
     data_ticker_strip = extract_ticker_strip(data_html)
+    data_footer = extract_site_footer(data_html)
     assert "Route spread" in data_route_map_section
     assert "3 routes keep overview, methodology, and data one jump away." in data_route_map_section
     assert ">Data<" in data_route_map_section
@@ -1159,6 +1192,12 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "22 indexed" in data_ticker_strip
     assert "hot outputs" in data_ticker_strip
     assert "17 files" in data_ticker_strip
+    assert "Provenance lock" in data_footer
+    assert "Passed with warnings validation keeps /data published as a source-derived visible sample, not a full platform export." in data_footer
+    assert "Build pack" in data_footer
+    assert "4 checked-in input zones plus 10 local panels and 22 global commands keep the shell reproducible." in data_footer
+    assert "Hosting contract" in data_footer
+    assert "Static pages currently expose 17 hot-output files with no runtime server, authenticated backend, or hidden publication layer." in data_footer
     assert "Registry shape" in data_html
     assert "Signal anchors" in data_html
     assert "keep the publication command surface self-contained at" in data_html

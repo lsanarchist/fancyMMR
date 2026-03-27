@@ -880,6 +880,13 @@ def page_shell(
     command_deck_story_html = command_deck_story_rail(local_panel_items, active=active)
     route_registry_story_html = route_registry_story_rail(route_registry_items)
     output_registry_links = output_registry_sections_markup(output_registry_sections)
+    footer_status_html = footer_status_rails(
+        active=active,
+        status=status,
+        local_panel_count=len(local_panel_items),
+        global_command_count=global_command_count,
+        hot_output_count=len(output_registry_items),
+    )
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -1010,6 +1017,7 @@ def page_shell(
     </aside>
   </div>
   <footer class="site-shell site-footer">
+    {footer_status_html}
     <p>This static site is a source-derived visible sample research artifact. It is not a full platform export and is not affiliated with TrustMRR.</p>
     <p>Build inputs live in <code>data/</code>, <code>charts/</code>, <code>docs/</code>, and <code>DATA-NOTICE.md</code>; regenerate the site with <code>python src/build_site.py</code>.</p>
   </footer>
@@ -2623,6 +2631,114 @@ def standalone_story_rail(*, kicker: str, headline: str, note: str, meters_html:
         )
         + "</div>"
     )
+
+
+def footer_status_rails(
+    *,
+    active: str,
+    status: str,
+    local_panel_count: int,
+    global_command_count: int,
+    hot_output_count: int,
+) -> str:
+    validation_ratio, validation_tone = validation_story_profile(status)
+    comparison_max = max(local_panel_count, global_command_count, hot_output_count, 4, 1)
+    rails = [
+        chart_annotation_rail(
+            kicker="Provenance lock",
+            headline=(
+                f"{status_label(status)} validation keeps {route_key(active)} published as a source-derived visible sample, "
+                "not a full platform export."
+            ),
+            note="The footer repeats provenance and claim scope at the last scan line so the publication contract stays explicit after the workstation panels end.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Validation",
+                        status_label(status),
+                        validation_ratio,
+                        tone=validation_tone,
+                    ),
+                    infographic_meter(
+                        "Current route",
+                        route_key(active),
+                        1.0,
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Claim scope",
+                        "visible sample",
+                        1.0,
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+        chart_annotation_rail(
+            kicker="Build pack",
+            headline=(
+                f"4 checked-in input zones plus {count_label(local_panel_count, 'local panel')} and "
+                f"{count_label(global_command_count, 'global command')} keep the shell reproducible."
+            ),
+            note="The footer keeps the repo-root inputs and indexed shell scope visible so readers can connect the published surface back to checked-in build inputs.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Input zones",
+                        count_label(4, "zone"),
+                        normalized_ratio(4, comparison_max),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Local panels",
+                        count_label(local_panel_count, "panel"),
+                        normalized_ratio(local_panel_count, comparison_max),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Global commands",
+                        count_label(global_command_count, "command"),
+                        normalized_ratio(global_command_count, comparison_max),
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+        chart_annotation_rail(
+            kicker="Hosting contract",
+            headline=(
+                f"Static pages currently expose {count_label(hot_output_count, 'hot-output file')} with no runtime server, "
+                "authenticated backend, or hidden publication layer."
+            ),
+            note="The footer keeps the GitHub-Pages-safe hosting posture explicit even after readers leave the command strip and monitor rails.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Surface",
+                        "static pages",
+                        1.0,
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Hot outputs",
+                        count_label(hot_output_count, "file"),
+                        normalized_ratio(hot_output_count, comparison_max),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Backend",
+                        "none",
+                        0.0,
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+    ]
+    return f'<div class="annotation-rail-grid">{"".join(rails)}</div>'
 
 
 def overview_revenue_lens_story_rail(metrics: dict[str, object]) -> str:
