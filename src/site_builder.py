@@ -66,6 +66,13 @@ def format_byte_count(byte_count: int) -> str:
     return f"{byte_count:,} bytes"
 
 
+def format_average_byte_count(total_bytes: int, item_count: int) -> str:
+    if item_count <= 0:
+        return "avg 0 bytes"
+    average_bytes = (total_bytes + (item_count // 2)) // item_count
+    return f"avg {format_byte_count(average_bytes)}"
+
+
 def format_delay_seconds(value: object) -> str:
     if value in (None, ""):
         return "n/a"
@@ -740,6 +747,7 @@ def output_registry_command_links_markup(command_items: list[dict[str, object]])
                 f'<span class="rail-command-divider-label">{html.escape(item_format.upper())}</span>'
                 f'<span class="rail-command-divider-count">{format_counts[item_format]:,}</span>'
                 f'<span class="rail-command-divider-bytes">{html.escape(format_byte_count(format_bytes[item_format]))}</span>'
+                f'<span class="rail-command-divider-average">{html.escape(format_average_byte_count(format_bytes[item_format], format_counts[item_format]))}</span>'
                 "</div>"
             )
             active_format = item_format
@@ -2475,6 +2483,12 @@ body {
   font-size: 0.64rem;
   letter-spacing: 0.08em;
   color: var(--ink-dim);
+}
+
+.rail-command-divider-average {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
 }
 
 .rail-command-group-title,
