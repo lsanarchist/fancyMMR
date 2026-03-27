@@ -104,10 +104,16 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "GO / Data" in index_html
     assert "GO / Downloads" in index_html
     assert "GET metrics.json" in index_html
+    assert "GET category_summary.csv" in index_html
+    assert "GET public_source_pages.csv" in index_html
+    assert "GET source_pipeline/snapshots/run_manifest.json" in index_html
+    assert "GET source_pipeline/processed/detail_page_rows.csv" in index_html
     assert 'data-command-kind="route"' in index_html
     assert 'data-command-kind="asset"' in index_html
     assert 'data-command-query="/data #downloads"' in index_html
     assert 'data-command-query="metrics.json"' in index_html
+    assert 'data-command-query="category_summary.csv"' in index_html
+    assert 'data-command-query="source_pipeline/snapshots/run_manifest.json"' in index_html
     assert 'src="assets/site.js"' in index_html
     assert "Ctrl+K" in index_html
     assert "data-command-input" in index_html
@@ -177,6 +183,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Jump palette" in data_html
     assert "Route registry" in data_html
     assert "Hot outputs" in data_html
+    assert "GET category_summary.csv" in data_html
+    assert "GET source_pipeline/snapshots/run_manifest.json" in data_html
+    assert "GET source_pipeline/processed/detail_field_coverage.json" in data_html
     assert "--bg: #05070a" in site_css
     assert ".workstation {" in site_css
     assert ".command-strip {" in site_css
@@ -330,6 +339,9 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert "data/fetch_failures/category--ai.json" in data_html
     assert "data/fetch_failures/category--ai.html" in data_html
     assert "data/fetch_failures/category--sales.json" in data_html
+    assert "GET fetch_failures/category--ai.json" in data_html
+    assert "GET fetch_failures/category--ai.html" in data_html
+    assert "GET fetch_failures/category--sales.json" in data_html
     for artifact in pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"]:
         assert artifact["site_path"] in data_html
         assert artifact["sha256"] in data_html

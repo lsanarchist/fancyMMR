@@ -143,6 +143,69 @@ def fetch_failure_download_items(
     )
 
 
+def manifest_generated_download_items(pipeline_manifest: dict[str, object]) -> list[dict[str, object]]:
+    items: list[dict[str, object]] = []
+    seen_paths: set[str] = set()
+    for artifact in pipeline_manifest.get("generated_outputs", []):
+        if not isinstance(artifact, dict):
+            continue
+        path = str(artifact.get("path") or "")
+        if not path.startswith("data/"):
+            continue
+        if Path(path).suffix.lower() not in {".json", ".csv"}:
+            continue
+        if path in seen_paths or not (ROOT / path).exists():
+            continue
+        artifact_path = ROOT / path
+        items.append(
+            {
+                "path": path,
+                "site_path": path,
+                "label": Path(path).name,
+                "description": f"Publication bundle artifact copied into the static site: {path}.",
+                "format": Path(path).suffix.lstrip(".").lower(),
+                "bytes": int(artifact.get("bytes") or artifact_path.stat().st_size),
+                "sha256": str(artifact.get("sha256") or ""),
+            }
+        )
+        seen_paths.add(path)
+
+    manifest_path = "data/pipeline_manifest.json"
+    if manifest_path not in seen_paths and (ROOT / manifest_path).exists():
+        manifest_file = ROOT / manifest_path
+        items.append(
+            {
+                "path": manifest_path,
+                "site_path": manifest_path,
+                "label": Path(manifest_path).name,
+                "description": "Active pipeline manifest for the current static publication bundle.",
+                "format": "json",
+                "bytes": int(manifest_file.stat().st_size),
+                "sha256": "",
+            }
+        )
+    return items
+
+
+def publication_download_items(
+    source_pipeline_diagnostics: dict[str, object],
+    pipeline_manifest: dict[str, object],
+) -> list[dict[str, object]]:
+    items: list[dict[str, object]] = []
+    seen_paths: set[str] = set()
+    for artifact in (
+        manifest_generated_download_items(pipeline_manifest)
+        + staged_source_pipeline_download_items(source_pipeline_diagnostics, pipeline_manifest)
+        + fetch_failure_download_items(source_pipeline_diagnostics, pipeline_manifest)
+    ):
+        site_path = str(artifact.get("site_path") or "")
+        if not site_path or site_path in seen_paths:
+            continue
+        items.append(artifact)
+        seen_paths.add(site_path)
+    return items
+
+
 def copy_assets(
     *,
     staged_download_items: list[dict[str, object]],
@@ -410,44 +473,27 @@ def global_route_command_items() -> list[dict[str, str]]:
     ]
 
 
-def global_output_command_items() -> list[dict[str, str]]:
-    return [
-        command_item(
-            label="GET metrics.json",
-            target="data/metrics.json",
-            kind="asset",
-            query="metrics.json",
-            terms="metrics download revenue concentration sample json",
-        ),
-        command_item(
-            label="GET publication_input.json",
-            target="data/publication_input.json",
-            kind="asset",
-            query="publication_input.json",
-            terms="publication input manifest dataset json download",
-        ),
-        command_item(
-            label="GET validation_report.json",
-            target="data/validation_report.json",
-            kind="asset",
-            query="validation_report.json",
-            terms="validation report checks json download",
-        ),
-        command_item(
-            label="GET source_pipeline_diagnostics.json",
-            target="data/source_pipeline_diagnostics.json",
-            kind="asset",
-            query="source_pipeline_diagnostics.json",
-            terms="source pipeline diagnostics provenance json download",
-        ),
-        command_item(
-            label="GET pipeline_manifest.json",
-            target="data/pipeline_manifest.json",
-            kind="asset",
-            query="pipeline_manifest.json",
-            terms="pipeline manifest build provenance json download",
-        ),
-    ]
+def global_output_command_items(download_items: list[dict[str, object]]) -> list[dict[str, str]]:
+    items: list[dict[str, str]] = []
+    for artifact in download_items:
+        site_path = str(artifact.get("site_path") or "")
+        if not site_path:
+            continue
+        query = site_path.removeprefix("data/")
+        label = f"GET {query}"
+        description = str(artifact.get("description") or "")
+        human_label = str(artifact.get("label") or "")
+        artifact_format = str(artifact.get("format") or "")
+        items.append(
+            command_item(
+                label=label,
+                target=site_path,
+                kind="asset",
+                query=query,
+                terms=f"{query} {site_path} {human_label} {description} {artifact_format} download asset",
+            )
+        )
+    return items
 
 
 def command_links_markup(command_items: list[dict[str, str]], *, link_class: str) -> str:
@@ -500,12 +546,12 @@ def page_shell(
     description: str,
     status: str,
     command_links: list[tuple[str, str]],
+    output_registry_items: list[dict[str, str]],
     monitor_html: str,
     body_html: str,
 ) -> str:
     local_panel_items = panel_command_items(active=active, command_links=command_links)
     route_registry_items = global_route_command_items()
-    output_registry_items = global_output_command_items()
     nav_items = [
         ("index", "Overview", "index.html"),
         ("methodology", "Methodology", "methodology.html"),
@@ -768,6 +814,7 @@ def build_index_page(
     metrics: dict[str, object],
     validation_report: dict[str, object],
     category_rows: list[dict[str, str]],
+    output_registry_items: list[dict[str, str]],
 ) -> str:
     command_links = [
         ("OV.00 Top", "#top"),
@@ -946,6 +993,7 @@ def build_index_page(
         description="Static overview of the TrustMRR visible-sample research bundle.",
         status=str(validation_report["status"]),
         command_links=command_links,
+        output_registry_items=output_registry_items,
         monitor_html=monitor_html,
         body_html=body,
     )
@@ -955,6 +1003,7 @@ def build_methodology_page(
     methodology_markdown: str,
     data_notice_markdown: str,
     validation_report: dict[str, object],
+    output_registry_items: list[dict[str, str]],
 ) -> str:
     command_links = [
         ("MD.00 Top", "#top"),
@@ -1048,6 +1097,7 @@ def build_methodology_page(
         description="Methodology and data caveats for the TrustMRR visible-sample static site.",
         status=str(validation_report["status"]),
         command_links=command_links,
+        output_registry_items=output_registry_items,
         monitor_html=methodology_monitor_html,
         body_html=body,
     )
@@ -1062,6 +1112,7 @@ def build_data_page(
     pipeline_manifest: dict[str, object],
     category_rows: list[dict[str, str]],
     revenue_band_rows: list[dict[str, str]],
+    output_registry_items: list[dict[str, str]],
 ) -> str:
     command_links = [
         ("DT.00 Top", "#top"),
@@ -1934,6 +1985,7 @@ def build_data_page(
         description="Download links and source coverage for the TrustMRR visible-sample static site.",
         status=str(validation_report["status"]),
         command_links=command_links,
+        output_registry_items=output_registry_items,
         monitor_html=data_monitor_html,
         body_html=body,
     )
@@ -3079,14 +3131,22 @@ def write_site_pages() -> None:
     source_coverage_report = read_json(DATA_DIR / "source_coverage_report.json")
     source_pipeline_diagnostics = read_json(DATA_DIR / "source_pipeline_diagnostics.json")
     pipeline_manifest = read_json(DATA_DIR / "pipeline_manifest.json")
+    output_registry_items = global_output_command_items(
+        publication_download_items(source_pipeline_diagnostics, pipeline_manifest)
+    )
     category_rows = read_csv_rows(DATA_DIR / "category_summary.csv")
     revenue_band_rows = read_csv_rows(DATA_DIR / "revenue_band_summary.csv")
     methodology_markdown = (DOCS_DIR / "methodology.md").read_text(encoding="utf-8")
     data_notice_markdown = (ROOT / "DATA-NOTICE.md").read_text(encoding="utf-8")
 
     pages = {
-        "index.html": build_index_page(metrics, validation_report, category_rows),
-        "methodology.html": build_methodology_page(methodology_markdown, data_notice_markdown, validation_report),
+        "index.html": build_index_page(metrics, validation_report, category_rows, output_registry_items),
+        "methodology.html": build_methodology_page(
+            methodology_markdown,
+            data_notice_markdown,
+            validation_report,
+            output_registry_items,
+        ),
         "data.html": build_data_page(
             metrics,
             publication_input,
@@ -3096,6 +3156,7 @@ def write_site_pages() -> None:
             pipeline_manifest,
             category_rows,
             revenue_band_rows,
+            output_registry_items,
         ),
     }
     for filename, content in pages.items():
