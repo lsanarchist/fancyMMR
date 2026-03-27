@@ -627,6 +627,26 @@ def command_deck_markup(local_panel_items: list[dict[str, object]]) -> str:
     )
 
 
+def route_registry_markup(route_registry_items: list[dict[str, object]]) -> str:
+    return "".join(
+        (
+            f'<a class="rail-command-link route-registry-link" href="{html.escape(str(item["target"]), quote=True)}" '
+            f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
+            f'data-command-target="{html.escape(str(item["target"]), quote=True)}" '
+            f'data-command-kind="{html.escape(str(item["kind"]), quote=True)}" '
+            f'data-command-query="{html.escape(str(item["query"]), quote=True)}" '
+            f'data-command-terms="{html.escape(str(item["terms"]), quote=True)}">'
+            f'<span class="route-registry-label">{html.escape(str(item["label"]))}</span>'
+            '<span class="route-registry-meta">'
+            f'<span class="route-registry-badge route-registry-badge-target">{html.escape(str(item["target"]))}</span>'
+            f'<span class="route-registry-badge route-registry-badge-kind">{html.escape(str(item["kind"]))}</span>'
+            "</span>"
+            "</a>"
+        )
+        for item in route_registry_items
+    )
+
+
 def command_item(
     *,
     label: str,
@@ -918,7 +938,7 @@ def page_shell(
     navigation = primary_nav_markup(nav_items, active=active)
     command_bar_links = command_links_markup(local_panel_items, link_class="command-chip")
     command_deck_links = command_deck_markup(local_panel_items)
-    route_registry_links = command_links_markup(route_registry_items, link_class="rail-command-link")
+    route_registry_links = route_registry_markup(route_registry_items)
     route_map_story_html = route_map_story_rail(nav_items, active=active)
     operating_mode_story_html = operating_mode_story_rail(
         status=status,
@@ -5419,6 +5439,49 @@ body {
   color: var(--cyan);
   border-color: rgba(98, 201, 214, 0.22);
   background: rgba(98, 201, 214, 0.08);
+}
+
+.route-registry-link {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.route-registry-label {
+  color: var(--ink);
+}
+
+.route-registry-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.route-registry-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(5, 7, 10, 0.2);
+  color: var(--ink-dim);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+}
+
+.route-registry-badge-target {
+  color: var(--cyan);
+  border-color: rgba(98, 201, 214, 0.22);
+  background: rgba(98, 201, 214, 0.08);
+}
+
+.route-registry-badge-kind {
+  color: var(--accent);
+  border-color: rgba(246, 165, 58, 0.22);
+  background: rgba(246, 165, 58, 0.08);
 }
 
 .nav-link:hover,

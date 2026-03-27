@@ -185,6 +185,16 @@ def extract_page_panels_nav(text: str) -> str:
     return match.group(1)
 
 
+def extract_route_registry_nav(text: str) -> str:
+    pattern = re.compile(
+        r'<nav class="rail-command-links" aria-label="Cross-page routes">(.*?)</nav>',
+        re.DOTALL,
+    )
+    match = pattern.search(text)
+    assert match, "route-registry-nav"
+    return match.group(1)
+
+
 def format_byte_count(byte_count: int) -> str:
     if byte_count == 1:
         return "1 byte"
@@ -782,6 +792,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     index_brand = extract_brand(index_html)
     index_primary_nav = extract_primary_nav(index_html)
     index_page_panels_nav = extract_page_panels_nav(index_html)
+    index_route_registry_nav = extract_route_registry_nav(index_html)
     index_ticker_strip = extract_ticker_strip(index_html)
     index_footer = extract_site_footer(index_html)
     index_workspace_command = extract_workspace_command(index_html)
@@ -879,6 +890,21 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "#top" in index_page_panels_nav
     assert "#snapshot" in index_page_panels_nav
     assert "#category-leaders" in index_page_panels_nav
+    assert "GO / Overview" in index_route_registry_nav
+    assert "GO / Methodology" in index_route_registry_nav
+    assert "GO / Data" in index_route_registry_nav
+    assert "GO / Downloads" in index_route_registry_nav
+    assert "GO / Diagnostics" in index_route_registry_nav
+    assert "route-registry-link" in index_route_registry_nav
+    assert "route-registry-label" in index_route_registry_nav
+    assert "route-registry-meta" in index_route_registry_nav
+    assert "route-registry-badge route-registry-badge-target" in index_route_registry_nav
+    assert "route-registry-badge route-registry-badge-kind" in index_route_registry_nav
+    assert "index.html" in index_route_registry_nav
+    assert "methodology.html" in index_route_registry_nav
+    assert "data.html#downloads" in index_route_registry_nav
+    assert "data.html#source-pipeline-diagnostics" in index_route_registry_nav
+    assert ">route<" in index_route_registry_nav
     assert "surface" in index_ticker_strip
     assert "static pages" in index_ticker_strip
     assert "validation" in index_ticker_strip
@@ -1066,6 +1092,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     methodology_brand = extract_brand(methodology_html)
     methodology_primary_nav = extract_primary_nav(methodology_html)
     methodology_page_panels_nav = extract_page_panels_nav(methodology_html)
+    methodology_route_registry_nav = extract_route_registry_nav(methodology_html)
     methodology_ticker_strip = extract_ticker_strip(methodology_html)
     methodology_footer = extract_site_footer(methodology_html)
     methodology_workspace_command = extract_workspace_command(methodology_html)
@@ -1115,6 +1142,17 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "#validation-checks" in methodology_page_panels_nav
     assert "command-deck-badge command-deck-badge-order" in methodology_page_panels_nav
     assert "command-deck-badge command-deck-badge-anchor" in methodology_page_panels_nav
+    assert "GO / Overview" in methodology_route_registry_nav
+    assert "GO / Methodology" in methodology_route_registry_nav
+    assert "GO / Data" in methodology_route_registry_nav
+    assert "GO / Downloads" in methodology_route_registry_nav
+    assert "GO / Diagnostics" in methodology_route_registry_nav
+    assert "route-registry-badge route-registry-badge-target" in methodology_route_registry_nav
+    assert "route-registry-badge route-registry-badge-kind" in methodology_route_registry_nav
+    assert "index.html" in methodology_route_registry_nav
+    assert "methodology.html" in methodology_route_registry_nav
+    assert "data.html#downloads" in methodology_route_registry_nav
+    assert ">route<" in methodology_route_registry_nav
     assert "route" in methodology_ticker_strip
     assert "methodology" in methodology_ticker_strip
     assert "local panels" in methodology_ticker_strip
@@ -1252,6 +1290,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     data_brand = extract_brand(data_html)
     data_primary_nav = extract_primary_nav(data_html)
     data_page_panels_nav = extract_page_panels_nav(data_html)
+    data_route_registry_nav = extract_route_registry_nav(data_html)
     data_ticker_strip = extract_ticker_strip(data_html)
     data_footer = extract_site_footer(data_html)
     data_workspace_command = extract_workspace_command(data_html)
@@ -1338,6 +1377,17 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "#manifest-notes" in data_page_panels_nav
     assert "command-deck-badge command-deck-badge-order" in data_page_panels_nav
     assert "command-deck-badge command-deck-badge-anchor" in data_page_panels_nav
+    assert "GO / Overview" in data_route_registry_nav
+    assert "GO / Methodology" in data_route_registry_nav
+    assert "GO / Data" in data_route_registry_nav
+    assert "GO / Downloads" in data_route_registry_nav
+    assert "GO / Diagnostics" in data_route_registry_nav
+    assert "route-registry-badge route-registry-badge-target" in data_route_registry_nav
+    assert "route-registry-badge route-registry-badge-kind" in data_route_registry_nav
+    assert "index.html" in data_route_registry_nav
+    assert "data.html#downloads" in data_route_registry_nav
+    assert "data.html#source-pipeline-diagnostics" in data_route_registry_nav
+    assert ">route<" in data_route_registry_nav
     assert "route" in data_ticker_strip
     assert "data" in data_ticker_strip
     assert "local panels" in data_ticker_strip
@@ -1413,6 +1463,12 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".command-deck-badge {" in site_css
     assert ".command-deck-badge-order {" in site_css
     assert ".command-deck-badge-anchor {" in site_css
+    assert ".route-registry-link {" in site_css
+    assert ".route-registry-label {" in site_css
+    assert ".route-registry-meta {" in site_css
+    assert ".route-registry-badge {" in site_css
+    assert ".route-registry-badge-target {" in site_css
+    assert ".route-registry-badge-kind {" in site_css
     assert ".command-input {" in site_css
     assert ".command-input-wrap:focus-within {" in site_css
     assert ".infographic-grid {" in site_css
