@@ -673,6 +673,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     command_deck_section = extract_rail_module(index_html, "Command deck")
     route_registry_section = extract_rail_module(index_html, "Route registry")
     operating_mode_section = extract_rail_module(index_html, "Operating mode")
+    system_brief_section = extract_rail_module(index_html, "System brief")
+    build_path_section = extract_rail_module(index_html, "Build path")
     assert "Route spread" in route_map_section
     assert "3 routes keep overview, methodology, and data one jump away." in route_map_section
     assert ">Overview<" in route_map_section
@@ -699,6 +701,18 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Claim scope" in operating_mode_section
     assert "static pages" in operating_mode_section
     assert "visible sample" in operating_mode_section
+    assert "Surface brief" in system_brief_section
+    assert "Passed with warnings validation keeps /index routed through the static operator shell." in system_brief_section
+    assert "Current route" in system_brief_section
+    assert "Validation" in system_brief_section
+    assert "Surface" in system_brief_section
+    assert "/index" in system_brief_section
+    assert "Overview" in system_brief_section
+    assert "Build contract" in build_path_section
+    assert "`python src/build_site.py` rebuilds 5 local panels, 5 cross-page routes, and 3 hot-output blocks into static pages." in build_path_section
+    assert "Local panels" in build_path_section
+    assert "Cross-page routes" in build_path_section
+    assert "Hot-output blocks" in build_path_section
     publication_output_section = extract_hot_output_section(index_html, "Publication outputs")
     staged_output_section = extract_hot_output_section(index_html, "Staged provenance")
     assert "Registry shape" in publication_output_section
@@ -944,6 +958,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     data_command_deck_section = extract_rail_module(data_html, "Command deck")
     data_route_registry_section = extract_rail_module(data_html, "Route registry")
     data_operating_mode_section = extract_rail_module(data_html, "Operating mode")
+    data_system_brief_section = extract_rail_module(data_html, "System brief")
+    data_build_path_section = extract_rail_module(data_html, "Build path")
     assert "Route spread" in data_route_map_section
     assert "3 routes keep overview, methodology, and data one jump away." in data_route_map_section
     assert ">Data<" in data_route_map_section
@@ -970,6 +986,18 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Claim scope" in data_operating_mode_section
     assert "static pages" in data_operating_mode_section
     assert "visible sample" in data_operating_mode_section
+    assert "Surface brief" in data_system_brief_section
+    assert "Passed with warnings validation keeps /data routed through the static operator shell." in data_system_brief_section
+    assert "Current route" in data_system_brief_section
+    assert "Validation" in data_system_brief_section
+    assert "Surface" in data_system_brief_section
+    assert "/data" in data_system_brief_section
+    assert "Data" in data_system_brief_section
+    assert "Build contract" in data_build_path_section
+    assert "`python src/build_site.py` rebuilds 10 local panels, 5 cross-page routes, and 3 hot-output blocks into static pages." in data_build_path_section
+    assert "Local panels" in data_build_path_section
+    assert "Cross-page routes" in data_build_path_section
+    assert "Hot-output blocks" in data_build_path_section
     assert "Registry shape" in data_html
     assert "Signal anchors" in data_html
     assert "keep the publication command surface self-contained at" in data_html

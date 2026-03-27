@@ -852,6 +852,12 @@ def page_shell(
         route_registry_items=route_registry_items,
         output_registry_sections=output_registry_sections,
     )
+    system_brief_story_html = system_brief_story_rail(title=title, active=active, status=status)
+    build_path_story_html = build_path_story_rail(
+        local_panel_items=local_panel_items,
+        route_registry_items=route_registry_items,
+        output_registry_sections=output_registry_sections,
+    )
     command_deck_story_html = command_deck_story_rail(local_panel_items, active=active)
     route_registry_story_html = route_registry_story_rail(route_registry_items)
     output_registry_links = output_registry_sections_markup(output_registry_sections)
@@ -966,12 +972,14 @@ def page_shell(
     <aside class="monitor-rail" aria-label="Operator monitors">
       <section class="rail-module">
         <p class="rail-kicker">System brief</p>
+        {system_brief_story_html}
         <h2 class="rail-title">{html.escape(title)}</h2>
         <p class="rail-copy">{html.escape(description)}</p>
       </section>
       {monitor_html}
       <section class="rail-module">
         <p class="rail-kicker">Build path</p>
+        {build_path_story_html}
         <p class="rail-copy">Regenerate the static operator surface with <code>python src/build_site.py</code>.</p>
       </section>
     </aside>
@@ -2452,6 +2460,96 @@ def operating_mode_story_rail(
                         "Claim scope",
                         "visible sample",
                         1.0,
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        )
+        + "</div>"
+    )
+
+
+def system_brief_story_rail(*, title: str, active: str, status: str) -> str:
+    validation_ratio = {
+        "passed": 1.0,
+        "passed_with_warnings": 0.72,
+        "failed": 0.32,
+    }.get(status, 0.5)
+    validation_tone = {
+        "passed": "green",
+        "passed_with_warnings": "accent",
+        "failed": "red",
+    }.get(status, "cyan")
+    return (
+        '<div class="annotation-rail-grid">'
+        + chart_annotation_rail(
+            kicker="Surface brief",
+            headline=f"{status_label(status)} validation keeps {route_key(active)} routed through the static operator shell.",
+            note="The monitor rail keeps the current surface identity and validation posture visible before readers move into the page-specific monitor modules.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Current route",
+                        route_key(active),
+                        1.0,
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Validation",
+                        status_label(status),
+                        validation_ratio,
+                        tone=validation_tone,
+                    ),
+                    infographic_meter(
+                        "Surface",
+                        title,
+                        1.0,
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        )
+        + "</div>"
+    )
+
+
+def build_path_story_rail(
+    *,
+    local_panel_items: list[dict[str, object]],
+    route_registry_items: list[dict[str, object]],
+    output_registry_sections: list[dict[str, object]],
+) -> str:
+    hot_output_block_count = len(output_registry_sections)
+    return (
+        '<div class="annotation-rail-grid">'
+        + chart_annotation_rail(
+            kicker="Build contract",
+            headline=(
+                f"`python src/build_site.py` rebuilds {count_label(len(local_panel_items), 'local panel')}, "
+                f"{count_label(len(route_registry_items), 'cross-page route')}, and "
+                f"{count_label(hot_output_block_count, 'hot-output block')} into static pages."
+            ),
+            note="The monitor rail keeps the rebuild path explicit so the workstation stays reproducible without a runtime backend.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Local panels",
+                        count_label(len(local_panel_items), "panel"),
+                        normalized_ratio(len(local_panel_items), max(len(local_panel_items), len(route_registry_items), hot_output_block_count, 1)),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Cross-page routes",
+                        count_label(len(route_registry_items), "route"),
+                        normalized_ratio(len(route_registry_items), max(len(local_panel_items), len(route_registry_items), hot_output_block_count, 1)),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Hot-output blocks",
+                        count_label(hot_output_block_count, "block"),
+                        normalized_ratio(hot_output_block_count, max(len(local_panel_items), len(route_registry_items), hot_output_block_count, 1)),
                         tone="green",
                     ),
                 ]
