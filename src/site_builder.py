@@ -849,6 +849,37 @@ def build_data_page(
                 "<h3>Fetch-failure timing</h3>"
                 '<p class="section-note">No staged fetch-failure timing is currently recorded for the active manifest.</p>'
             )
+        fetch_failure_source_label_counts = source_pipeline_diagnostics.get("fetch_failure_source_label_counts", {}) or {}
+        fetch_failure_source_group_counts = source_pipeline_diagnostics.get("fetch_failure_source_group_counts", {}) or {}
+        if fetch_failure_sources:
+            diagnostics_fetch_failure_source_context_section = (
+                "<h3>Fetch-failure source context</h3>"
+                + render_table(
+                    ["Source label", "Affected sources"],
+                    [
+                        [
+                            html.escape(str(source_label)),
+                            html.escape(f"{int(count):,}"),
+                        ]
+                        for source_label, count in fetch_failure_source_label_counts.items()
+                    ],
+                )
+                + render_table(
+                    ["Source group", "Affected sources"],
+                    [
+                        [
+                            html.escape(str(source_group)),
+                            html.escape(f"{int(count):,}"),
+                        ]
+                        for source_group, count in fetch_failure_source_group_counts.items()
+                    ],
+                )
+            )
+        else:
+            diagnostics_fetch_failure_source_context_section = (
+                "<h3>Fetch-failure source context</h3>"
+                '<p class="section-note">No staged fetch-failure source-label context is currently recorded for the active manifest.</p>'
+            )
         fetch_failure_robots_policy_counts = source_pipeline_diagnostics.get("fetch_failure_robots_policy_counts", {}) or {}
         fetch_failure_robots_status_code_counts = (
             source_pipeline_diagnostics.get("fetch_failure_robots_status_code_counts", {}) or {}
@@ -1004,6 +1035,7 @@ def build_data_page(
             + diagnostics_failure_section
             + diagnostics_fetch_failure_section
             + diagnostics_fetch_failure_timing_section
+            + diagnostics_fetch_failure_source_context_section
             + diagnostics_fetch_failure_delay_section
             + diagnostics_fetch_failure_robots_section
             + diagnostics_fetch_failure_breakdown_section

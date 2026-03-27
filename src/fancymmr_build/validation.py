@@ -301,6 +301,14 @@ def _robots_policy_label(value: object) -> str | None:
     return str(value)
 
 
+def _source_label(category_label: object, source_id: object) -> str:
+    if category_label not in (None, ""):
+        return str(category_label)
+    if source_id not in (None, ""):
+        return str(source_id)
+    return "unknown"
+
+
 def _artifact_download_record(
     *,
     relative_path: str,
@@ -407,13 +415,15 @@ def _load_fetch_failure_sources(
             robots_effective_delay_seconds = robots.get("effective_delay_seconds")
 
         source_metadata = selected_sources_by_id.get(source_id, {})
+        category_label = source_metadata.get("category_label")
         failure_sources.append(
             {
                 "source_id": source_id,
                 "source_url": str(snapshot.get("url") or source_metadata.get("source_url") or ""),
                 "parser_strategy": snapshot.get("parser_strategy") or source_metadata.get("parser_strategy"),
                 "source_group": snapshot.get("source_group") or source_metadata.get("source_group"),
-                "category_label": source_metadata.get("category_label"),
+                "category_label": category_label,
+                "source_label": _source_label(category_label, source_id),
                 "recorded_at": snapshot.get("recorded_at"),
                 "error_type": str(snapshot.get("error_type") or ""),
                 "message": str(snapshot.get("message") or ""),
@@ -509,6 +519,8 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
         "fetch_failure_effective_delay_seconds_counts": None,
         "fetch_failure_min_effective_delay_seconds": None,
         "fetch_failure_max_effective_delay_seconds": None,
+        "fetch_failure_source_label_counts": None,
+        "fetch_failure_source_group_counts": None,
         "fetch_failure_status_code_counts": None,
         "detail_parse_failure_source_count": None,
         "detail_parse_status_counts": None,
@@ -692,6 +704,16 @@ def build_source_pipeline_diagnostics_report(summary: SummaryArtifacts) -> dict[
             ),
             "fetch_failure_min_effective_delay_seconds": fetch_failure_min_effective_delay_seconds,
             "fetch_failure_max_effective_delay_seconds": fetch_failure_max_effective_delay_seconds,
+            "fetch_failure_source_label_counts": _count_values(
+                fetch_failure_sources,
+                "source_label",
+                none_label="unknown",
+            ),
+            "fetch_failure_source_group_counts": _count_values(
+                fetch_failure_sources,
+                "source_group",
+                none_label="unknown",
+            ),
             "fetch_failure_status_code_counts": _count_values(
                 fetch_failure_sources,
                 "status_code",
@@ -844,6 +866,12 @@ def write_pipeline_manifest(
             ],
             "fetch_failure_max_effective_delay_seconds": source_pipeline_diagnostics_report[
                 "fetch_failure_max_effective_delay_seconds"
+            ],
+            "fetch_failure_source_label_counts": source_pipeline_diagnostics_report[
+                "fetch_failure_source_label_counts"
+            ],
+            "fetch_failure_source_group_counts": source_pipeline_diagnostics_report[
+                "fetch_failure_source_group_counts"
             ],
             "fetch_failure_status_code_counts": source_pipeline_diagnostics_report["fetch_failure_status_code_counts"],
             "detail_parse_failure_source_count": source_pipeline_diagnostics_report["detail_parse_failure_source_count"],

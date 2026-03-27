@@ -93,6 +93,8 @@
   "fetch_failure_robots_policy_counts": {},
   "fetch_failure_robots_status_code_counts": {},
   "fetch_failure_source_count": 0,
+  "fetch_failure_source_group_counts": {},
+  "fetch_failure_source_label_counts": {},
   "fetch_failure_sources": [],
   "fetch_failure_status_code_counts": {},
   "fetched_detail_page_count": 0,
