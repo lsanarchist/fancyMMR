@@ -310,6 +310,15 @@ def format_median_byte_count(byte_values: list[int]) -> str:
     return f"med {format_byte_count(median_bytes)}"
 
 
+def format_max_to_median_ratio(max_bytes: int | None, median_bytes: int | None) -> str:
+    if max_bytes is None or median_bytes is None or median_bytes <= 0:
+        return "max/med n/a"
+    ratio = max_bytes / median_bytes
+    if ratio < 10:
+        return f"max/med {ratio:.1f}x"
+    return f"max/med {ratio:.0f}x"
+
+
 def artifact_format_label(artifact: dict[str, object]) -> str:
     artifact_format = str(artifact.get("format") or "").strip().lower()
     if artifact_format:
@@ -693,6 +702,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     item_format_file_share = str(item.get("format_file_share") or "")
     item_format_average_size = str(item.get("format_average_size") or "")
     item_format_median_size = str(item.get("format_median_size") or "")
+    item_format_max_median = str(item.get("format_max_median") or "")
     byte_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
         if isinstance(item_bytes, int)
@@ -743,6 +753,11 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         if item_format_median_size
         else ""
     )
+    format_max_median_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-format-max-median">{html.escape(item_format_max_median)}</span>'
+        if item_format_max_median
+        else ""
+    )
     return (
         f'<a class="rail-command-link output-registry-link" href="{html.escape(target, quote=True)}" '
         f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
@@ -764,6 +779,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         f"{format_file_share_badge_html}"
         f"{format_average_size_badge_html}"
         f"{format_median_size_badge_html}"
+        f"{format_max_median_badge_html}"
         "</span>"
         "</a>"
     )
@@ -876,6 +892,7 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
     format_item_counts: dict[str, int] = {}
     format_total_bytes: dict[str, int] = {}
     format_byte_values: dict[str, list[int]] = {}
+    format_max_bytes: dict[str, int] = {}
     for artifact in download_items:
         site_path = str(artifact.get("site_path") or "")
         artifact_format = str(artifact.get("format") or "").strip().lower() or "other"
@@ -888,6 +905,8 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
             continue
         format_total_bytes[artifact_format] = format_total_bytes.get(artifact_format, 0) + artifact_bytes
         format_byte_values.setdefault(artifact_format, []).append(artifact_bytes)
+        if artifact_format not in format_max_bytes or artifact_bytes > format_max_bytes[artifact_format]:
+            format_max_bytes[artifact_format] = artifact_bytes
         format_ranked_site_paths.setdefault(artifact_format, []).append((site_path, artifact_bytes))
     for artifact_format, ranked_items in format_ranked_site_paths.items():
         format_count = len(ranked_items)
@@ -934,6 +953,10 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
         )
         items[-1]["format_median_size"] = (
             f"{artifact_format_label} {format_median_byte_count(format_byte_values.get(artifact_format_key, []))}"
+        )
+        items[-1]["format_max_median"] = (
+            f"{artifact_format_label} "
+            f"{format_max_to_median_ratio(format_max_bytes.get(artifact_format_key), median_byte_value(format_byte_values.get(artifact_format_key, [])))}"
         )
         artifact_bytes = artifact.get("bytes")
         if isinstance(artifact_bytes, int):
@@ -5786,6 +5809,12 @@ body {
   color: var(--warning);
   border-color: rgba(255, 191, 97, 0.22);
   background: rgba(255, 191, 97, 0.12);
+}
+
+.output-registry-badge-format-max-median {
+  color: var(--red);
+  border-color: rgba(255, 123, 105, 0.22);
+  background: rgba(255, 123, 105, 0.12);
 }
 
 .nav-link:hover,
