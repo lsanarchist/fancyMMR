@@ -887,6 +887,12 @@ def page_shell(
         global_command_count=global_command_count,
         hot_output_count=len(output_registry_items),
     )
+    workspace_command_story_html = workspace_command_story_rails(
+        active=active,
+        local_panel_items=local_panel_items,
+        route_registry_items=route_registry_items,
+        output_registry_items=output_registry_items,
+    )
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -997,6 +1003,7 @@ def page_shell(
         <div class="command-bar-links">
           {command_bar_links}
         </div>
+        {workspace_command_story_html}
         <p class="command-status" role="status" aria-live="polite" aria-atomic="true" data-command-status>Ready. {len(local_panel_items):,} local panels and {global_command_count:,} global commands indexed.</p>
       </section>
       {body_html}
@@ -2739,6 +2746,125 @@ def footer_status_rails(
         ),
     ]
     return f'<div class="annotation-rail-grid">{"".join(rails)}</div>'
+
+
+def workspace_command_story_rails(
+    *,
+    active: str,
+    local_panel_items: list[dict[str, object]],
+    route_registry_items: list[dict[str, object]],
+    output_registry_items: list[dict[str, object]],
+) -> str:
+    local_panel_count = len(local_panel_items)
+    route_registry_count = len(route_registry_items)
+    hot_output_count = len(output_registry_items)
+    global_command_count = route_registry_count + hot_output_count
+    top_anchor_count = sum(1 for item in local_panel_items if str(item.get("target") or "") == "#top")
+    section_anchor_count = sum(
+        1
+        for item in local_panel_items
+        if str(item.get("target") or "").startswith("#") and str(item.get("target") or "") != "#top"
+    )
+    last_anchor = str(local_panel_items[-1].get("target") or "#top") if local_panel_items else "#top"
+    top_anchor_label = "anchor" if top_anchor_count == 1 else "anchors"
+    section_anchor_label = "anchor" if section_anchor_count == 1 else "anchors"
+    comparison_max = max(local_panel_count, route_registry_count, hot_output_count, global_command_count, 1)
+    rails = [
+        chart_annotation_rail(
+            kicker="Route scope",
+            headline=(
+                f"{route_key(active)} keeps {count_label(local_panel_count, 'local jump')} and "
+                f"{count_label(global_command_count, 'global command')} one query away from the jump palette."
+            ),
+            note="The command surface keeps the current route and indexed workspace scope visible before readers type, tab, or cycle through local panels.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Current route",
+                        route_key(active),
+                        1.0,
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Local panels",
+                        count_label(local_panel_count, "jump"),
+                        normalized_ratio(local_panel_count, comparison_max),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Global commands",
+                        count_label(global_command_count, "command"),
+                        normalized_ratio(global_command_count, comparison_max),
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+        chart_annotation_rail(
+            kicker="Anchor spread",
+            headline=(
+                f"{top_anchor_count:,} top {top_anchor_label} and {section_anchor_count:,} section {section_anchor_label} "
+                f"map the {route_key(active)} surface from #top to {last_anchor}."
+            ),
+            note="The jump palette keeps route-local anchor mix explicit so readers can scan section depth before relying on the command chips alone.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Top anchor",
+                        count_label(top_anchor_count, "anchor"),
+                        normalized_ratio(top_anchor_count, local_panel_count or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Section anchors",
+                        count_label(section_anchor_count, "anchor"),
+                        normalized_ratio(section_anchor_count, local_panel_count or 1),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Furthest anchor",
+                        last_anchor,
+                        1.0 if local_panel_count > 0 else 0.0,
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+        chart_annotation_rail(
+            kicker="Asset scope",
+            headline=(
+                f"{count_label(route_registry_count, 'cross-page route')} and {count_label(hot_output_count, 'hot-output file')} "
+                "expand the command surface beyond local panel anchors."
+            ),
+            note="The shared command panel keeps both route pivots and machine-readable asset queries visible, so jumps like /data #downloads and metrics.json stay in the same surface.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Cross-page routes",
+                        count_label(route_registry_count, "route"),
+                        normalized_ratio(route_registry_count, comparison_max),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Hot outputs",
+                        count_label(hot_output_count, "file"),
+                        normalized_ratio(hot_output_count, comparison_max),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Global scope",
+                        count_label(global_command_count, "command"),
+                        normalized_ratio(global_command_count, comparison_max),
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+    ]
+    return f'<div class="annotation-rail-grid command-surface-rails">{"".join(rails)}</div>'
 
 
 def overview_revenue_lens_story_rail(metrics: dict[str, object]) -> str:
@@ -5227,8 +5353,9 @@ body {
 
 .workspace-command {
   display: flex;
+  flex-wrap: wrap;
   gap: 14px;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
 }
 
@@ -5240,9 +5367,19 @@ body {
 }
 
 .command-entry {
+  flex: 1 1 460px;
   min-width: min(100%, 460px);
   display: grid;
   gap: 8px;
+}
+
+.workspace-command .annotation-rail-grid,
+.command-status {
+  width: 100%;
+}
+
+.command-surface-rails {
+  margin-bottom: 0;
 }
 
 .command-input-wrap {

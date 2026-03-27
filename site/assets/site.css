@@ -502,8 +502,9 @@ body {
 
 .workspace-command {
   display: flex;
+  flex-wrap: wrap;
   gap: 14px;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
 }
 
@@ -515,9 +516,19 @@ body {
 }
 
 .command-entry {
+  flex: 1 1 460px;
   min-width: min(100%, 460px);
   display: grid;
   gap: 8px;
+}
+
+.workspace-command .annotation-rail-grid,
+.command-status {
+  width: 100%;
+}
+
+.command-surface-rails {
+  margin-bottom: 0;
 }
 
 .command-input-wrap {

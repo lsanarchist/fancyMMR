@@ -145,6 +145,16 @@ def extract_site_footer(text: str) -> str:
     return match.group(1)
 
 
+def extract_workspace_command(text: str) -> str:
+    pattern = re.compile(
+        r'<section class="workspace-command"[^>]*>(.*?)</section>',
+        re.DOTALL,
+    )
+    match = pattern.search(text)
+    assert match, "workspace-command"
+    return match.group(1)
+
+
 def format_byte_count(byte_count: int) -> str:
     if byte_count == 1:
         return "1 byte"
@@ -741,6 +751,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     overview_hero_aside = extract_hero_aside(index_html, "Current build snapshot")
     index_ticker_strip = extract_ticker_strip(index_html)
     index_footer = extract_site_footer(index_html)
+    index_workspace_command = extract_workspace_command(index_html)
     assert "Route spread" in route_map_section
     assert "3 routes keep overview, methodology, and data one jump away." in route_map_section
     assert ">Overview<" in route_map_section
@@ -829,6 +840,21 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Surface" in index_footer
     assert "Hot outputs" in index_footer
     assert "Backend" in index_footer
+    assert "Route scope" in index_workspace_command
+    assert "/index keeps 5 local jumps and 22 global commands one query away from the jump palette." in index_workspace_command
+    assert "Current route" in index_workspace_command
+    assert "Local panels" in index_workspace_command
+    assert "Global commands" in index_workspace_command
+    assert "Anchor spread" in index_workspace_command
+    assert "1 top anchor and 4 section anchors map the /index surface from #top to #category-leaders." in index_workspace_command
+    assert "Top anchor" in index_workspace_command
+    assert "Section anchors" in index_workspace_command
+    assert "Furthest anchor" in index_workspace_command
+    assert "Asset scope" in index_workspace_command
+    assert "5 cross-page routes and 17 hot-output files expand the command surface beyond local panel anchors." in index_workspace_command
+    assert "Cross-page routes" in index_workspace_command
+    assert "Hot outputs" in index_workspace_command
+    assert "Global scope" in index_workspace_command
     publication_output_section = extract_hot_output_section(index_html, "Publication outputs")
     staged_output_section = extract_hot_output_section(index_html, "Staged provenance")
     assert "Registry shape" in publication_output_section
@@ -971,6 +997,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     methodology_hero_aside = extract_hero_aside(methodology_html, "Warning-only signals")
     methodology_ticker_strip = extract_ticker_strip(methodology_html)
     methodology_footer = extract_site_footer(methodology_html)
+    methodology_workspace_command = extract_workspace_command(methodology_html)
     assert "Gate contract" in methodology_inclusion_rule_section
     assert "The methodology keeps the visible sample tied to the public-page &gt;= $5,000 / 30d inclusion rule." in methodology_inclusion_rule_section
     assert "Threshold" in methodology_inclusion_rule_section
@@ -1007,6 +1034,12 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Build pack" in methodology_footer
     assert "4 checked-in input zones plus 5 local panels and 22 global commands keep the shell reproducible." in methodology_footer
     assert "Hosting contract" in methodology_footer
+    assert "Route scope" in methodology_workspace_command
+    assert "/methodology keeps 5 local jumps and 22 global commands one query away from the jump palette." in methodology_workspace_command
+    assert "Anchor spread" in methodology_workspace_command
+    assert "1 top anchor and 4 section anchors map the /methodology surface from #top to #validation-checks." in methodology_workspace_command
+    assert "Asset scope" in methodology_workspace_command
+    assert "5 cross-page routes and 17 hot-output files expand the command surface beyond local panel anchors." in methodology_workspace_command
 
     assert "metrics.json" in data_html
     assert f'<meta http-equiv="Content-Security-Policy" content="{ESCAPED_CSP_SNIPPET}">' in data_html
@@ -1124,6 +1157,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     data_hero_aside = extract_hero_aside(data_html, "Manifest summary")
     data_ticker_strip = extract_ticker_strip(data_html)
     data_footer = extract_site_footer(data_html)
+    data_workspace_command = extract_workspace_command(data_html)
     assert "Route spread" in data_route_map_section
     assert "3 routes keep overview, methodology, and data one jump away." in data_route_map_section
     assert ">Data<" in data_route_map_section
@@ -1198,6 +1232,12 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "4 checked-in input zones plus 10 local panels and 22 global commands keep the shell reproducible." in data_footer
     assert "Hosting contract" in data_footer
     assert "Static pages currently expose 17 hot-output files with no runtime server, authenticated backend, or hidden publication layer." in data_footer
+    assert "Route scope" in data_workspace_command
+    assert "/data keeps 10 local jumps and 22 global commands one query away from the jump palette." in data_workspace_command
+    assert "Anchor spread" in data_workspace_command
+    assert "1 top anchor and 9 section anchors map the /data surface from #top to #manifest-notes." in data_workspace_command
+    assert "Asset scope" in data_workspace_command
+    assert "5 cross-page routes and 17 hot-output files expand the command surface beyond local panel anchors." in data_workspace_command
     assert "Registry shape" in data_html
     assert "Signal anchors" in data_html
     assert "keep the publication command surface self-contained at" in data_html
@@ -1250,6 +1290,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".shortcut-chip {" in site_css
     assert ".shortcut-keys {" in site_css
     assert ".shortcut-chip kbd {" in site_css
+    assert ".workspace-command .annotation-rail-grid," in site_css
+    assert ".command-surface-rails {" in site_css
     assert "@media (prefers-reduced-motion: reduce)" in site_css
     assert "scroll-behavior: auto;" in site_css
     assert "transition-duration: 0.01ms !important;" in site_css
