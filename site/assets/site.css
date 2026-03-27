@@ -275,6 +275,12 @@ body {
   color: var(--ink-dim);
 }
 
+.rail-command-divider-max-median {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  color: var(--accent-muted);
+}
+
 .rail-command-divider-average {
   font-size: 0.64rem;
   letter-spacing: 0.08em;
