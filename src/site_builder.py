@@ -559,6 +559,27 @@ def route_key(slug: str) -> str:
     }.get(slug, f"/{slug}")
 
 
+def brand_status_badges(*, active: str, status: str) -> str:
+    badge_specs = [
+        ("Publication", "Source-derived sample", "brand-badge brand-badge-accent"),
+        ("Validation", status_label(status), f"brand-badge {status_class(status)}"),
+        ("Route", f"{route_key(active)} active", "brand-badge"),
+    ]
+    return (
+        '<span class="brand-status" aria-label="Header status">'
+        + "".join(
+            (
+                f'<span class="{html.escape(class_name, quote=True)}">'
+                f"<strong>{html.escape(label)}</strong>"
+                f"<span>{html.escape(value)}</span>"
+                "</span>"
+            )
+            for label, value, class_name in badge_specs
+        )
+        + "</span>"
+    )
+
+
 def route_href(slug: str) -> str:
     return {
         "index": "index.html",
@@ -887,6 +908,7 @@ def page_shell(
         global_command_count=global_command_count,
         hot_output_count=len(output_registry_items),
     )
+    brand_status_html = brand_status_badges(active=active, status=status)
     workspace_command_story_html = workspace_command_story_rails(
         active=active,
         local_panel_items=local_panel_items,
@@ -913,6 +935,7 @@ def page_shell(
       <a class="brand" href="index.html">
         <span class="brand-kicker">fancyMMR</span>
         <span class="brand-title">TrustMRR visible-sample terminal</span>
+        {brand_status_html}
       </a>
       <div class="ticker-strip" aria-label="Workspace status">
         {shell_tokens(
@@ -4964,14 +4987,16 @@ body {
 
 .command-strip-inner {
   display: flex;
+  flex-wrap: wrap;
   gap: 18px;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 12px 0;
 }
 
 .brand {
   display: inline-flex;
+  flex: 1 1 340px;
   flex-direction: column;
   gap: 4px;
   color: inherit;
@@ -4998,9 +5023,59 @@ body {
   text-transform: uppercase;
 }
 
+.brand-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(17, 22, 29, 0.92);
+  color: var(--ink-soft);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.brand-badge strong {
+  color: var(--ink);
+  font-size: 0.64rem;
+}
+
+.brand-badge-accent {
+  border-color: var(--line-strong);
+  background: var(--accent-soft);
+}
+
+.brand-badge.is-passed {
+  color: var(--green);
+  background: var(--green-soft);
+  border-color: rgba(131, 212, 134, 0.36);
+}
+
+.brand-badge.is-warning {
+  color: var(--warning);
+  background: var(--warning-soft);
+  border-color: rgba(255, 191, 97, 0.36);
+}
+
+.brand-badge.is-failed {
+  color: var(--red);
+  background: var(--red-soft);
+  border-color: rgba(255, 123, 105, 0.36);
+}
+
 .ticker-strip,
 .command-bar-links {
   display: flex;
+  flex: 1 1 620px;
   flex-wrap: wrap;
   gap: 10px;
 }

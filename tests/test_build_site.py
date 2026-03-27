@@ -155,6 +155,16 @@ def extract_workspace_command(text: str) -> str:
     return match.group(1)
 
 
+def extract_brand(text: str) -> str:
+    pattern = re.compile(
+        r'<a class="brand" href="index.html">(.*?)</a>',
+        re.DOTALL,
+    )
+    match = pattern.search(text)
+    assert match, "brand"
+    return match.group(1)
+
+
 def format_byte_count(byte_count: int) -> str:
     if byte_count == 1:
         return "1 byte"
@@ -749,6 +759,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     concentration_monitor_section = extract_rail_module(index_html, "Concentration monitor")
     warning_posture_section = extract_rail_module(index_html, "Warning posture")
     overview_hero_aside = extract_hero_aside(index_html, "Current build snapshot")
+    index_brand = extract_brand(index_html)
     index_ticker_strip = extract_ticker_strip(index_html)
     index_footer = extract_site_footer(index_html)
     index_workspace_command = extract_workspace_command(index_html)
@@ -811,6 +822,15 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Validation" in overview_hero_aside
     assert "Current build snapshot" in overview_hero_aside
     assert "249 startups" in overview_hero_aside
+    assert "fancyMMR" in index_brand
+    assert "TrustMRR visible-sample terminal" in index_brand
+    assert "Header status" in index_brand
+    assert "Publication" in index_brand
+    assert "Source-derived sample" in index_brand
+    assert "Validation" in index_brand
+    assert "Passed with warnings" in index_brand
+    assert "Route" in index_brand
+    assert "/index active" in index_brand
     assert "surface" in index_ticker_strip
     assert "static pages" in index_ticker_strip
     assert "validation" in index_ticker_strip
@@ -995,6 +1015,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     methodology_validation_posture_section = extract_rail_module(methodology_html, "Validation posture")
     methodology_publication_caveat_section = extract_rail_module(methodology_html, "Publication caveat")
     methodology_hero_aside = extract_hero_aside(methodology_html, "Warning-only signals")
+    methodology_brand = extract_brand(methodology_html)
     methodology_ticker_strip = extract_ticker_strip(methodology_html)
     methodology_footer = extract_site_footer(methodology_html)
     methodology_workspace_command = extract_workspace_command(methodology_html)
@@ -1021,6 +1042,12 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Heuristic gaps" in methodology_hero_aside
     assert "Warning-only signals" in methodology_hero_aside
     assert "9 duplicate names / 0 heuristic gaps" in methodology_hero_aside
+    assert "Publication" in methodology_brand
+    assert "Source-derived sample" in methodology_brand
+    assert "Validation" in methodology_brand
+    assert "Passed with warnings" in methodology_brand
+    assert "Route" in methodology_brand
+    assert "/methodology active" in methodology_brand
     assert "route" in methodology_ticker_strip
     assert "methodology" in methodology_ticker_strip
     assert "local panels" in methodology_ticker_strip
@@ -1155,6 +1182,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     download_surface_section = extract_rail_module(data_html, "Download surface")
     diagnostics_feed_section = extract_rail_module(data_html, "Diagnostics feed")
     data_hero_aside = extract_hero_aside(data_html, "Manifest summary")
+    data_brand = extract_brand(data_html)
     data_ticker_strip = extract_ticker_strip(data_html)
     data_footer = extract_site_footer(data_html)
     data_workspace_command = extract_workspace_command(data_html)
@@ -1218,6 +1246,12 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Diagnostics" in data_hero_aside
     assert "Manifest summary" in data_hero_aside
     assert "21 generated outputs" in data_hero_aside
+    assert "Publication" in data_brand
+    assert "Source-derived sample" in data_brand
+    assert "Validation" in data_brand
+    assert "Passed with warnings" in data_brand
+    assert "Route" in data_brand
+    assert "/data active" in data_brand
     assert "route" in data_ticker_strip
     assert "data" in data_ticker_strip
     assert "local panels" in data_ticker_strip
@@ -1278,6 +1312,10 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".command-chip:focus-visible," in site_css
     assert ".button:focus-visible {" in site_css
     assert ".command-strip {" in site_css
+    assert ".brand-status {" in site_css
+    assert ".brand-badge {" in site_css
+    assert ".brand-badge strong {" in site_css
+    assert ".brand-badge-accent {" in site_css
     assert ".command-input {" in site_css
     assert ".command-input-wrap:focus-within {" in site_css
     assert ".infographic-grid {" in site_css
