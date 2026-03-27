@@ -132,6 +132,62 @@
 - This note is again written before the commit/push step so the code change can stay in one clean task-scoped commit
 - Any push or remote-log limitation is reported in the terminal summary for this run
 
+## 2026-03-27 07:09:28 CET (+0100)
+
+- Run timing note: this entry starts after the previous note at `2026-03-27 07:05:00 CET (+0100)` and records the next quality pass
+- Intent: improve keyboard accessibility and navigation semantics in the static operator shell without changing analytics behavior
+
+### What I looked for this time
+
+- Another shell-level quality gap that affects real use, not just code organization
+- A change that improves accessibility and navigation semantics for the terminal-style Pages UI
+- A slice that can be verified deterministically and stays fully static/GitHub-Pages-safe
+
+### External research used
+
+- I used accessibility guidance around skip links and active navigation semantics so the shell improves keyboard usability without changing the overall workstation style
+
+### Main finding from this pass
+
+- The shell still lacked a real skip link, which means keyboard users have to tab through repeated navigation before reaching the actual workspace
+- The active route was visible via styling, but it was not exposed with `aria-current`, so the navigation state was less explicit for assistive technology
+
+### What I changed
+
+1. Updated [src/site_builder.py](/run/media/doomguy/Новый%20том/fancy/fancyMMR/src/site_builder.py) so the generated shell now includes:
+   - a `Skip to workspace` link at the top of the body
+   - a focus target on the main workspace region
+   - `aria-current="page"` on the active primary route link
+2. Added matching styling in the generated [site/assets/site.css](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/assets/site.css) so the skip link stays hidden until focused and still fits the terminal visual language
+3. Regenerated the static Pages outputs:
+   - [site/index.html](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/index.html)
+   - [site/methodology.html](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/methodology.html)
+   - [site/data.html](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/data.html)
+4. Expanded [tests/test_build_site.py](/run/media/doomguy/Новый%20том/fancy/fancyMMR/tests/test_build_site.py) so the skip link, workspace focus target, active-route semantics, and skip-link CSS are all now part of the site contract
+
+### Why this refactor is safe
+
+- It does not touch any dataset, report, promotion, fetch, parse, normalize, or validation logic
+- It keeps the terminal shell style intact while making it easier to use with a keyboard and assistive tech
+- It remains fully static and GitHub-Pages-safe
+
+### Verification
+
+- `python -m py_compile src/site_builder.py tests/test_build_site.py`
+- `python src/build_site.py`
+- `python -m pytest tests/test_build_site.py -q` -> `3 passed`
+- `python -m pytest` -> `46 passed`
+
+### Honest remaining gaps
+
+- This still does not align repo metrics with live Instantly truth because there is still no external source-of-truth adapter or accessible DB/Railway/MCP connector in this environment
+- So this pass improves shell accessibility and semantics, not upstream reporting reconciliation
+
+### Note about push/log follow-up
+
+- This note is again written before the commit/push step so the code change can stay in one clean task-scoped commit
+- Any push or remote-log limitation is reported in the terminal summary for this run
+
 ## 2026-03-27 07:05:00 CET (+0100)
 
 - Run timing note: this entry starts after the previous note at `2026-03-27 06:58:23 CET (+0100)` and records the next quality pass

@@ -821,7 +821,7 @@ def page_shell(
     ]
     navigation = "".join(
         (
-            f'<a class="nav-link{" is-active" if slug == active else ""}" href="{href}">{label}</a>'
+            f'<a class="nav-link{" is-active" if slug == active else ""}" href="{href}"{" aria-current=\"page\"" if slug == active else ""}>{label}</a>'
         )
         for slug, label, href in nav_items
     )
@@ -842,6 +842,7 @@ def page_shell(
   <script defer src="assets/site.js"></script>
 </head>
 <body class="page-{active}">
+  <a class="skip-link" href="#workspace-main">Skip to workspace</a>
   <div class="page-backdrop"></div>
   <header class="command-strip">
     <div class="site-shell command-strip-inner">
@@ -883,7 +884,7 @@ def page_shell(
         <p class="rail-copy">Visible public sample only. Static GitHub Pages publication. No runtime server, no hidden backend, no platform-wide claim.</p>
       </section>
     </aside>
-    <main class="workspace">
+    <main class="workspace" id="workspace-main" tabindex="-1">
       <section class="workspace-command" data-command-surface data-page-route="{html.escape(route_key(active), quote=True)}">
         <div class="command-entry">
           <label class="command-prompt-label" for="jump-palette">Jump palette</label>
@@ -2294,6 +2295,25 @@ body {
 .site-shell {
   width: min(1480px, calc(100vw - 32px));
   margin: 0 auto;
+}
+
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -48px;
+  z-index: 40;
+  padding: 10px 14px;
+  border: 1px solid var(--line-strong);
+  background: rgba(5, 7, 10, 0.98);
+  color: var(--accent);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+}
+
+.skip-link:focus {
+  top: 12px;
 }
 
 .command-strip {

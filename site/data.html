@@ -11,6 +11,7 @@
   <script defer src="assets/site.js"></script>
 </head>
 <body class="page-data">
+  <a class="skip-link" href="#workspace-main">Skip to workspace</a>
   <div class="page-backdrop"></div>
   <header class="command-strip">
     <div class="site-shell command-strip-inner">
@@ -28,7 +29,7 @@
       <section class="rail-module">
         <p class="rail-kicker">Route map</p>
         <nav class="nav-links" aria-label="Primary">
-          <a class="nav-link" href="index.html">Overview</a><a class="nav-link" href="methodology.html">Methodology</a><a class="nav-link is-active" href="data.html">Data</a>
+          <a class="nav-link" href="index.html">Overview</a><a class="nav-link" href="methodology.html">Methodology</a><a class="nav-link is-active" href="data.html" aria-current="page">Data</a>
         </nav>
       </section>
       <section class="rail-module">
@@ -88,7 +89,7 @@
         <p class="rail-copy">Visible public sample only. Static GitHub Pages publication. No runtime server, no hidden backend, no platform-wide claim.</p>
       </section>
     </aside>
-    <main class="workspace">
+    <main class="workspace" id="workspace-main" tabindex="-1">
       <section class="workspace-command" data-command-surface data-page-route="/data">
         <div class="command-entry">
           <label class="command-prompt-label" for="jump-palette">Jump palette</label>

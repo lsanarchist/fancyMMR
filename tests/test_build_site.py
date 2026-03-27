@@ -597,8 +597,12 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "visible public sample" in index_html.lower()
     assert f'<meta http-equiv="Content-Security-Policy" content="{ESCAPED_CSP_SNIPPET}">' in index_html
     assert '<meta http-equiv="Referrer-Policy" content="no-referrer, strict-origin-when-cross-origin">' in index_html
+    assert '<a class="skip-link" href="#workspace-main">Skip to workspace</a>' in index_html
+    assert '<main class="workspace" id="workspace-main" tabindex="-1">' in index_html
     assert 'href="methodology.html"' in index_html
     assert 'href="data.html"' in index_html
+    assert 'href="index.html" aria-current="page"' in index_html
+    assert 'href="methodology.html" aria-current="page"' not in index_html
     assert 'src="assets/charts/category_share_map.png"' in index_html
     assert 'loading="lazy"' in index_html
     assert 'href="/' not in index_html
@@ -726,6 +730,10 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "not a full database export" in methodology_html.lower()
     assert f'<meta http-equiv="Content-Security-Policy" content="{ESCAPED_CSP_SNIPPET}">' in methodology_html
     assert '<meta http-equiv="Referrer-Policy" content="no-referrer, strict-origin-when-cross-origin">' in methodology_html
+    assert '<a class="skip-link" href="#workspace-main">Skip to workspace</a>' in methodology_html
+    assert '<main class="workspace" id="workspace-main" tabindex="-1">' in methodology_html
+    assert 'href="methodology.html" aria-current="page"' in methodology_html
+    assert 'href="index.html" aria-current="page"' not in methodology_html
     assert "source-derived visible sample" in methodology_html.lower()
     assert "passed with warnings" in methodology_html.lower()
     assert "data/source_pipeline/" in methodology_html
@@ -735,6 +743,10 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "metrics.json" in data_html
     assert f'<meta http-equiv="Content-Security-Policy" content="{ESCAPED_CSP_SNIPPET}">' in data_html
     assert '<meta http-equiv="Referrer-Policy" content="no-referrer, strict-origin-when-cross-origin">' in data_html
+    assert '<a class="skip-link" href="#workspace-main">Skip to workspace</a>' in data_html
+    assert '<main class="workspace" id="workspace-main" tabindex="-1">' in data_html
+    assert 'href="data.html" aria-current="page"' in data_html
+    assert 'href="index.html" aria-current="page"' not in data_html
     assert "Category summary" in data_html
     assert "Business model summary" in data_html
     assert "GTM model summary" in data_html
@@ -816,6 +828,8 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert fetch_failure_total_bytes in data_html
     assert "--bg: #05070a" in site_css
     assert ".workstation {" in site_css
+    assert ".skip-link {" in site_css
+    assert ".skip-link:focus {" in site_css
     assert ".command-strip {" in site_css
     assert ".command-input {" in site_css
     assert ".rail-command-group {" in site_css
