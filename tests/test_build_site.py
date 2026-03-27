@@ -832,6 +832,9 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".skip-link:focus {" in site_css
     assert ".command-strip {" in site_css
     assert ".command-input {" in site_css
+    assert "@media (prefers-reduced-motion: reduce)" in site_css
+    assert "scroll-behavior: auto;" in site_css
+    assert "transition-duration: 0.01ms !important;" in site_css
     assert ".rail-command-group {" in site_css
     assert ".rail-command-group-head {" in site_css
     assert ".rail-command-group-meta {" in site_css
@@ -856,12 +859,16 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".download-badge-format {" in site_css
     assert ".section-card.is-focused" in site_css or ".hero.is-focused" in site_css
     assert "window.localStorage.setItem" in site_js
+    assert 'window.matchMedia("(prefers-reduced-motion: reduce)")' in site_js
+    assert 'const scrollBehavior = () => (reducedMotionQuery && reducedMotionQuery.matches ? "auto" : "smooth");' in site_js
+    assert "scrollPanelIntoView" in site_js
     assert 'event.key === "/"' in site_js
     assert 'event.key === "[" || event.key === "]"' in site_js
     assert 'command.kind === "panel"' in site_js
     assert "new URL(command.target, window.location.href)" in site_js
     assert "window.location.href = absoluteUrl.toString();" in site_js
     assert "matchedCommands" in site_js
+    assert 'behavior: "smooth"' not in site_js
     assert "scrollIntoView" in site_js
     for artifact in pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"]:
         assert artifact["site_path"] in data_html

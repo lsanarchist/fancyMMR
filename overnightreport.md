@@ -132,6 +132,69 @@
 - This note is again written before the commit/push step so the code change can stay in one clean task-scoped commit
 - Any push or remote-log limitation is reported in the terminal summary for this run
 
+## 2026-03-27 07:16:40 CET (+0100)
+
+- Run timing note: this entry starts after the previous note at `2026-03-27 07:09:28 CET (+0100)` and records the next quality-only pass
+- Intent: improve the terminal shell's accessibility and comfort for motion-sensitive users without changing any analytics, pipeline, or publication logic
+
+### What I looked for this time
+
+- Another operator-shell delivery issue that affects real users rather than internal code style only
+- A Pages-safe accessibility refinement that can be verified locally and deterministically
+- A change that reduces UI friction without widening the business logic surface
+
+### External research used
+
+- I checked current guidance around `prefers-reduced-motion` and motion-from-interaction accessibility so the shell would respect user system preferences instead of always forcing animated scroll behavior
+- The main references for this pass were:
+  - MDN on `prefers-reduced-motion`
+  - WCAG Understanding: Animation from Interactions
+
+### Main finding from this pass
+
+- The static terminal shell still forced smooth scrolling in both CSS and JavaScript
+- That means panel jumps and in-page command navigation continued to animate even for users who explicitly ask the OS/browser for reduced motion
+- The existing shell only uses motion for polish, so there is no reason to override that preference
+
+### What I changed
+
+1. Updated [src/site_builder.py](/run/media/doomguy/Новый%20том/fancy/fancyMMR/src/site_builder.py) so the generated stylesheet now includes a `prefers-reduced-motion: reduce` block that:
+   - disables smooth scrolling
+   - collapses transition and animation durations to near-zero
+2. Updated the generated command-surface script in the same source file so in-page panel jumps now:
+   - detect `window.matchMedia("(prefers-reduced-motion: reduce)")`
+   - switch scroll behavior from `smooth` to `auto` when reduced motion is requested
+3. Regenerated the static Pages outputs:
+   - [site/index.html](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/index.html)
+   - [site/methodology.html](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/methodology.html)
+   - [site/data.html](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/data.html)
+   - [site/assets/site.css](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/assets/site.css)
+   - [site/assets/site.js](/run/media/doomguy/Новый%20том/fancy/fancyMMR/site/assets/site.js)
+4. Expanded [tests/test_build_site.py](/run/media/doomguy/Новый%20том/fancy/fancyMMR/tests/test_build_site.py) so the reduced-motion CSS and JS contract is now locked in
+
+### Why this refactor is safe
+
+- It does not touch dataset generation, validation, promotion, fetch behavior, parsing, normalization, charts, or publication metrics
+- It only changes how the existing static operator shell behaves when a user has already opted into reduced motion at the platform level
+- It remains fully static and GitHub-Pages-safe
+
+### Verification
+
+- `python -m py_compile src/site_builder.py tests/test_build_site.py`
+- `python src/build_site.py`
+- `python -m pytest tests/test_build_site.py -q` -> `3 passed`
+- `python -m pytest` -> `46 passed`
+
+### Honest remaining gaps
+
+- This still does not solve the main "actual Instantly truth" discrepancy problem because there is still no accessible live source-of-truth integration, DB mirror, Railway connector, or MCP surface available from this environment
+- So this pass improves quality of delivery and accessibility in the published shell, not upstream metric reconciliation
+
+### Note about push/log follow-up
+
+- This note is again written before the commit/push step so the code change can stay in one clean task-scoped commit
+- Any push or remote-log limitation is reported in the terminal summary for this run
+
 ## 2026-03-27 07:09:28 CET (+0100)
 
 - Run timing note: this entry starts after the previous note at `2026-03-27 07:05:00 CET (+0100)` and records the next quality pass

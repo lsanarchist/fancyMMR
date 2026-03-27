@@ -3307,6 +3307,20 @@ pre code {
     max-width: none;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 """
 
 
@@ -3326,6 +3340,7 @@ def build_script() -> str:
 
   const route = surface.getAttribute("data-page-route") || window.location.pathname || "/";
   const storageKey = `fancymmr:last-panel:${route}`;
+  const reducedMotionQuery = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
   const commandNodes = Array.from(document.querySelectorAll("[data-command-target]"));
   const commandMap = new Map();
 
@@ -3391,6 +3406,12 @@ def build_script() -> str:
 
   const setStatus = (message) => {
     status.textContent = message;
+  };
+
+  const scrollBehavior = () => (reducedMotionQuery && reducedMotionQuery.matches ? "auto" : "smooth");
+
+  const scrollPanelIntoView = (panel) => {
+    panel?.scrollIntoView({ behavior: scrollBehavior(), block: "start" });
   };
 
   const normalizedCommandQuery = (rawValue) => {
@@ -3478,7 +3499,7 @@ def build_script() -> str:
     if (command.kind === "panel") {
       if (window.location.hash === command.target) {
         highlightPanel(command.target);
-        command.panel?.scrollIntoView({ behavior: "smooth", block: "start" });
+        scrollPanelIntoView(command.panel);
         return;
       }
       window.location.hash = command.target;
@@ -3494,7 +3515,7 @@ def build_script() -> str:
     ) {
       if (window.location.hash === absoluteUrl.hash) {
         highlightPanel(absoluteUrl.hash);
-        panelMap.get(absoluteUrl.hash)?.panel?.scrollIntoView({ behavior: "smooth", block: "start" });
+        scrollPanelIntoView(panelMap.get(absoluteUrl.hash)?.panel);
       } else {
         window.location.hash = absoluteUrl.hash;
       }
