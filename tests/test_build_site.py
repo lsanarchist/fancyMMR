@@ -74,6 +74,16 @@ def format_byte_count(byte_count: int) -> str:
     return f"{byte_count:,} bytes"
 
 
+def format_byte_totals(items: list[dict[str, object]]) -> dict[str, str]:
+    totals: dict[str, int] = {}
+    for artifact in items:
+        artifact_format = str(artifact.get("format") or "").strip().lower() or "other"
+        artifact_bytes = artifact.get("bytes")
+        if isinstance(artifact_bytes, int):
+            totals[artifact_format] = totals.get(artifact_format, 0) + artifact_bytes
+    return {artifact_format: format_byte_count(total_bytes) for artifact_format, total_bytes in totals.items()}
+
+
 def manifest_generated_download_total_bytes(workspace: Path, pipeline_manifest: dict[str, object]) -> int:
     total_bytes = 0
     seen_paths: set[str] = set()
@@ -95,6 +105,39 @@ def manifest_generated_download_total_bytes(workspace: Path, pipeline_manifest: 
     if "data/pipeline_manifest.json" not in seen_paths and manifest_path.exists():
         total_bytes += manifest_path.stat().st_size
     return total_bytes
+
+
+def manifest_generated_download_items(workspace: Path, pipeline_manifest: dict[str, object]) -> list[dict[str, object]]:
+    items: list[dict[str, object]] = []
+    seen_paths: set[str] = set()
+    for artifact in pipeline_manifest.get("generated_outputs", []):
+        if not isinstance(artifact, dict):
+            continue
+        path = str(artifact.get("path") or "")
+        if not path.startswith("data/"):
+            continue
+        if Path(path).suffix.lower() not in {".json", ".csv"}:
+            continue
+        artifact_path = workspace / path
+        if path in seen_paths or not artifact_path.exists():
+            continue
+        items.append(
+            {
+                "format": Path(path).suffix.lstrip(".").lower(),
+                "bytes": int(artifact.get("bytes") or artifact_path.stat().st_size),
+            }
+        )
+        seen_paths.add(path)
+
+    manifest_path = workspace / "data" / "pipeline_manifest.json"
+    if "data/pipeline_manifest.json" not in seen_paths and manifest_path.exists():
+        items.append(
+            {
+                "format": "json",
+                "bytes": manifest_path.stat().st_size,
+            }
+        )
+    return items
 
 
 def source_pipeline_artifact_total_bytes(
@@ -159,6 +202,15 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     fetch_failure_total_bytes = format_byte_count(
         source_pipeline_artifact_total_bytes(pipeline_manifest, "downloadable_fetch_failure_artifacts")
     )
+    publication_format_byte_totals = format_byte_totals(
+        manifest_generated_download_items(workspace, pipeline_manifest)
+    )
+    staged_format_byte_totals = format_byte_totals(
+        list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_staged_artifacts"])
+    )
+    fetch_failure_format_byte_totals = format_byte_totals(
+        list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
+    )
 
     assert "visible public sample" in index_html.lower()
     assert 'href="methodology.html"' in index_html
@@ -198,10 +250,14 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert 'rail-command-divider-label">JSON<' in publication_output_section
     assert 'rail-command-divider-count">5<' in publication_output_section
     assert 'rail-command-divider-count">6<' in publication_output_section
+    assert publication_format_byte_totals["csv"] in publication_output_section
+    assert publication_format_byte_totals["json"] in publication_output_section
     assert 'rail-command-divider-label">CSV<' in staged_output_section
     assert 'rail-command-divider-label">JSON<' in staged_output_section
     assert 'rail-command-divider-count">1<' in staged_output_section
     assert 'rail-command-divider-count">5<' in staged_output_section
+    assert staged_format_byte_totals["csv"] in staged_output_section
+    assert staged_format_byte_totals["json"] in staged_output_section
     assert_text_order(
         publication_output_section,
         [
@@ -336,6 +392,7 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert ".rail-command-divider {" in site_css
     assert ".rail-command-divider-label {" in site_css
     assert ".rail-command-divider-count {" in site_css
+    assert ".rail-command-divider-bytes {" in site_css
     assert ".rail-command-group-empty {" in site_css
     assert ".download-summary {" in site_css
     assert ".download-badge {" in site_css
@@ -417,6 +474,9 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     pipeline_manifest = json.loads((site_root / "data" / "pipeline_manifest.json").read_text(encoding="utf-8"))
     fetch_failure_total_bytes = format_byte_count(
         source_pipeline_artifact_total_bytes(pipeline_manifest, "downloadable_fetch_failure_artifacts")
+    )
+    fetch_failure_format_byte_totals = format_byte_totals(
+        list(pipeline_manifest["source_pipeline_diagnostics"]["downloadable_fetch_failure_artifacts"])
     )
 
     assert (site_root / "data" / "fetch_failures" / "category--ai.json").exists()
@@ -505,6 +565,8 @@ def test_build_site_copies_manifest_driven_fetch_failure_downloads(tmp_path: Pat
     assert 'rail-command-divider-label">JSON<' in fetch_failure_output_section
     assert 'rail-command-divider-count">1<' in fetch_failure_output_section
     assert 'rail-command-divider-count">2<' in fetch_failure_output_section
+    assert fetch_failure_format_byte_totals["html"] in fetch_failure_output_section
+    assert fetch_failure_format_byte_totals["json"] in fetch_failure_output_section
     assert_text_order(
         fetch_failure_output_section,
         [

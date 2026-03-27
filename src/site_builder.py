@@ -621,8 +621,8 @@ def global_route_command_items() -> list[dict[str, str]]:
     ]
 
 
-def global_output_command_items(download_items: list[dict[str, object]]) -> list[dict[str, str]]:
-    items: list[dict[str, str]] = []
+def global_output_command_items(download_items: list[dict[str, object]]) -> list[dict[str, object]]:
+    items: list[dict[str, object]] = []
     for artifact in download_items:
         site_path = str(artifact.get("site_path") or "")
         if not site_path:
@@ -643,6 +643,9 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
         )
         if artifact_format:
             items[-1]["format"] = artifact_format
+        artifact_bytes = artifact.get("bytes")
+        if isinstance(artifact_bytes, int):
+            items[-1]["bytes"] = artifact_bytes
     return items
 
 
@@ -722,6 +725,12 @@ def output_registry_command_links_markup(command_items: list[dict[str, object]])
         str(item.get("format") or "").strip().lower() or "other"
         for item in command_items
     )
+    format_bytes: Counter[str] = Counter()
+    for item in command_items:
+        item_format = str(item.get("format") or "").strip().lower() or "other"
+        item_bytes = item.get("bytes")
+        if isinstance(item_bytes, int):
+            format_bytes[item_format] += item_bytes
     active_format = None
     for item in command_items:
         item_format = str(item.get("format") or "").strip().lower() or "other"
@@ -730,6 +739,7 @@ def output_registry_command_links_markup(command_items: list[dict[str, object]])
                 '<div class="rail-command-divider">'
                 f'<span class="rail-command-divider-label">{html.escape(item_format.upper())}</span>'
                 f'<span class="rail-command-divider-count">{format_counts[item_format]:,}</span>'
+                f'<span class="rail-command-divider-bytes">{html.escape(format_byte_count(format_bytes[item_format]))}</span>'
                 "</div>"
             )
             active_format = item_format
@@ -2459,6 +2469,12 @@ body {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-soft);
+}
+
+.rail-command-divider-bytes {
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-dim);
 }
 
 .rail-command-group-title,
