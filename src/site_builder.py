@@ -1801,6 +1801,223 @@ def diagnostics_story_rails(source_pipeline_diagnostics: dict[str, object]) -> s
     )
 
 
+def artifact_collection_stats(items: list[dict[str, object]]) -> dict[str, object]:
+    format_counts: Counter[str] = Counter()
+    format_bytes: Counter[str] = Counter()
+    total_bytes = 0
+    ranked_items: list[dict[str, object]] = []
+    for artifact in items:
+        artifact_format = artifact_format_label(artifact)
+        if artifact_format:
+            format_counts[artifact_format] += 1
+        artifact_bytes = artifact.get("bytes")
+        if isinstance(artifact_bytes, int):
+            total_bytes += artifact_bytes
+            if artifact_format:
+                format_bytes[artifact_format] += artifact_bytes
+        ranked_items.append(artifact)
+    ranked_items.sort(key=lambda artifact: int(artifact.get("bytes", 0)) if isinstance(artifact.get("bytes"), int) else 0, reverse=True)
+    return {
+        "item_count": len(items),
+        "total_bytes": total_bytes,
+        "format_counts": format_counts,
+        "format_bytes": format_bytes,
+        "ranked_items": ranked_items,
+    }
+
+
+def publication_download_story_rails(publication_bundle_items: list[dict[str, object]]) -> str:
+    stats = artifact_collection_stats(publication_bundle_items)
+    total_bytes = int(stats["total_bytes"])
+    format_counts: Counter[str] = stats["format_counts"]  # type: ignore[assignment]
+    format_bytes: Counter[str] = stats["format_bytes"]  # type: ignore[assignment]
+    ranked_items: list[dict[str, object]] = stats["ranked_items"]  # type: ignore[assignment]
+    item_count = int(stats["item_count"])
+
+    json_count = format_counts.get("json", 0)
+    csv_count = format_counts.get("csv", 0)
+    json_byte_total = format_bytes.get("json", 0)
+    csv_byte_total = format_bytes.get("csv", 0)
+    top_items = ranked_items[:3]
+
+    rails = [
+        chart_annotation_rail(
+            kicker="Bundle shape",
+            headline=f"{count_label(item_count, 'file')} keep the promoted download surface self-contained at {format_byte_count(total_bytes)}.",
+            note="The publication bundle keeps tabular summaries and machine-readable manifests downloadable from the same static Pages surface.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "JSON files",
+                        count_label(json_count, "file"),
+                        normalized_ratio(json_count, item_count or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "CSV files",
+                        count_label(csv_count, "file"),
+                        normalized_ratio(csv_count, item_count or 1),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Total bytes",
+                        format_byte_count(total_bytes),
+                        1.0 if total_bytes > 0 else 0.0,
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+        chart_annotation_rail(
+            kicker="Byte weight",
+            headline=f"JSON carries {pct(normalized_ratio(json_byte_total, total_bytes or 1))} of publication bytes.",
+            note="The file count is nearly split, but most bundle weight sits in the machine-readable provenance and manifest layer.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "JSON bytes",
+                        format_byte_count(json_byte_total),
+                        normalized_ratio(json_byte_total, total_bytes or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "CSV bytes",
+                        format_byte_count(csv_byte_total),
+                        normalized_ratio(csv_byte_total, total_bytes or 1),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Diagnostics share",
+                        format_byte_count(int(top_items[0].get("bytes", 0))) if top_items else "0 bytes",
+                        normalized_ratio(int(top_items[0].get("bytes", 0)) if top_items and isinstance(top_items[0].get("bytes"), int) else 0, total_bytes or 1),
+                        tone="red",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+        chart_annotation_rail(
+            kicker="Heavy anchors",
+            headline="Diagnostics and manifest artifacts outweigh the summary tables in the published bundle.",
+            note="The largest downloadable files are provenance-heavy JSON outputs, which keeps the static publication inspectable without a backend.",
+            meters_html="".join(
+                infographic_meter(
+                    publication_download_card_metadata(str(artifact.get("site_path") or ""))[0],
+                    format_byte_count(int(artifact.get("bytes", 0))) if isinstance(artifact.get("bytes"), int) else "0 bytes",
+                    normalized_ratio(int(artifact.get("bytes", 0)) if isinstance(artifact.get("bytes"), int) else 0, total_bytes or 1),
+                    tone=tone,
+                )
+                for artifact, tone in zip(top_items, ["red", "accent", "cyan"])
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+    ]
+    return (
+        f'<div class="annotation-rail-grid">{"".join(rails)}</div>'
+        '<p class="section-note">These download story rails reuse the same manifest-driven artifact metadata already attached to the publication bundle, so the operator readout stays deterministic and GitHub-Pages-safe.</p>'
+    )
+
+
+def staged_bundle_story_rails(
+    staged_bundle_items: list[dict[str, object]],
+    source_pipeline_diagnostics: dict[str, object],
+) -> str:
+    if not staged_bundle_items:
+        return ""
+
+    stats = artifact_collection_stats(staged_bundle_items)
+    total_bytes = int(stats["total_bytes"])
+    format_counts: Counter[str] = stats["format_counts"]  # type: ignore[assignment]
+    ranked_items: list[dict[str, object]] = stats["ranked_items"]  # type: ignore[assignment]
+    item_count = int(stats["item_count"])
+    json_count = format_counts.get("json", 0)
+    csv_count = format_counts.get("csv", 0)
+    top_items = ranked_items[:3]
+    detail_page_target_count = int(source_pipeline_diagnostics.get("detail_page_target_count", 0))
+    not_requested_detail_count = int((source_pipeline_diagnostics.get("detail_parse_status_counts", {}) or {}).get("not_requested", 0))
+    fetched_detail_page_count = int(source_pipeline_diagnostics.get("fetched_detail_page_count", 0))
+    parsed_detail_page_count = int(source_pipeline_diagnostics.get("parsed_detail_page_count", 0))
+
+    rails = [
+        chart_annotation_rail(
+            kicker="Provenance pack",
+            headline=f"{count_label(item_count, 'file')} keep {format_byte_count(total_bytes)} of staged evidence attached to the active manifest.",
+            note="The staged bundle stays visibly separate from the promoted dataset contract while remaining downloadable from the same static page.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "JSON files",
+                        count_label(json_count, "file"),
+                        normalized_ratio(json_count, item_count or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "CSV files",
+                        count_label(csv_count, "file"),
+                        normalized_ratio(csv_count, item_count or 1),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Total bytes",
+                        format_byte_count(total_bytes),
+                        1.0 if total_bytes > 0 else 0.0,
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+        chart_annotation_rail(
+            kicker="Detail-row weight",
+            headline="The staged bundle is dominated by the flattened detail-row export rather than the smaller JSON summaries.",
+            note="Most staged bundle weight lives in one CSV evidence table, with the run manifest and field-coverage JSON as the next-largest anchors.",
+            meters_html="".join(
+                infographic_meter(
+                    str(artifact.get("label") or Path(str(artifact.get("site_path") or artifact.get("path") or "")).name),
+                    format_byte_count(int(artifact.get("bytes", 0))) if isinstance(artifact.get("bytes"), int) else "0 bytes",
+                    normalized_ratio(int(artifact.get("bytes", 0)) if isinstance(artifact.get("bytes"), int) else 0, total_bytes or 1),
+                    tone=tone,
+                )
+                for artifact, tone in zip(top_items, ["red", "accent", "cyan"])
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+        chart_annotation_rail(
+            kicker="Staging posture",
+            headline=f"{detail_page_target_count:,} target detail pages remain opt-in, with {not_requested_detail_count:,} still not requested in the promoted run.",
+            note="The staged bundle exposes the deeper pipeline surface without silently expanding the live crawl behind the static publication.",
+            meters_html="".join(
+                [
+                    infographic_meter(
+                        "Not requested",
+                        count_label(not_requested_detail_count, "page"),
+                        normalized_ratio(not_requested_detail_count, detail_page_target_count or 1),
+                        tone="accent",
+                    ),
+                    infographic_meter(
+                        "Fetched",
+                        count_label(fetched_detail_page_count, "page"),
+                        normalized_ratio(fetched_detail_page_count, detail_page_target_count or 1),
+                        tone="cyan",
+                    ),
+                    infographic_meter(
+                        "Parsed",
+                        count_label(parsed_detail_page_count, "page"),
+                        normalized_ratio(parsed_detail_page_count, detail_page_target_count or 1),
+                        tone="green",
+                    ),
+                ]
+            ),
+            extra_class="chart-annotation-rail-standalone",
+        ),
+    ]
+    return (
+        f'<div class="annotation-rail-grid">{"".join(rails)}</div>'
+        '<p class="section-note">These staged-bundle story rails reuse the same staged artifact metadata and detail-staging counts already published in the bundle, so the operator readout stays deterministic and GitHub-Pages-safe.</p>'
+    )
+
+
 def section(
     title: str,
     intro: str,
@@ -2361,6 +2578,8 @@ def build_data_page(
         staged_bundle_items=staged_bundle_items,
         fetch_failure_items=fetch_failure_items,
     )
+    publication_download_story_rails_html = publication_download_story_rails(publication_bundle_items)
+    staged_bundle_story_rails_html = staged_bundle_story_rails(staged_bundle_items, source_pipeline_diagnostics)
 
     category_table = render_table(
         ["Category", "Visible revenue", "Median revenue", "Revenue share"],
@@ -3018,7 +3237,9 @@ def build_data_page(
         section(
             "Downloads",
             "Manifest-driven publication outputs are copied into the site so the published Pages bundle stays inspectable on its own.",
-            download_section_summary_html(publication_bundle_items) + f'<div class="card-grid">{downloads}</div>',
+            publication_download_story_rails_html
+            + download_section_summary_html(publication_bundle_items)
+            + f'<div class="card-grid">{downloads}</div>',
             section_id="downloads",
             panel_code="DT.02",
             panel_tag="core outputs",
@@ -3028,7 +3249,9 @@ def build_data_page(
             "Staged Bundle",
             "The active promoted staged source-pipeline bundle is exposed as a separate manifest-driven provenance surface, distinct from the promoted dataset contract.",
             (
-                download_section_summary_html(staged_bundle_items) + f'<div class="card-grid">{staged_bundle_downloads}</div>'
+                staged_bundle_story_rails_html
+                + download_section_summary_html(staged_bundle_items)
+                + f'<div class="card-grid">{staged_bundle_downloads}</div>'
                 if staged_bundle_items
                 else (
                     download_section_summary_html(staged_bundle_items)

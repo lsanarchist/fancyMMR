@@ -792,6 +792,14 @@ def test_build_site_outputs_pages_assets_and_copied_json(tmp_path: Path) -> None
     assert "Revenue band pressure" in data_html
     assert "Category lanes" in data_html
     assert "Source-page leaders" in data_html
+    assert "Bundle shape" in data_html
+    assert "Byte weight" in data_html
+    assert "Heavy anchors" in data_html
+    assert "Provenance pack" in data_html
+    assert "Detail-row weight" in data_html
+    assert "Staging posture" in data_html
+    assert "These download story rails reuse the same manifest-driven artifact metadata already attached to the publication bundle" in data_html
+    assert "These staged-bundle story rails reuse the same staged artifact metadata and detail-staging counts already published in the bundle" in data_html
     assert "These data-pane infographics are derived from the same static bundle outputs mirrored below" in data_html
     assert "Staged Bundle" in data_html
     assert "Fetch Failure Snapshots" in data_html
