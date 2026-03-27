@@ -346,6 +346,14 @@ def format_byte_delta(min_bytes: int | None, max_bytes: int | None) -> str:
     return f"delta {format_byte_count(abs(max_bytes - min_bytes))}"
 
 
+def format_byte_range(min_bytes: int | None, max_bytes: int | None) -> str:
+    if min_bytes is None or max_bytes is None:
+        return "size n/a"
+    if min_bytes == max_bytes:
+        return format_byte_count(min_bytes)
+    return f"{format_byte_count(min_bytes)} to {format_byte_count(max_bytes)}"
+
+
 def artifact_format_label(artifact: dict[str, object]) -> str:
     artifact_format = str(artifact.get("format") or "").strip().lower()
     if artifact_format:
@@ -734,6 +742,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     item_format_smallest_share = str(item.get("format_smallest_share") or "")
     item_format_share_gap = str(item.get("format_share_gap") or "")
     item_format_byte_delta = str(item.get("format_byte_delta") or "")
+    item_format_byte_range = str(item.get("format_byte_range") or "")
     byte_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
         if isinstance(item_bytes, int)
@@ -809,6 +818,11 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         if item_format_byte_delta
         else ""
     )
+    format_byte_range_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-format-byte-range">{html.escape(item_format_byte_range)}</span>'
+        if item_format_byte_range
+        else ""
+    )
     return (
         f'<a class="rail-command-link output-registry-link" href="{html.escape(target, quote=True)}" '
         f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
@@ -835,6 +849,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         f"{format_smallest_share_badge_html}"
         f"{format_share_gap_badge_html}"
         f"{format_byte_delta_badge_html}"
+        f"{format_byte_range_badge_html}"
         "</span>"
         "</a>"
     )
@@ -1035,6 +1050,13 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
         items[-1]["format_byte_delta"] = (
             f"{artifact_format_label} "
             f"{format_byte_delta(
+                format_min_bytes.get(artifact_format_key),
+                format_max_bytes.get(artifact_format_key),
+            )}"
+        )
+        items[-1]["format_byte_range"] = (
+            f"{artifact_format_label} "
+            f"{format_byte_range(
                 format_min_bytes.get(artifact_format_key),
                 format_max_bytes.get(artifact_format_key),
             )}"
@@ -5920,6 +5942,12 @@ body {
   color: var(--accent);
   border-color: rgba(246, 165, 58, 0.22);
   background: rgba(246, 165, 58, 0.12);
+}
+
+.output-registry-badge-format-byte-range {
+  color: var(--cyan);
+  border-color: rgba(98, 201, 214, 0.22);
+  background: rgba(98, 201, 214, 0.12);
 }
 
 .nav-link:hover,
