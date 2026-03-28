@@ -284,6 +284,22 @@ def format_count_share(item_count: int, section_item_count: int) -> str:
     return f"{share:.0f}%"
 
 
+def format_byte_file_share_gap(
+    total_bytes: int,
+    section_total_bytes: int,
+    item_count: int,
+    section_item_count: int,
+) -> str:
+    if section_total_bytes <= 0 or section_item_count <= 0:
+        return "mix n/a"
+    byte_share = (100 * total_bytes) / section_total_bytes
+    file_share = (100 * item_count) / section_item_count
+    gap = byte_share - file_share
+    if abs(gap) < 0.5:
+        return "mix 0pp"
+    return f"mix {gap:+.0f}pp"
+
+
 def format_average_byte_count(total_bytes: int, item_count: int) -> str:
     if item_count <= 0:
         return "avg 0 bytes"
@@ -756,6 +772,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     item_format_section_byte_share = str(item.get("format_section_byte_share") or "")
     item_format_section_byte_rank = str(item.get("format_section_byte_rank") or "")
     item_format_section_file_rank = str(item.get("format_section_file_rank") or "")
+    item_format_byte_file_share_gap = str(item.get("format_byte_file_share_gap") or "")
     byte_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
         if isinstance(item_bytes, int)
@@ -856,6 +873,11 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         if item_format_section_file_rank
         else ""
     )
+    format_byte_file_share_gap_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-format-byte-file-share-gap">{html.escape(item_format_byte_file_share_gap)}</span>'
+        if item_format_byte_file_share_gap
+        else ""
+    )
     return (
         f'<a class="rail-command-link output-registry-link" href="{html.escape(target, quote=True)}" '
         f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
@@ -887,6 +909,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         f"{format_section_byte_share_badge_html}"
         f"{format_section_byte_rank_badge_html}"
         f"{format_section_file_rank_badge_html}"
+        f"{format_byte_file_share_gap_badge_html}"
         "</span>"
         "</a>"
     )
@@ -1140,6 +1163,15 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
         items[-1]["format_section_file_rank"] = format_section_file_rank_lookup.get(
             artifact_format_key,
             "",
+        )
+        items[-1]["format_byte_file_share_gap"] = (
+            f"{artifact_format_label} "
+            f"{format_byte_file_share_gap(
+                format_total_bytes.get(artifact_format_key, 0),
+                section_total_bytes,
+                format_item_counts.get(artifact_format_key, 0),
+                section_item_count,
+            )}"
         )
         artifact_bytes = artifact.get("bytes")
         if isinstance(artifact_bytes, int):
@@ -6052,6 +6084,12 @@ body {
   color: var(--red);
   border-color: rgba(255, 123, 105, 0.22);
   background: rgba(255, 123, 105, 0.12);
+}
+
+.output-registry-badge-format-byte-file-share-gap {
+  color: var(--warning);
+  border-color: rgba(255, 191, 97, 0.22);
+  background: rgba(255, 191, 97, 0.12);
 }
 
 .nav-link:hover,
