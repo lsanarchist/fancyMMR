@@ -755,6 +755,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     item_format_spread_ratio = str(item.get("format_spread_ratio") or "")
     item_format_section_byte_share = str(item.get("format_section_byte_share") or "")
     item_format_section_byte_rank = str(item.get("format_section_byte_rank") or "")
+    item_format_section_file_rank = str(item.get("format_section_file_rank") or "")
     byte_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
         if isinstance(item_bytes, int)
@@ -850,6 +851,11 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         if item_format_section_byte_rank
         else ""
     )
+    format_section_file_rank_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-format-section-file-rank">{html.escape(item_format_section_file_rank)}</span>'
+        if item_format_section_file_rank
+        else ""
+    )
     return (
         f'<a class="rail-command-link output-registry-link" href="{html.escape(target, quote=True)}" '
         f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
@@ -880,6 +886,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         f"{format_spread_ratio_badge_html}"
         f"{format_section_byte_share_badge_html}"
         f"{format_section_byte_rank_badge_html}"
+        f"{format_section_file_rank_badge_html}"
         "</span>"
         "</a>"
     )
@@ -989,6 +996,7 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
     }
     format_rank_lookup: dict[str, str] = {}
     format_section_byte_rank_lookup: dict[str, str] = {}
+    format_section_file_rank_lookup: dict[str, str] = {}
     format_ranked_site_paths: dict[str, list[tuple[str, int]]] = {}
     format_item_counts: dict[str, int] = {}
     format_total_bytes: dict[str, int] = {}
@@ -1032,6 +1040,16 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
             sorted(
                 format_item_counts,
                 key=lambda key: (-format_total_bytes.get(key, 0), key),
+            ),
+            start=1,
+        )
+    }
+    format_section_file_rank_lookup = {
+        artifact_format: f"{artifact_format.upper()} F{rank:0{format_lane_width}d}/{format_lane_count:0{format_lane_width}d}"
+        for rank, artifact_format in enumerate(
+            sorted(
+                format_item_counts,
+                key=lambda key: (-format_item_counts.get(key, 0), key),
             ),
             start=1,
         )
@@ -1116,6 +1134,10 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
             f"{format_byte_share(format_total_bytes.get(artifact_format_key, 0), section_total_bytes)}"
         )
         items[-1]["format_section_byte_rank"] = format_section_byte_rank_lookup.get(
+            artifact_format_key,
+            "",
+        )
+        items[-1]["format_section_file_rank"] = format_section_file_rank_lookup.get(
             artifact_format_key,
             "",
         )
@@ -6024,6 +6046,12 @@ body {
   color: var(--cyan);
   border-color: rgba(98, 201, 214, 0.22);
   background: rgba(98, 201, 214, 0.12);
+}
+
+.output-registry-badge-format-section-file-rank {
+  color: var(--red);
+  border-color: rgba(255, 123, 105, 0.22);
+  background: rgba(255, 123, 105, 0.12);
 }
 
 .nav-link:hover,
