@@ -300,6 +300,24 @@ def format_byte_file_share_gap(
     return f"mix {gap:+.0f}pp"
 
 
+def format_byte_file_share_ratio(
+    total_bytes: int,
+    section_total_bytes: int,
+    item_count: int,
+    section_item_count: int,
+) -> str:
+    if section_total_bytes <= 0 or section_item_count <= 0 or item_count <= 0:
+        return "mix n/a"
+    byte_share = total_bytes / section_total_bytes
+    file_share = item_count / section_item_count
+    if file_share <= 0:
+        return "mix n/a"
+    ratio = byte_share / file_share
+    if ratio < 10:
+        return f"mix {ratio:.1f}x"
+    return f"mix {ratio:.0f}x"
+
+
 def format_average_byte_count(total_bytes: int, item_count: int) -> str:
     if item_count <= 0:
         return "avg 0 bytes"
@@ -773,6 +791,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
     item_format_section_byte_rank = str(item.get("format_section_byte_rank") or "")
     item_format_section_file_rank = str(item.get("format_section_file_rank") or "")
     item_format_byte_file_share_gap = str(item.get("format_byte_file_share_gap") or "")
+    item_format_byte_file_share_ratio = str(item.get("format_byte_file_share_ratio") or "")
     byte_badge_html = (
         f'<span class="output-registry-badge output-registry-badge-bytes">{html.escape(format_byte_count(item_bytes))}</span>'
         if isinstance(item_bytes, int)
@@ -878,6 +897,11 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         if item_format_byte_file_share_gap
         else ""
     )
+    format_byte_file_share_ratio_badge_html = (
+        f'<span class="output-registry-badge output-registry-badge-format-byte-file-share-ratio">{html.escape(item_format_byte_file_share_ratio)}</span>'
+        if item_format_byte_file_share_ratio
+        else ""
+    )
     return (
         f'<a class="rail-command-link output-registry-link" href="{html.escape(target, quote=True)}" '
         f'data-command-label="{html.escape(str(item["label"]), quote=True)}" '
@@ -910,6 +934,7 @@ def output_registry_link_markup(item: dict[str, object]) -> str:
         f"{format_section_byte_rank_badge_html}"
         f"{format_section_file_rank_badge_html}"
         f"{format_byte_file_share_gap_badge_html}"
+        f"{format_byte_file_share_ratio_badge_html}"
         "</span>"
         "</a>"
     )
@@ -1167,6 +1192,15 @@ def global_output_command_items(download_items: list[dict[str, object]]) -> list
         items[-1]["format_byte_file_share_gap"] = (
             f"{artifact_format_label} "
             f"{format_byte_file_share_gap(
+                format_total_bytes.get(artifact_format_key, 0),
+                section_total_bytes,
+                format_item_counts.get(artifact_format_key, 0),
+                section_item_count,
+            )}"
+        )
+        items[-1]["format_byte_file_share_ratio"] = (
+            f"{artifact_format_label} "
+            f"{format_byte_file_share_ratio(
                 format_total_bytes.get(artifact_format_key, 0),
                 section_total_bytes,
                 format_item_counts.get(artifact_format_key, 0),
@@ -6090,6 +6124,12 @@ body {
   color: var(--warning);
   border-color: rgba(255, 191, 97, 0.22);
   background: rgba(255, 191, 97, 0.12);
+}
+
+.output-registry-badge-format-byte-file-share-ratio {
+  color: var(--green);
+  border-color: rgba(131, 212, 134, 0.22);
+  background: rgba(131, 212, 134, 0.12);
 }
 
 .nav-link:hover,
